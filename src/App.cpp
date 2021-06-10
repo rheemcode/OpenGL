@@ -147,14 +147,14 @@
 //
 //    VertexArray va;
 //
-//    //IndexBuffer ibo(cube_indices, 17);
+//    IndexBuffer ibo(cube_indices, 17);
 //   
 //    
-//    //VertexBuffer vb(sizeof(cubePositions) + sizeof(cube_colors));
-//    //vb.BufferSubData(torusList, 0, sizeof(torusList));
-//    //vb.BufferSubData(cube_colors, sizeof(cubePositions), sizeof(cube_colors));
-//    VertexBuffer vb(sizeof(float) * torusVec.size() * 3 );
-//    vb.BufferSubData(torusVec.data(), 0, sizeof(float) * torusVec.size() * 3);
+//    VertexBuffer vb(sizeof(cubePositions) + sizeof(cube_colors));
+//    vb.BufferSubData(torusList, 0, sizeof(torusList));
+//    vb.BufferSubData(cube_colors, sizeof(cubePositions), sizeof(cube_colors));
+//    //VertexBuffer vb(sizeof(float) * torusVec.size() * 3 );
+//    //vb.BufferSubData(torusVec.data(), 0, sizeof(float) * torusVec.size() * 3);
 //    //vb.BufferSubData(cube_colors, sizeof(cubePositions), sizeof(cube_colors));
 //
 //    va.Bind();
@@ -176,8 +176,8 @@
 //    GLCall(glEnableVertexAttribArray(0));
 //    GLCall(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, NULL));
 //    
-//  //  GLCall(glEnableVertexAttribArray(1));
-//  //  glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, (void*) sizeof(cubePositions));
+//    GLCall(glEnableVertexAttribArray(1));
+//   glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, (void*) sizeof(cubePositions));
 //
 //
 //    using namespace glm;
@@ -226,10 +226,9 @@
 //        //GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
 //
 //        // When primitive restart is on, we can call one draw command
-//       // GLCall(glEnable(GL_PRIMITIVE_RESTART));
-//       // GLCall(glPrimitiveRestartIndex(0xFFFF));
+//       GLCall(glEnable(GL_PRIMITIVE_RESTART));
+//        GLCall(glPrimitiveRestartIndex(0xFFFF));
 //
-//        GLCall(glDrawArrays(GL_TRIANGLE_STRIP, 0, 2112));
 //       // GLCall(glDrawElements(GL_TRIANGLE_STRIP, 17, GL_UNSIGNED_INT, NULL));
 //
 //
