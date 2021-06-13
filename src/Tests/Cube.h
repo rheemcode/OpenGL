@@ -15,6 +15,7 @@ private:
      void CreateVertexBuffer() override;
      void CreateIndexBuffer() override;
 private:
+    std::vector<vec4> m_VertexPositions;
     int m_UniformLocation;
     int m_MvpLocation;
 };

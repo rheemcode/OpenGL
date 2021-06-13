@@ -3,13 +3,18 @@
 #include <GLFW/include/GLFW/glfw3.h>
 #include <glm/gtc/type_ptr.hpp>
 #include "Camera.h"
+#include <iostream>
 
+Torus::Torus(const Torus& t)
+{
+    
+}
 
 Torus::Torus(int mainSegments, int tubeSegments, float mainRadius, float tubeRadius)
     : m_MainSegments(mainSegments), m_TubeSegments(tubeSegments),
     m_TubeRadius(tubeRadius), m_MainRadius(mainRadius)
 {
-
+    std::cout << "Created";
     GenTorusVertices();
 
     CreateVertexArray();
@@ -23,6 +28,8 @@ Torus::Torus(int mainSegments, int tubeSegments, float mainRadius, float tubeRad
     EnableAttribs();
 
     Scale();
+
+    transform = glm::translate(transform, glm::vec3(0.f, 2.f, 0.f));
 
 }
 
@@ -39,7 +46,7 @@ void Torus::CreateVertexArray()
 
 void Torus::CreateVertexBuffer()
 {
-    m_Vb = std::make_unique<VertexBuffer>(m_VertexPositions.data(), (sizeof(float) * 3) * m_VertexPositions.size());
+    m_Vb = std::make_unique<VertexBuffer>(m_VertexPositions.data(), (sizeof(float) * 4) * m_VertexPositions.size());
 }
 
 static glm::mat4x4 p;
@@ -100,7 +107,8 @@ void Torus::GenTorusVertices()
                 {
                 (m_MainRadius + m_TubeRadius * cosTubeSegment) * cosMainSegment,
                 (m_MainRadius + m_TubeRadius * cosTubeSegment) * sinMainSegment,
-                m_TubeRadius * sinTubeSegment
+                m_TubeRadius * sinTubeSegment,
+                1.f
                 });
 
             currentTubeSegmentAngle += tubeSegmentAngleStep;
@@ -148,5 +156,10 @@ void Torus::EnableAttribs()
     projLocation = glGetUniformLocation(shader, "projMatrix");
 
     GLCall(glEnableVertexAttribArray(vPosLocation));
-    GLCall(glVertexAttribPointer(vPosLocation, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (void*)0));
+    GLCall(glVertexAttribPointer(vPosLocation, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, (void*)0));
+}
+
+Torus::~Torus()
+{
+    std::cout << "deleted";
 }

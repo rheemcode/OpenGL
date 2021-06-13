@@ -3,8 +3,9 @@
 class Torus : public Primitive
 {
 public:
+    Torus(const Torus& t);
     Torus(int mainSegments, int tubeSegments, float mainRadius, float tubeRadius);
-
+    ~Torus();
 
 public:
     void Draw(const class Camera& camera) override;
@@ -22,6 +23,7 @@ private:
 
 
 private:
+    std::vector<vec4> m_VertexPositions;
     int m_MainSegments,
         m_TubeSegments,
         m_NumIndicies,

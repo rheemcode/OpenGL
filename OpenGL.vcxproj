@@ -152,6 +152,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Core\Camera.cpp" />
+    <ClCompile Include="src\test.cpp" />
     <ClCompile Include="src\Tests\Cube.cpp" />
     <ClCompile Include="Deps\glm\detail\glm.cpp" />
     <ClCompile Include="src\Core\Renderer.cpp" />
@@ -163,6 +164,7 @@
     <ClCompile Include="src\Core\VertexArray.cpp" />
     <ClCompile Include="src\Core\VertexBufferLayout.cpp" />
     <ClCompile Include="src\Tests\Torus.cpp" />
+    <ClCompile Include="src\Window\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Core\Camera.h" />

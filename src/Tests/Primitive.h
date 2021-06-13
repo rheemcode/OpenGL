@@ -9,6 +9,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 
 struct vec3 { float x, y, z; };
+struct vec4 { float x, y, z, w; };
 
 class Primitive : public Object
 {
@@ -19,7 +20,6 @@ private:
     virtual void CreateIndexBuffer() = 0;
 
 protected:
-    std::vector<vec3> m_VertexPositions;
     std::vector<unsigned int> m_Indicies;
 
     std::unique_ptr<Shader> m_Shader;

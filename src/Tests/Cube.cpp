@@ -15,12 +15,11 @@ Cube::Cube()
 	EnableAttribs();
 	
 	transform = glm::mat4x4(1);
-	//transform = glm::translate(transform, glm::vec3(10.f, 0.f, 0.f));
 }
 
 void Cube::GenVertices()
 {
-	vec3 currentVertex;
+	vec4 currentVertex;
 
 	float x = -1.f, y = -1.f, z = 1.f;
 	int n = -1;
@@ -50,7 +49,7 @@ void Cube::GenVertices()
 					else
 						z = 1.f;
 
-					currentVertex = { x, y, z };
+					currentVertex = { x, y, z, 1.f };
 					 
 
 				}

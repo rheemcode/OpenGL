@@ -1,4 +1,5 @@
 #include "Camera.h"
+#include "Window/Window.h"
 
 Camera::Camera(const CameraMode& mode)
 {
@@ -8,6 +9,41 @@ Camera::Camera(const CameraMode& mode)
 Camera::Camera(const CameraSettings& setting)
 {
 	m_ProjectionMatrix = MakeProjectionMatrix(setting);
+}
+
+void Camera::Update()
+{
+	if (Window::isQkey)
+	{
+		rot.y += .6f;
+
+	}
+	if (Window::isEkey)
+	{
+		rot.y -= .6f;
+
+	}
+	if (Window::isWkey)
+	{
+		pos.x += -glm::cos(glm::radians(rot.y + 90)) * .1f;
+		pos.z += -glm::sin(glm::radians(rot.y + 90)) * .1f;
+	}
+	if (Window::isSkey)
+	{
+		pos.x += glm::cos(glm::radians(rot.y + 90)) * .1f;
+		pos.z += glm::sin(glm::radians(rot.y + 90)) * .1f;
+	}
+	if (Window::isAkey)
+	{	
+		pos.x += -glm::cos(glm::radians(rot.y)) * .1f;
+		pos.z += -glm::sin(glm::radians(rot.y)) * .1f;
+	}
+	if (Window::isDkey)
+	{
+		pos.x += glm::cos(glm::radians(rot.y)) * .1f;
+		pos.z += glm::sin(glm::radians(rot.y)) * .1f;
+	}
+		Translate(pos);
 }
 
 glm::mat4x4 Camera::MakeProjectionMatrix(const CameraMode& projectionMode)
@@ -33,7 +69,7 @@ glm::mat4x4 Camera::MakeProjectionMatrix(const CameraSettings& setting)
 	{
 		case (CameraMode::ORTHOGRAPHIC):
 		{
-			break;
+			return glm::ortho(-4.f, 4.f, 3.f, -3.f, 3.f, -300.f);
 		}
 		case (CameraMode::PERSPECTIVE):
 		{
@@ -46,7 +82,9 @@ glm::mat4x4 Camera::MakeProjectionMatrix(const CameraSettings& setting)
 
 void Camera::Translate(glm::vec3 position)
 {
-	m_ViewMatrix = glm::translate(m_ViewMatrix, position);
+	glm::mat4x4 mat;
+	mat = glm::rotate(mat, glm::radians(rot.y), { 0, 1.f, 0 });
+	m_ViewMatrix = glm::translate(mat, -position);
 }
 
 void Camera::Rotate(float angle, glm::vec3 direction)
