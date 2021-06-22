@@ -33,6 +33,7 @@ void IndexBuffer::UnBind() const
 
 void IndexBuffer::AddData(const unsigned int& data)
 {
+	m_Count += 1;
 	m_Data.push_back(data);
 }
 

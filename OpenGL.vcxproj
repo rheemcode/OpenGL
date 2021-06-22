@@ -152,6 +152,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Core\Camera.cpp" />
+    <ClCompile Include="src\Math\Math.cpp" />
+    <ClCompile Include="src\Math\Matrix3x3.cpp" />
+    <ClCompile Include="src\Math\Matrix4x4.cpp" />
+    <ClCompile Include="src\Math\Quaternion.cpp" />
+    <ClCompile Include="src\Math\SimpleVec.cpp" />
+    <ClCompile Include="src\Math\Vector2.cpp" />
+    <ClCompile Include="src\Math\Vector3.cpp" />
     <ClCompile Include="src\test.cpp" />
     <ClCompile Include="src\Tests\Cube.cpp" />
     <ClCompile Include="Deps\glm\detail\glm.cpp" />
@@ -163,11 +170,20 @@
     <ClCompile Include="src\Core\IndexBuffer.cpp" />
     <ClCompile Include="src\Core\VertexArray.cpp" />
     <ClCompile Include="src\Core\VertexBufferLayout.cpp" />
+    <ClCompile Include="src\Tests\Sphere.cpp" />
     <ClCompile Include="src\Tests\Torus.cpp" />
     <ClCompile Include="src\Window\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Core\Camera.h" />
+    <ClInclude Include="src\Math\fdecl.h" />
+    <ClInclude Include="src\Math\Math.h" />
+    <ClInclude Include="src\Math\Matrix3x3.h" />
+    <ClInclude Include="src\Math\Matrix4x4.h" />
+    <ClInclude Include="src\Math\Quaternion.h" />
+    <ClInclude Include="src\Math\SimpleVec.h" />
+    <ClInclude Include="src\Math\Vector2.h" />
+    <ClInclude Include="src\Math\Vector3.h" />
     <ClInclude Include="src\Tests\Cube.h" />
     <ClInclude Include="Deps\glm\common.hpp" />
     <ClInclude Include="Deps\glm\detail\func_common.hpp" />
@@ -319,6 +335,7 @@
     <ClInclude Include="src\Core\VertexBuffer.h" />
     <ClInclude Include="src\Core\VertexArray.h" />
     <ClInclude Include="src\Core\VertexBufferLayout.h" />
+    <ClInclude Include="src\Tests\Sphere.h" />
     <ClInclude Include="src\Tests\Torus.h" />
     <ClInclude Include="src\Window\Window.h" />
   </ItemGroup>

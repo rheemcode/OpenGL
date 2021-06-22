@@ -1,0 +1,74 @@
+#pragma once
+
+
+#include "Math/Math.h"
+
+struct Vector2
+{
+	Vector2() :x(0), y(0) {};
+	Vector2(float p_x, float p_y) : x(p_x), y(p_y) {}
+	Vector2(const Vector2& p_vec) : x(p_vec.x), y(p_vec.y) {}
+	Vector2(const Vector3& p_vec);
+
+	static Vector2 Normalize(const Vector2& p_vec);
+	static Vector2 Abs(Vector2& p_vec);
+	static float Length(const Vector2& p_vec);
+	static float LengthSq(const Vector2& p_vec);
+	static float Distance(const Vector2& p_vecA, const Vector2& p_vecB);
+	static float DistanceSq(const Vector2& p_vecA, const Vector2& p_vecB);
+	static Vector2 Direction(const Vector2& p_vecA, const Vector2& p_vecB);
+	static float AngleBetween(const Vector2& p_vecA, const Vector2& p_vecB);
+	static Vector2 AngleToDir(float p_angleRad);
+	static float DirToAngle(const Vector2& p_dir);
+	static Vector2 Rotate(const Vector2& p_vec, const float angleRad);
+	static float AngleToPoint(const Vector2& p_vecA, const Vector2& p_vec);	
+	static float Dot(const Vector2& p_vecA, const Vector2& p_vecB);
+	static float Cross(const Vector2& p_vecA, const Vector2& p_vecB);
+	static Vector2 Clamp(const Vector2& p_vec);
+	static Vector2 Lerp(const Vector2& p_vecA, const Vector2& p_vecB, const float p_delta);
+	static Vector2 Slerp(const Vector2& p_vecA, const Vector2& p_vecB, const float p_delta);
+	static Vector2 MoveTowards(const Vector2& p_vecA, const Vector2& p_vecB, const float p_delta);
+	static Vector2 Orthogonal(const Vector2& p_vec);
+	static Vector2 Sign(const Vector2& p_vec);
+	static Vector2 Floor(const Vector2& p_vec);
+	static Vector2 Ceil(const Vector2& p_vec);
+	static Vector2 Round(const Vector2& p_vec);
+	inline float& operator[](int p_axis) { return p_axis ? x : y; }
+	inline Vector2 operator=(const Vector2& p_vec);
+	inline Vector2 operator=(const Vector3& p_vec);
+	inline Vector2 operator+(const Vector2& p_v) const;
+	inline void operator+=(const Vector2& p_v);
+	inline Vector2 operator-(const Vector2& p_v) const;
+	inline void operator-=(const Vector2& p_v);
+	inline void operator*=(const float& rvalue);
+	friend inline Vector2 operator*(float p_scalar, const Vector2& p_vec);
+	friend inline Vector2 operator*(double p_scalar, const Vector2& p_vec);
+	friend inline Vector2 operator*(int p_scalar, const Vector2& p_vec);
+	friend inline Vector2 operator*(const Vector2& p_vec, const Vector2& p_vecB);
+	inline void operator*=(const Vector2& rvalue) { *this = *this * rvalue; }
+	inline Vector2 operator/(const Vector2& p_v1) const;
+	inline Vector2 operator/(const float& rvalue) const;
+	inline void operator/=(const float& rvalue);
+	inline void operator/=(const Vector2& rvalue) { *this = *this / rvalue; }
+	inline Vector2 operator-() const;
+	inline bool operator==(const Vector2& p_vec2) const;
+	inline bool operator!=(const Vector2& p_vec2) const;
+
+	inline bool operator<(const Vector2& p_vec2) const { return x == p_vec2.x ? (y < p_vec2.y) : (x < p_vec2.x); }
+	inline bool operator>(const Vector2& p_vec2) const { return x == p_vec2.x ? (y > p_vec2.y) : (x > p_vec2.x); }
+	inline bool operator<=(const Vector2& p_vec2) const { return x == p_vec2.x ? (y <= p_vec2.y) : (x < p_vec2.x); }
+	inline bool operator>=(const Vector2& p_vec2) const { return x == p_vec2.x ? (y >= p_vec2.y) : (x > p_vec2.x); }
+
+	union
+	{
+		float x;
+		float width;
+	};
+
+	union
+	{
+		float y;
+		float height;
+	};
+
+};

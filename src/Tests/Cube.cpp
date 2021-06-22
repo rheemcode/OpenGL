@@ -2,6 +2,7 @@
 #include <GLFW/include/GLFW/glfw3.h>
 #include <glm/gtc/type_ptr.hpp>
 #include "Camera.h"
+#include "Math/Quaternion.h"
 
 Cube::Cube()
 {
@@ -14,7 +15,7 @@ Cube::Cube()
 	m_Shader = std::make_unique<Shader>("src/shader.shader");
 	EnableAttribs();
 	
-	transform = glm::mat4x4(1);
+	transform = Matrix4x4::Translate(transform, Vector3(-3.7f, 0, 0));
 }
 
 void Cube::GenVertices()
@@ -73,7 +74,7 @@ void Cube::EnableAttribs()
 	int vPosLocation = glGetAttribLocation(shader, "vPos");
 
 	GLCall(glEnableVertexAttribArray(vPosLocation));
-	GLCall(glVertexAttribPointer(vPosLocation, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (void*)0));
+	GLCall(glVertexAttribPointer(vPosLocation, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 4, (void*)0));
 }
 
 void Cube::CreateVertexArray()
@@ -83,7 +84,7 @@ void Cube::CreateVertexArray()
 
 void Cube::CreateVertexBuffer()
 {
-	m_Vb = std::make_unique<VertexBuffer>(m_VertexPositions.data(), (sizeof(float) * 3) * m_VertexPositions.size());
+	m_Vb = std::make_unique<VertexBuffer>(m_VertexPositions.data(), (sizeof(float) * 4) * m_VertexPositions.size());
 }
 
 void Cube::CreateIndexBuffer()
@@ -97,24 +98,27 @@ void Cube::CreateIndexBuffer()
 
 	m_Ib = std::make_unique<IndexBuffer>(ci, 17);
 }
+static Quaternion rot;
+static glm::quat rot2;
+static glm::mat4x4 ma(1.f);
+static Matrix4x4 mmm(1.f);
 
 void Cube::Draw(const Camera& camera)
 {
 	m_Va->Bind();
-
-	transform = glm::rotate(transform, 0.01f, glm::vec3(1, 1, 1));
 	glUseProgram(m_Shader->GetProgram());
 
 
 	glUniform4f(m_UniformLocation, 1.f, 0.f, 0.f, 1.f);
-	glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(camera.GetViewMatrix()));
-	glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(transform));
-	glUniformMatrix4fv(projLocation, 1, GL_FALSE, glm::value_ptr(camera.GetProjectionMatrix()));
+	glUniformMatrix4fv(viewLocation, 1, GL_FALSE, &(camera.GetViewMatrix()[0].x));
+	glUniformMatrix4fv(modelLocation, 1, GL_FALSE, &(transform[0].x));
+	glUniformMatrix4fv(projLocation, 1, GL_FALSE, &(camera.GetProjectionMatrix()[0].x));
 
 
 
 	glEnable(GL_PRIMITIVE_RESTART);
 	glPrimitiveRestartIndex(0xFFFF);
 
-	glDrawElements(GL_TRIANGLE_STRIP, 17, GL_UNSIGNED_INT, NULL);
+	glDrawElementsInstanced(GL_TRIANGLE_STRIP, 17, GL_UNSIGNED_INT, NULL, 12);
+	//glDrawElements(GL_TRIANGLE_STRIP, 17, GL_UNSIGNED_INT, NULL);
 }

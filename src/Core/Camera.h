@@ -1,6 +1,5 @@
 #pragma once
-#include <glm/glm.hpp>
-#include "glm/gtc/matrix_transform.hpp"
+#include "Math/Matrix4x4.h"
 #include "Tests/Object.h"
 
 enum class CameraMode
@@ -26,8 +25,8 @@ struct CameraSettings
 class Transform
 {
 public:
-	glm::vec3 pos;
-	glm::vec3 rot;
+	Vector3 pos;
+	Vector3 rot;
 };
 
 
@@ -38,29 +37,29 @@ public:
 	Camera(const CameraMode& mode);
 	Camera(const CameraSettings& setting);
 
-	glm::mat4x4 MakeProjectionMatrix(const CameraMode& projectionMode);
-	glm::mat4x4 MakeProjectionMatrix(const CameraSettings& setting);
+	Matrix4x4 MakeProjectionMatrix(const CameraMode& projectionMode);
+	Matrix4x4 MakeProjectionMatrix(const CameraSettings& setting);
 
-	glm::mat4x4 MakeViewMatrix();
+	Matrix4x4 MakeViewMatrix();
 
-	glm::mat4x4 GetViewMatrix() const;
-	glm::mat4x4 GetProjectionMatrix() const;
+	const Matrix4x4& GetViewMatrix() const;
+	const Matrix4x4& GetProjectionMatrix() const;
 
-	void Translate(glm::vec3 postion);
-	void Rotate(float angle, glm::vec3 direction);
+	void Translate(Vector3 postion);
+	void Rotate(float angle, Vector3 direction);
 
 	void Update();
 
 
 private:
-	glm::mat4x4 m_ProjectionMatrix;
-	glm::mat4x4 m_ViewMatrix;
-	glm::mat4x4 m_ViewProjectionMatrix;
+	Matrix4x4 m_ProjectionMatrix;
+	Matrix4x4 m_ViewMatrix;
+	Matrix4x4 m_ViewProjectionMatrix;
 
 	float m_Width, m_Height;
-	glm::vec3 m_Rotation;
+	Vector3 m_Rotation;
 
-	glm::vec3 velocity;
+	Vector3 velocity;
 	
 	class Window* m_Window;
 };

@@ -155,7 +155,7 @@ namespace glm
 		tmat4x4<T, P> const & mat
 	)
 	{
-		return &(mat[0].x);
+		return &mat[0].x;
 	}
 
 	//! Return the address to the data of the matrix input.

@@ -3,6 +3,8 @@
 #include <GLFW/include/GLFW/glfw3.h>
 #include <glm/gtc/type_ptr.hpp>
 #include "Camera.h"
+#include "Math/Matrix4x4.h"
+#include "Math/SimpleVec.h"
 #include <iostream>
 
 Torus::Torus(const Torus& t)
@@ -14,9 +16,9 @@ Torus::Torus(int mainSegments, int tubeSegments, float mainRadius, float tubeRad
     : m_MainSegments(mainSegments), m_TubeSegments(tubeSegments),
     m_TubeRadius(tubeRadius), m_MainRadius(mainRadius)
 {
+    //glm::perspective()
     std::cout << "Created";
     GenTorusVertices();
-
     CreateVertexArray();
     CreateVertexBuffer();
     CreateIndexBuffer();
@@ -27,9 +29,11 @@ Torus::Torus(int mainSegments, int tubeSegments, float mainRadius, float tubeRad
     m_Shader = std::make_unique<Shader>("src/shader.shader");
     EnableAttribs();
 
+    glm::mat4 m;
     Scale();
-
-    transform = glm::translate(transform, glm::vec3(0.f, 2.f, 0.f));
+    m = glm::scale(m, { .5f, .5f, .5f });
+    transform = Matrix4x4::Translate(transform, Vector3(0.f, 2.f, 0.f));
+    m = glm::translate(m, glm::vec3(0.f, 2.f, 0.f));
 
 }
 
@@ -49,35 +53,32 @@ void Torus::CreateVertexBuffer()
     m_Vb = std::make_unique<VertexBuffer>(m_VertexPositions.data(), (sizeof(float) * 4) * m_VertexPositions.size());
 }
 
-static glm::mat4x4 p;
+static Matrix4x4 p;
 
 void Torus::Draw(const Camera& camera)
 {
     m_Va->Bind();
-
-    Rotate();
     glUseProgram(m_Shader->GetProgram());
 
     glUniform4f(m_UniformLocation, 1.f, 0.f, 0.f, 1.f);
-
-    glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(camera.GetViewMatrix()));
-    glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(transform));
-    glUniformMatrix4fv(projLocation, 1, GL_FALSE, glm::value_ptr(camera.GetProjectionMatrix()));
+    glUniformMatrix4fv(viewLocation, 1, GL_FALSE, &camera.GetViewMatrix()[0].x);
+    glUniformMatrix4fv(modelLocation, 1, GL_FALSE, &transform[0].x);
+    glUniformMatrix4fv(projLocation, 1, GL_FALSE, &camera.GetProjectionMatrix()[0].x);
 
     glEnable(GL_PRIMITIVE_RESTART);
     glPrimitiveRestartIndex(m_RestartIndex);
 
-     glDrawElements(GL_TRIANGLE_STRIP, m_NumIndicies, GL_UNSIGNED_INT, NULL);
+    glDrawElements(GL_TRIANGLE_STRIP, m_NumIndicies, GL_UNSIGNED_INT, NULL);
 }
 
 void Torus::Rotate()
 {
-    transform = glm::rotate(transform, (float)0.01f, glm::vec3(1.f, 1.f, 1.f));
+    transform = Matrix4x4::Rotate(transform, Vector3(1.f, 1.f, 1.f),(float)0.01f);
 }
 
 void Torus::Scale()
 {
-    transform = glm::scale(transform, glm::vec3(.5f, .5f, .5f));
+    transform = Matrix4x4::Scale(transform, Vector3(.5f, .5f, .5f));
 }
 
 

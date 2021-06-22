@@ -103,6 +103,12 @@ namespace glm
 		T angle,
 		tvec3<T, P> const & axis);
 
+	template <typename T, precision P>
+	GLM_FUNC_DECL tmat4x4<T, P> rotate2(
+		tmat4x4<T, P> const& m,
+		T angle,
+		tvec3<T, P> const& axis);
+
 	/// Builds a scale 4 * 4 matrix created from 3 scalars. 
 	/// 
 	/// @param m Input matrix multiplied by this scale matrix.

@@ -7,6 +7,7 @@
 #include "VertexArray.h"
 #include <glm/glm.hpp>
 #include "glm/gtc/matrix_transform.hpp"
+#include "Math/Matrix4x4.h"
 
 struct vec3 { float x, y, z; };
 struct vec4 { float x, y, z, w; };
@@ -27,9 +28,9 @@ protected:
     std::unique_ptr<VertexArray> m_Va;
     std::unique_ptr<VertexBuffer> m_Vb;
     
-    glm::mat4x4 transform;
-    glm::mat4x4 viewTransform;
-    glm::mat4x4 projTransform;
+    Matrix4x4 transform;
+    Matrix4x4 viewTransform;
+    Matrix4x4 projTransform;
 
     int viewLocation, modelLocation, projLocation;
 
