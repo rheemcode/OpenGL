@@ -32,7 +32,7 @@ Torus::Torus(int mainSegments, int tubeSegments, float mainRadius, float tubeRad
     glm::mat4 m;
     Scale();
     m = glm::scale(m, { .5f, .5f, .5f });
-    transform = Matrix4x4::Translate(transform, Vector3(0.f, 2.f, 0.f));
+    transform = Matrix4x4::Translate(transform, Vector3(0.f, 2.f, -5.f));
     m = glm::translate(m, glm::vec3(0.f, 2.f, 0.f));
 
 }
@@ -60,7 +60,7 @@ void Torus::Draw(const Camera& camera)
     m_Va->Bind();
     glUseProgram(m_Shader->GetProgram());
 
-    glUniform4f(m_UniformLocation, 1.f, 0.f, 0.f, 1.f);
+   // glUniform4f(m_UniformLocation, 1.f, 0.f, 0.f, 1.f);
     glUniformMatrix4fv(viewLocation, 1, GL_FALSE, &camera.GetViewMatrix()[0].x);
     glUniformMatrix4fv(modelLocation, 1, GL_FALSE, &transform[0].x);
     glUniformMatrix4fv(projLocation, 1, GL_FALSE, &camera.GetProjectionMatrix()[0].x);

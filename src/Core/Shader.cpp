@@ -1,6 +1,8 @@
 #include "Shader.h"	
 #include <GLEW/include/GL/glew.h>
 #include <iostream>
+#include <fstream>
+#include "Renderer.h"
 
 Shader::Shader(const std::string& filePath)
 {
@@ -50,10 +52,10 @@ void Shader::CreateShader()
 	unsigned int vs = CompileShader(vertexSource, GL_VERTEX_SHADER);
 	unsigned int fs = CompileShader(fragmentSource, GL_FRAGMENT_SHADER);
 
-	glAttachShader(program, vs);
-	glAttachShader(program, fs);
-	glLinkProgram(program);
-	glValidateProgram(program);
+	GLCall(glAttachShader(program, vs));
+	GLCall(glAttachShader(program, fs));
+	GLCall(glLinkProgram(program));
+	GLCall(glValidateProgram(program));
 }
 
 unsigned int Shader::CompileShader(const std::string& src, unsigned int type)
@@ -64,15 +66,18 @@ unsigned int Shader::CompileShader(const std::string& src, unsigned int type)
 	glCompileShader(id);
 
 	int result;
-	glGetShaderiv(id, GL_COMPILE_STATUS, &result);
+	GLCall(glGetShaderiv(id, GL_COMPILE_STATUS, &result));
 
 	if (result == GL_FALSE)
 	{
+		std::ofstream file("log_output", std::ios_base::app);
 		int length;
-		glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
+		GLCall(glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length));
 		char* message = (char*)_malloca(length * sizeof(char));
-
-		glGetShaderInfoLog(id, length, &length, message);
+		//file.write("\n", 1);
+		GLCall(glGetShaderInfoLog(id, length, &length, message));
+		file << message;
+		file.flush();
 		std::cout << "FAILED TO COMPILE SHADER\n";
 		std::cout << message << "\n";
 		return 0;

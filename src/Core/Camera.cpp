@@ -5,11 +5,14 @@
 Camera::Camera(const CameraMode& mode)
 {
 	m_ProjectionMatrix = MakeProjectionMatrix(mode);
+	m_ViewMatrix = Matrix4x4::Translate(m_ViewMatrix, -Vector3(0, 0, -20.f));
 }
 
 Camera::Camera(const CameraSettings& setting)
 {
 	m_ProjectionMatrix = MakeProjectionMatrix(setting);
+	pos = Vector3(0, 0, 40.f);
+	//m_ViewMatrix = Matrix4x4::Translate(m_ViewMatrix, Vector3(0, 0, -40.f));
 }
 
 void Camera::Update()
@@ -17,6 +20,7 @@ void Camera::Update()
 	if (Window::isQkey)
 	{
 		rot.y += .6f;
+
 
 	}
 	if (Window::isEkey)

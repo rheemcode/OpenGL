@@ -1,10 +1,10 @@
 #shader vertex
 
-#version 330 core
+#version 410 core
 
-attribute vec4 vCol; 
-attribute vec4 vPos; 
-varying vec4 m_color; 
+//attribute vec4 vCol; 
+layout(location = 0) in vec4 vPos; 
+out vec4 m_color; 
 
 uniform mat4 viewMatrix;
 uniform mat4 projMatrix;
@@ -13,17 +13,19 @@ uniform mat4 modelMatrix;
 void main()  
 {  
      gl_Position = projMatrix * viewMatrix * modelMatrix * vPos;  
-     m_color = vCol;  
+     m_color = vec4(1.0f, 1.0f, 0, 1.0f);  
 };
 
 
 
 #shader fragment
-#version 330 core
+#version 410 core
+
 uniform vec4 u_Color;
-varying vec4 m_color;  
+in vec4 m_color;  
+out vec4 outPutCol;
 
  void main()  
  {  
-     gl_FragColor = u_Color;
+     outPutCol = m_color;
  };

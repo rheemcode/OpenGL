@@ -1,0 +1,26 @@
+ERROR: 0:4: 'attribute' : not available in current GLSL version 5
+ERROR: 0:5: 'attribute' : not available in current GLSL version 5
+ERROR: 0:6: 'varying' : not available in current GLSL version 5
+
+ERROR: 0:3: 'varying' : not available in current GLSL version 5
+ERROR: 0:? : 'gl_FragColor' : variable is removed in Forward Compatible context 
+
+ERROR: 0:4: 'attribute' : not available in current GLSL version 7
+ERROR: 0:5: 'attribute' : not available in current GLSL version 7
+ERROR: 0:6: 'varying' : not available in current GLSL version 7
+
+ERROR: 0:3: 'varying' : not available in current GLSL version 7
+ERROR: 0:? : 'gl_FragColor' : variable is removed in Forward Compatible context 
+
+ERROR: 0:4: 'attribute' : not available in current GLSL version 7
+ERROR: 0:5: 'attribute' : not available in current GLSL version 7
+ERROR: 0:6: 'varying' : not available in current GLSL version 7
+
+ERROR: 0:3: 'varying' : not available in current GLSL version 7
+ERROR: 0:? : 'gl_FragColor' : variable is removed in Forward Compatible context 
+
+ERROR: 0:15: 'vCol' : undeclared identifier 
+ERROR: 0:15: 'assign' :  cannot convert from 'highp float' to 'varying 4-component vector of highp float'
+
+ERROR: 0:5: ';' : syntax error syntax error
+

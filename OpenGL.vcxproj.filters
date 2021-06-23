@@ -81,6 +81,9 @@
     <ClCompile Include="src\Tests\Sphere.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Core\OpenGLContext.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Core\Shader.h">
@@ -570,6 +573,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Tests\Sphere.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\OpenGLContext.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

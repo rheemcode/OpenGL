@@ -6,7 +6,6 @@
 #include "Math/Matrix4x4.h"
 #include "Math/SimpleVec.h"
 #include <iostream>
-
 Sphere::Sphere(const Sphere& t)
 {
 

@@ -118,7 +118,6 @@ void Cube::Draw(const Camera& camera)
 
 	glEnable(GL_PRIMITIVE_RESTART);
 	glPrimitiveRestartIndex(0xFFFF);
-
 	glDrawElementsInstanced(GL_TRIANGLE_STRIP, 17, GL_UNSIGNED_INT, NULL, 12);
 	//glDrawElements(GL_TRIANGLE_STRIP, 17, GL_UNSIGNED_INT, NULL);
 }

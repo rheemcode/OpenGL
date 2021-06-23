@@ -17,7 +17,7 @@ struct CameraSettings
 	}
 
 	CameraMode mode;
-	float fovY, near, far;
+	float fovY, znear, zfar;
 	float winWidth, winHeight;
 	float ratio;
 };
