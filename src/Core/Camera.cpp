@@ -16,7 +16,7 @@ Camera::Camera(const CameraSettings& setting)
 }
 
 void Camera::Update()
-{
+{/*
 	if (Window::isQkey)
 	{
 		rot.y += .6f;
@@ -47,7 +47,7 @@ void Camera::Update()
 	{
 		pos.x += Math::Cos(Math::Deg2Rad(rot.y)) * .1f;
 		pos.z += Math::Sin(Math::Deg2Rad(rot.y)) * .1f;
-	}
+	}*/
 		Translate(pos);
 }
 

@@ -23,9 +23,9 @@ void main()
 
 uniform vec4 u_Color;
 in vec4 m_color;  
-out vec4 outPutCol;
+out vec4 outputCol;
 
  void main()  
  {  
-     outPutCol = m_color;
+     outputCol = m_color;
  };

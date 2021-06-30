@@ -14,6 +14,8 @@ SimpleVec3::SimpleVec3()
 	: x(0), y(0), z(0) {}
 SimpleVec3::SimpleVec3(const float& p_x, const float& p_y, const float& p_z)
 	: x(p_x), y(p_y), z(p_z) {}
+SimpleVec3::SimpleVec3(const float& p_x, const float& p_y)
+	: x(p_x), y(p_y), z(0) {}
 SimpleVec3::SimpleVec3(const SimpleVec3& p_vec3)
 	: x(p_vec3.x), y(p_vec3.y), z(p_vec3.z) {}
 SimpleVec3::SimpleVec3(const Vector3& p_vec3)

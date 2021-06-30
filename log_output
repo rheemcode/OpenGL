@@ -24,3 +24,13 @@ ERROR: 0:15: 'assign' :  cannot convert from 'highp float' to 'varying 4-compone
 
 ERROR: 0:5: ';' : syntax error syntax error
 
+ERROR: 0:5: 'projMatrix' : undeclared identifier 
+ERROR: 0:5: 'viewMatrix' : undeclared identifier 
+ERROR: 0:5: 'modelMatrix' : undeclared identifier 
+
+ERROR: 0:5: 'vec' : undeclared identifier 
+ERROR: 0:6: 'vec' : function name expected 
+ERROR: 0:5: 'assign' :  cannot convert from 'const highp float' to 'FragUserData 4-component vector of highp float'
+
+ERROR: 0:6: 'constructor' : too many arguments 
+

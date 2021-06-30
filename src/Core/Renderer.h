@@ -13,7 +13,10 @@ bool GLLogCall(const char* function, const char* file, int line);
 class Renderer
 {
 public:
-
-    void Draw();
+    void BeginScene();
+    void RenderTestCube();
+    void RenderTestSphere();
+    void RenderScene();
+    void EndScene();
 
 };

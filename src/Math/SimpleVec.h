@@ -8,6 +8,7 @@ struct SimpleVec3
 	{
 		struct { float x, y, z; };
 		struct { float r, g, b; };
+		struct { float width, height, depth; };
 		float component[3] = { 0 };
 	};
 
@@ -23,7 +24,7 @@ struct SimpleVec3
 
 	SimpleVec3 operator +(const SimpleVec3& p_vec) const
 	{
-		SimpleVec3 res;
+		SimpleVec3 res = *this;
 		res.x += p_vec.x;
 		res.y += p_vec.y;
 		res.z += p_vec.z;
@@ -34,7 +35,7 @@ struct SimpleVec3
 	SimpleVec3 operator =(const struct SimpleVec4& p_vec);
 	SimpleVec3 operator -(const SimpleVec3& p_vec) const
 	{
-		SimpleVec3 res;
+		SimpleVec3 res = *this;
 		res.x -=p_vec.x;
 		res.y -=p_vec.y;
 		res.z -=p_vec.z;
@@ -160,6 +161,11 @@ struct SimpleVec3
 
 		return *this;
 	}
+	
+	bool operator!=(const SimpleVec3& p_vec)
+	{
+		return (x != p_vec.x && p_vec.y != y);
+	}
 
 	const float& operator[](const int& p_index) const
 	{
@@ -179,6 +185,7 @@ struct SimpleVec3
 
 	SimpleVec3();
 	SimpleVec3(const float& p_x, const float& p_y, const float& p_z);
+	SimpleVec3(const float& p_x, const float& p_y);
 	SimpleVec3(const SimpleVec3& p_vec3);
 	SimpleVec3(const Vector3& p_vec3);
 	SimpleVec3(const SimpleVec4& p_vec3);
@@ -381,3 +388,5 @@ struct SimpleVec4
 	SimpleVec4(const Vector3& p_vec3, const float& p_w = 1);
 };
 
+typedef SimpleVec3 Point2;
+typedef SimpleVec3 Size2;

@@ -2,88 +2,119 @@
 //#include "Tests/Torus.h"
 //#include "Tests/Cube.h"
 //#include "Tests/Sphere.h"
+
 #include <Windows.h>
 #include <Camera.h>
 #include <Window/Window.h>
 #include <Tests/Torus.h>
 #include <Tests/Cube.h>
 #include <Tests/Sphere.h>
+#include <iostream>
+#include <GL/glew.h>
 
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam);
+
+UINT32 CompileShader(const char* src, UINT32 type)
+{
+	unsigned int id = glCreateShader(type);
+	glShaderSource(id, 1, &src, nullptr);
+	glCompileShader(id);
+
+	int result;
+	GLCall(glGetShaderiv(id, GL_COMPILE_STATUS, &result));
+
+	if (result == GL_FALSE)
+	{
+		std::ofstream file("log_output", std::ios_base::app);
+		int length;
+		GLCall(glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length));
+		char* message = (char*)_malloca(length * sizeof(char));
+		GLCall(glGetShaderInfoLog(id, length, &length, message));
+		file << message;
+		file.flush();
+		return 0;
+	}
+
+	return id;
+}
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PWSTR pCmdLine, int nCmdShow)
 {
-    const wchar_t CLASS_NAME[] = L"OpenGL Window Class";
+	uint32_t flags = 0;
 
-    WNDCLASS wc = { 0 };
-    wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC | CS_DBLCLKS;
-    wc.lpfnWndProc = WindowProc;
-    wc.hInstance = hInstance;
-    wc.lpszClassName = CLASS_NAME;
-    wc.cbClsExtra = 0;
-    wc.cbWndExtra = 0;
-    RegisterClass(&wc);
+	flags |= WINDOW_FLAG_ALWAYS_ON_TOP_BIT;
+	Size2 size;
+	size.x = 1300;
+	size.y = 730;
 
-    HWND hwnd = CreateWindowExW(
-        0,
-        CLASS_NAME,
-        L"OpenGL Test",
-        WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT, 700, 600,
-        NULL,
-        NULL,
-        hInstance,
-        NULL
-    );
-    
-   
+	Display::Create(hInstance, (WindowFlags)flags, WINDOW_MODE_MAXIMIZED, size);
+	Display* display = Display::GetSingleton();
 
-    if (hwnd == NULL)
-        return EXIT_FAILURE;
-    ShowWindow(hwnd, nCmdShow);
-    HWND hwnd2 = CreateWindowExW(
-        0,
-        CLASS_NAME,
-        L"Test",
-        WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
-        hwnd, NULL, hInstance, NULL
+	float vertexPos[] =
+	{
+		0.f, -0.5f, 0.f,
+		-.5f, .5f, 0.f,
+		.5f, .5f, 0.f,
+	};
 
-    );
-    if (hwnd2 == NULL)
-        return EXIT_FAILURE;
-
-    ShowWindow(hwnd2, nCmdShow);
-    MSG msg = {};
+	unsigned int indicies[] = { 0, 1, 2 };
+	unsigned int va;
+	glGenVertexArrays(1, &va);
+	glBindVertexArray(va);
 
 
-    Window window(700, 600);
-    window.Init(hwnd);
-    Torus t = Torus(10, 10, 4.f, 1.5);
-    Cube cube;
-    Sphere sphere = Sphere(18, 36, 1.2f);
-    window.AddObject(sphere);
-    window.AddObject(t);
-    window.AddObject(cube);
-    while (GetMessage(&msg, NULL, 0, 0))
-    {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-        window.Update();
+	unsigned int vb;
+	glGenBuffers(1, &vb);
+	GLCall(glBindBuffer(GL_ARRAY_BUFFER, vb));
+	GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(vertexPos), (void*)vertexPos, GL_STATIC_DRAW));
 
-    }
+	unsigned int ib;
+	glGenBuffers(1, &ib);
+	GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib));
+	GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indicies), (void*)indicies, GL_STATIC_DRAW));
 
-    return EXIT_SUCCESS;
-}
+	const char* vsS = "#version 410 core \n"
+		"layout(location = 0) in vec4 vPos; \n"
+		"void main()\n"
+		"{\n"
+		"   gl_Position = vPos;\n"
+		"};";
+	const char* fsS = "#version 410 core \n"
+		"out vec4 vCol;\n"
+		"void main()\n"
+		"{\n"
+		"   vCol = vec4(1.0f, 0.0f, 0.0f, 1.0f);\n"
+		"}";
 
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam)
-{
-    switch (uMsg)
-    {
-        case WM_DESTROY:
-            PostQuitMessage(0);
-            return EXIT_SUCCESS;
-        default:
-              return DefWindowProc(hwnd, uMsg, wParam, lparam);
-    }
+
+	int program;
+
+	program = glCreateProgram();
+	unsigned int vs = CompileShader(vsS, GL_VERTEX_SHADER);
+	unsigned int fs = CompileShader(fsS, GL_FRAGMENT_SHADER);
+
+	GLCall(glAttachShader(program, vs));
+	GLCall(glAttachShader(program, fs));
+	GLCall(glLinkProgram(program));
+	GLCall(glValidateProgram(program));
+	
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+#include <GLFW/glfw3.h>
+
+
+	
+	GLCall(glUseProgram(program));
+
+	while (!Display::isCloseRequest)
+	{
+
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LEQUAL);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
+		display->ProcessEvents();
+		display->SwapBuffer();
+	}
 }
