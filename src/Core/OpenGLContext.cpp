@@ -6,27 +6,14 @@
 int OpenGLContext::Init(HWND p_Hwnd)
 {
 	hwnd = p_Hwnd;
+	static PIXELFORMATDESCRIPTOR pfd;
+	ZeroMemory(&pfd, sizeof(pfd));
+	pfd.nSize = sizeof(pfd);
+	pfd.nVersion = 1;
+	pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+	pfd.iPixelType = PFD_TYPE_RGBA;
+	pfd.cColorBits = 24;
 
-	static PIXELFORMATDESCRIPTOR pfd = {
-		sizeof(PIXELFORMATDESCRIPTOR), // Size Of This Pixel Format Descriptor
-		1,
-		PFD_DRAW_TO_WINDOW | // Format Must Support Window
-				PFD_SUPPORT_OPENGL | // Format Must Support OpenGL
-				PFD_DOUBLEBUFFER,
-		(BYTE)PFD_TYPE_RGBA,
-		(BYTE)32,
-		(BYTE)0, (BYTE)0, (BYTE)0, (BYTE)0, (BYTE)0, (BYTE)0, // Color Bits Ignored
-		(BYTE)8, // Alpha Buffer
-		(BYTE)0, // Shift Bit Ignored
-		(BYTE)0, // No Accumulation Buffer
-		(BYTE)0, (BYTE)0, (BYTE)0, (BYTE)0, // Accumulation Bits Ignored
-		(BYTE)24, // 24Bit Z-Buffer (Depth Buffer)
-		(BYTE)0, // No Stencil Buffer
-		(BYTE)0, // No Auxiliary Buffer
-		(BYTE)PFD_MAIN_PLANE, // Main Drawing Layer
-		(BYTE)0, // Reserved
-		0, 0, 0 // Layer Masks Ignored
-	};
 
 	hDC = GetDC(hwnd);
 
@@ -91,7 +78,8 @@ int OpenGLContext::Init(HWND p_Hwnd)
 
 void OpenGLContext::MakeCurrent()
 {
-	wglMakeCurrent(hDC, hRC);
+	if (!wglMakeCurrent(hDC, hRC))
+		MessageBoxA(nullptr, "Failed To Register The Window Class.", "ERROR", MB_OK | MB_ICONEXCLAMATION);
 }
 
 void OpenGLContext::ReleaseCurrent()

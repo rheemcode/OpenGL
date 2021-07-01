@@ -34,3 +34,6 @@ ERROR: 0:5: 'assign' :  cannot convert from 'const highp float' to 'FragUserData
 
 ERROR: 0:6: 'constructor' : too many arguments 
 
+[OPEN GL Error] {1282}glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0)C:\Users\rheen\source\repos\OpenGL\src\main.cpp116
+[OPEN GL Error] {1282}glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0)C:\Users\rheen\source\repos\OpenGL\src\main.cpp118
+[OPEN GL Error] {1282}glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0)C:\Users\rheen\source\repos\OpenGL\src\main.cpp118

@@ -9,6 +9,7 @@
 #include <Events/KeyEvent.h>
 
 typedef uint8_t WindowID;
+constexpr int MAIN_WINDOW_ID = 1;
 
 enum MouseMode
 {
@@ -80,7 +81,7 @@ struct WindowData
 	HMONITOR hMonitor;
 	bool hasFocus;
 	Point2 lastPos;
-	int left, right, top, bottom, width, height;
+	int width, height;
 	float winRatio;
 	OpenGLContext context;
 	MouseMode mouseMode;
@@ -109,6 +110,8 @@ public:
 	WindowID GetID() { return windowData.windowID; }
 	void SetHasFocus(bool hasFocus) { windowData.hasFocus = hasFocus; }
 	void SetMouseMode(MouseMode p_mouseMode) { windowData.mouseMode = p_mouseMode;  }
+	void MakeCurrent() { windowData.context.MakeCurrent(); }
+	void ReleaseCurrent() { windowData.context.ReleaseCurrent(); }
 	MouseMode GetMouseMode(MouseMode p_mouseMode) { return windowData.mouseMode;  }
 	int GetWidth() const { return windowData.width;  }
 	void SetWidth(int width) { windowData.width = width; }
@@ -148,7 +151,7 @@ class Display
 	bool mouseOutside;
 	bool useRawInput;
 	WNDCLASSEXW wc;
-	uint8_t m_windowCount;
+	uint8_t m_windowCount = -1;
 	Display(HINSTANCE p_hInstance, WindowFlags p_flags, WindowMode p_mainWindowMode, Size2 p_windowSize);
 public:
 	static bool isCloseRequest;
@@ -157,7 +160,7 @@ public:
 	void GetWindowStyles(bool p_main_window, bool p_fullscreen, bool p_borderless, bool p_resizable, bool p_maximized, bool p_no_activate_focus, DWORD& r_style, DWORD& r_style_ex);
 	std::array<Window*, 3> m_Windows;
 	
-	Window* CreateWindowDisplay(WindowMode mode, const LPCWSTR& windowName, const RECT& p_rect);
+	int CreateWindowDisplay(WindowMode mode, const LPCWSTR& windowName, uint32_t p_flags, const RECT& p_rect);
 	void SetWindowFlags(WindowFlags p_flags, bool p_enabled, WindowID windowID);
 	void DestroyWindowDisplay(WindowID windowID);
 	void EnableCursor();
@@ -181,7 +184,8 @@ public:
 	Size2 GetWindowSize(WindowID windowID);
 	int GetKeyBoardLayouts();
 	void SetKeyBoardLayout(int p_index);
-	void SwapBuffer() { m_Windows[0]->SwapBuffers(); }
+//	void SwapBuffer() { m_Windows[0]->SwapBuffers(); }
+	void SwapBuffer(WindowID windowID) { m_Windows[windowID]->SwapBuffers(); }
 	void ShowWindow(WindowID windowID);
 	static Display* GetSingleton();
 	void ProcessEvents();

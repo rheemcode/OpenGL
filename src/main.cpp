@@ -41,12 +41,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PWSTR pCmdLine,
 {
 	uint32_t flags = 0;
 
-	flags |= WINDOW_FLAG_ALWAYS_ON_TOP_BIT;
 	Size2 size;
 	size.x = 1300;
 	size.y = 730;
 
-	Display::Create(hInstance, (WindowFlags)flags, WINDOW_MODE_MAXIMIZED, size);
+	Display::Create(hInstance, (WindowFlags)flags, WINDOW_MODE_WINDOWED, size);
 	Display* display = Display::GetSingleton();
 
 	float vertexPos[] =
@@ -100,21 +99,31 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PWSTR pCmdLine,
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
-#include <GLFW/glfw3.h>
-
-
-	
 	GLCall(glUseProgram(program));
 
+	//
+	int z= 0;
+	//display->ShowWindow(1);
 	while (!Display::isCloseRequest)
 	{
 
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		glEnable(GL_DEPTH_TEST);
-		glDepthFunc(GL_LEQUAL);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
+		
+		
+		GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
+		GLCall(glEnable(GL_DEPTH_TEST));
+		GLCall(glDepthFunc(GL_LEQUAL));
+		GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+		GLCall(glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0));
 		display->ProcessEvents();
-		display->SwapBuffer();
+
+		if (z == 0)
+		{
+
+			z = 1;
+		}
+
+		//display->m_Windows[0]->MakeCurrent();
+		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
+		display->SwapBuffer(0);
 	}
 }

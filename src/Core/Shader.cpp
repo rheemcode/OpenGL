@@ -78,6 +78,7 @@ unsigned int Shader::CompileShader(const std::string& src, unsigned int type)
 		GLCall(glGetShaderInfoLog(id, length, &length, message));
 		file << message;
 		file.flush();
+		file.close();
 		std::cout << "FAILED TO COMPILE SHADER\n";
 		std::cout << message << "\n";
 		return 0;

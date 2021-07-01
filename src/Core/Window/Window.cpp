@@ -16,7 +16,7 @@ int Window::Init()
 		MessageBoxW(nullptr, L"FAILED", L"FAILEd", 1);
 	}
 	glViewport(0, 0, windowData.width, windowData.height);
-	glClearColor(.8, .8, .8, 1);
+	glClearColor(.1f, .1f, .1f, 1);
 	return 0;
 }
 
@@ -57,6 +57,7 @@ LRESULT Display::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam)
 	if (!windowCreated) 
 		return DefWindowProc(hwnd, uMsg, wParam, lparam);
 	
+
 	switch (uMsg)
 	{
 
@@ -405,6 +406,8 @@ LRESULT Display::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam)
 			break;
 		}
 
+
+
 		case WM_MOVE:
 		{
 			if (m_mouseMode == MOUSE_MODE_CAPTURED)
@@ -456,12 +459,13 @@ LRESULT Display::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam)
 			break;
 		}
 
+
 		case WM_GETMINMAXINFO:
 		{
 			auto data = m_Windows[windowID]->GetWindowData();
 			if (data.resizeable && !data.isFullScreen)
 			{
-				Size2 dec = GetWindowSize(windowID) - GetActualWindowSize(windowID);
+				Size2 dec = GetActualWindowSize(windowID) - GetWindowSize(windowID);
 				MINMAXINFO* minMaxInfo = (MINMAXINFO*)lparam;
 				if (data.minSize != Size2())
 				{
@@ -480,9 +484,14 @@ LRESULT Display::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam)
 			{
 				break;
 			}
-			
+
 		}
 
+
+		case WM_PAINT:
+		{
+			break;
+		}
 
 		case WM_SYSKEYDOWN:
 		case WM_SYSKEYUP:
@@ -560,7 +569,7 @@ LRESULT Display::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam)
 			return DefWindowProc(hwnd, uMsg, wParam, lparam);
 		}
 	}
-	return DefWindowProc(hwnd, uMsg, wParam, lparam);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            	return DefWindowProc(hwnd, uMsg, wParam, lparam);
 }
 
 
@@ -697,9 +706,9 @@ void Display::GetWindowStyles(bool p_main_window, bool p_fullscreen, bool p_bord
 
 	if (p_fullscreen || p_borderless) {
 		r_style |= WS_POPUP;
-		//if (p_borderless) {
-		//	r_style_ex |= WS_EX_TOOLWINDOW;
-		//}
+		if (p_borderless) {
+			r_style_ex |= WS_EX_TOOLWINDOW;
+		}
 	}
 	else {
 		if (p_resizable) {
@@ -1066,7 +1075,17 @@ void Display::SetKeyBoardLayout(int p_index)
 
 void Display::ShowWindow(WindowID windowID)
 {
-	::ShowWindow(m_Windows[windowID]->GetNativeWindow(), SW_SHOWNA);
+	if (!::ShowWindow(m_Windows[windowID]->GetNativeWindow(), m_Windows[windowID]->GetWindowData().canFocus ? SW_SHOW : SW_SHOWNOACTIVATE))
+	{
+		MessageBoxA(nullptr, "OH NOO", "OH NOOOO", MB_OK | MB_ICONEXCLAMATION);
+		return;
+	}
+
+	if (m_Windows[windowID]->GetWindowData().canFocus)
+	{
+		SetForegroundWindow(m_Windows[windowID]->GetNativeWindow());
+		SetFocus(m_Windows[windowID]->GetNativeWindow());
+	}
 }
 
 
@@ -1084,12 +1103,12 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam)
 }
 
 
-Window* Display::CreateWindowDisplay(WindowMode p_mode, const LPCWSTR& windowName, const RECT& p_rect)
+int Display::CreateWindowDisplay(WindowMode p_mode, const LPCWSTR& windowName, uint32_t p_flags, const RECT& p_rect)
 {
 	DWORD dwExStyle;
 	DWORD dwStyle;
 
-	GetWindowStyles(0, p_mode == WindowMode::WINDOW_MODE_FULLSCREEN, false, true, false, false, dwStyle, dwExStyle);
+	GetWindowStyles(m_windowCount == 0, p_mode == WindowMode::WINDOW_MODE_FULLSCREEN, p_flags & WINDOW_FLAG_BORDERLESS_BIT, !(p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT), p_mode == WINDOW_MODE_MAXIMIZED, (p_flags & WINDOW_FLAG_NO_FOCUS_BIT), dwStyle, dwExStyle);
 	RECT WindowRect;
 
 	WindowRect.left = p_rect.left;
@@ -1117,23 +1136,21 @@ Window* Display::CreateWindowDisplay(WindowMode p_mode, const LPCWSTR& windowNam
 	if (!hwnd)
 	{
 		MessageBoxW(nullptr, L"Window Creation Error.", L"ERROR", MB_OK | MB_ICONEXCLAMATION);
-		return nullptr;
+		return -1;
 	}
 	auto window = new Window();
 	WindowData& windowData = window->GetWindowData();
-	windowData.bottom = WindowRect.bottom;
-	windowData.top = WindowRect.top;
-	windowData.left = WindowRect.left;
-	windowData.right = WindowRect.right;
 	windowData.width = WindowRect.right - WindowRect.left;
 	windowData.height = WindowRect.bottom - WindowRect.top;
 	windowData.hwnd = hwnd;
-	windowData.resizeable = true;
-	windowData.isFullScreen = false;
-	windowData.isMinimized = false;
-	windowData.isMaximized = false;
-	windowData.windowID = m_windowCount;
+	windowData.resizeable = !(p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT);
+	windowData.isFullScreen = p_mode == WINDOW_MODE_FULLSCREEN;
+	windowData.isMinimized = p_mode == WINDOW_MODE_MINIMIZED;
+	windowData.isMaximized = p_mode == WINDOW_MODE_MAXIMIZED;
+
 	windowData.minSize = Size2(400, 300);
+	windowData.maxSize = GetScreenSize(GetScreenCount() - 1);
+	windowData.canFocus = !(p_flags & WINDOW_FLAG_NO_FOCUS_BIT);
 
 	TRACKMOUSEEVENT tme;
 	tme.cbSize = sizeof(TRACKMOUSEEVENT);
@@ -1145,9 +1162,10 @@ Window* Display::CreateWindowDisplay(WindowMode p_mode, const LPCWSTR& windowNam
 	DragAcceptFiles(windowData.hwnd, true);
 
 	window->Init();
-	m_Windows[m_windowCount++] = window;
+	m_Windows[++m_windowCount] = window;
+	windowData.windowID = m_windowCount;
 
-	return window;
+	return m_windowCount;
 }
 
 void Display::SetWindowFlags(WindowFlags p_flag, bool p_enabled, WindowID windowID)
@@ -1228,11 +1246,13 @@ Display::Display(HINSTANCE p_hInstance, WindowFlags p_flags, WindowMode p_mainWi
 	winrect.top = mainWinPos.y;
 	winrect.right = p_windowSize.x;
 	winrect.bottom = p_windowSize.y;
-	Window* window = CreateWindowDisplay(p_mainWindowMode, L"ENGINE", winrect);
+	Window* window = m_Windows[CreateWindowDisplay(p_mainWindowMode, L"ENGINE", p_flags, winrect)];
+
 	window->GetWindowData().isBorderless = p_flags & WINDOW_FLAG_BORDERLESS_BIT;
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
 			SetWindowFlags(WindowFlags(i), true, 0);
+			//SetWindowFlags(WindowFlags(i), true, 1);
 		}
 	}
 
