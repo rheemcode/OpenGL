@@ -88,6 +88,8 @@ struct WindowData
 	WindowMode windowMode;
 	Size2 minSize;
 	Size2 maxSize;
+	Size2 fullSize;
+	Size2 clientSize;
 	bool canFocus = true;
 	bool isFullScreen;
 	bool isBorderless = false;

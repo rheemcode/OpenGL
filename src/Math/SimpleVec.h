@@ -162,7 +162,7 @@ struct SimpleVec3
 		return *this;
 	}
 	
-	bool operator!=(const SimpleVec3& p_vec)
+	bool operator!=(const SimpleVec3& p_vec) const
 	{
 		return (x != p_vec.x && p_vec.y != y);
 	}
@@ -177,7 +177,7 @@ struct SimpleVec3
 		return component[p_index];
 	}
 
-	bool operator ==(const SimpleVec3& p_vec)
+	bool operator ==(const SimpleVec3& p_vec) const
 	{
 		return (this->x == p_vec.x && this->y == p_vec.y && this->z == p_vec.z);
 	}

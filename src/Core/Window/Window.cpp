@@ -462,10 +462,13 @@ LRESULT Display::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam)
 
 		case WM_GETMINMAXINFO:
 		{
-			auto data = m_Windows[windowID]->GetWindowData();
+			const WindowData& data = m_Windows[windowID]->GetWindowData();
 			if (data.resizeable && !data.isFullScreen)
 			{
+
 				Size2 dec = GetActualWindowSize(windowID) - GetWindowSize(windowID);
+
+
 				MINMAXINFO* minMaxInfo = (MINMAXINFO*)lparam;
 				if (data.minSize != Size2())
 				{
@@ -1022,13 +1025,15 @@ Size2 Display::GetWindowSize(WindowID windowID)
 	const WindowData& windowData = m_Windows[windowID]->GetWindowData();
 
 	if (windowData.isMinimized)
-		return Size2(windowData.width, windowData.height);
+		return windowData.clientSize;
 
 	RECT rect;
 
 	if (GetClientRect(windowData.hwnd, &rect))
 	{
-		return Size2(rect.right - rect.left, rect.bottom - rect.top);
+		WindowData& wd = m_Windows[windowID]->GetWindowData();
+		wd.clientSize = Size2(rect.right - rect.left, rect.bottom - rect.top);
+		return wd.clientSize;
 	}
 
 	return Size2();
@@ -1055,12 +1060,20 @@ Point2 Display::GetWindowPosition(WindowID windowID)
 
 Size2 Display::GetActualWindowSize(WindowID windowID)
 {
-	RECT rect;
-	if (GetWindowRect(m_Windows[windowID]->GetNativeWindow(), &rect))
+	const WindowData& windowData = m_Windows[windowID]->GetWindowData();
+	RECT rect = { 0 };
+
+	if (windowData.isMinimized)
+		return windowData.fullSize;
+
+	if (GetWindowRect(windowData.hwnd, &rect))
 	{
-		return Size2(rect.right - rect.left, rect.bottom - rect.top);
+		WindowData& wd = m_Windows[windowID]->GetWindowData();
+		wd.fullSize = Size2(rect.right - rect.left, rect.bottom - rect.top);
+		return wd.fullSize;
 	}
 	return Size2();
+
 }
 
 void Display::SetKeyBoardLayout(int p_index)
