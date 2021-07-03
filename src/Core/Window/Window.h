@@ -3,7 +3,7 @@
 
 #include <array>
 #include "../Tests/Object.h"
-#include "OpenGLContext.h"
+#include "../Renderer/OpenGLContext.h"
 #include "Input/KeyCode.h"
 #include "Math/SimpleVec.h"
 #include <Events/KeyEvent.h>
@@ -11,6 +11,8 @@
 typedef uint8_t WindowID;
 constexpr int MAIN_WINDOW_ID = 1;
 
+
+/* Bad Bad API but we'll work with it*/
 enum MouseMode
 {
 	MOUSE_MODE_VISIBLE,
@@ -103,6 +105,8 @@ class Window
 	WindowData windowData;	
 public:
 	int Init();
+
+	void UseVysnc(bool use);
 	
 	/* Getters and Setters */
 	const WindowData& GetWindowData() const { return windowData; }
@@ -114,6 +118,7 @@ public:
 	void SetMouseMode(MouseMode p_mouseMode) { windowData.mouseMode = p_mouseMode;  }
 	void MakeCurrent() { windowData.context.MakeCurrent(); }
 	void ReleaseCurrent() { windowData.context.ReleaseCurrent(); }
+
 	MouseMode GetMouseMode(MouseMode p_mouseMode) { return windowData.mouseMode;  }
 	int GetWidth() const { return windowData.width;  }
 	void SetWidth(int width) { windowData.width = width; }
@@ -186,8 +191,15 @@ public:
 	Size2 GetWindowSize(WindowID windowID);
 	int GetKeyBoardLayouts();
 	void SetKeyBoardLayout(int p_index);
-//	void SwapBuffer() { m_Windows[0]->SwapBuffers(); }
-	void SwapBuffer(WindowID windowID) { m_Windows[windowID]->SwapBuffers(); }
+	void UseVysnc(bool use) 
+	{ 
+		for (auto window : m_Windows)
+		{
+			if (window)
+				window->UseVysnc(use);
+		}
+	}
+	void SwapBuffer() { if (focusedWindow != -1) m_Windows[focusedWindow]->SwapBuffers(); else return; }
 	void ShowWindow(WindowID windowID);
 	static Display* GetSingleton();
 	void ProcessEvents();

@@ -1,24 +1,22 @@
 #pragma once
 #include <vector>
-#include "Renderer.h"
+#include "../Debug.h"
 
 struct VertexBufferElement
 {
 	unsigned int type;
-	int id;
+	unsigned int id;
 	unsigned int count;
-
 	unsigned char normalized;
 
 	static unsigned int GetSizeOfType(unsigned int type)
 	{
 		switch (type)
 		{
-			case GL_FLOAT: return 4;
-			case GL_UNSIGNED_INT: return 4; 
-			case GL_UNSIGNED_BYTE: return 1;
+			case GL_FLOAT: return sizeof(float);
+			case GL_UNSIGNED_INT: return sizeof(unsigned int); 
+			case GL_UNSIGNED_BYTE: return sizeof(unsigned char);
 		}
-		ASSERT(false);
 		return 0;
 	}
 };
@@ -28,7 +26,15 @@ class VertexBufferLayout
 private:
 	std::vector<VertexBufferElement> m_Element;
 	unsigned int m_Stride;
+
 public:
+	enum ElementSize : uint32_t
+	{
+		VEC1 = 1,
+		VEC2,
+		VEC3,
+		VEC4
+	};
 
 	VertexBufferLayout()
 		: m_Stride{ 0 }
@@ -37,36 +43,29 @@ public:
 	}
 
 	template<typename T>
-	void Push(unsigned int count, int id)
+	void Push(ElementSize count, unsigned int id)
 	{
 		static_assert(false);
 	}
-
-	template<typename T>
-	void Push(unsigned int count)
-	{
-		static_assert(false);
-	}
-
 
 	template<>
-	void Push<float>(unsigned int count, int id)
+	void Push<float>(ElementSize count, unsigned int id)
 	{
-		m_Element.push_back({ GL_FLOAT, id, count, GL_FALSE });
+		m_Element.push_back({ GL_FLOAT, id, (uint32_t)count, GL_FALSE });
 		m_Stride += sizeof(float) * count;
 	}
 	
 	template<>
-	void Push<unsigned int>(unsigned int count, int id)
+	void Push<unsigned int>(ElementSize count, unsigned int id)
 	{
-		m_Element.push_back({ GL_UNSIGNED_INT, id, count, GL_FALSE });
+		m_Element.push_back({ GL_UNSIGNED_INT, id, (uint32_t)count, GL_FALSE });
 		m_Stride +=	sizeof(unsigned int) * count;
 	}
 
 	template<>
-	void Push<unsigned char>(unsigned int count, int id)
+	void Push<unsigned char>(ElementSize count, unsigned int id)
 	{
-		m_Element.push_back({GL_UNSIGNED_BYTE, id, count, GL_TRUE });
+		m_Element.push_back({GL_UNSIGNED_BYTE, id, (uint32_t )count, GL_TRUE });
 		m_Stride += sizeof(char) * count;
 	}
 

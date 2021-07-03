@@ -22,7 +22,12 @@ public:
 
 	const float* GetAsFloatPtr() const
 	{
-		return reinterpret_cast<const float*>(&m_data[0]);
+		return &m_data[0].x;
+	}
+	
+	static const float* GetAsFloatPtr(const Matrix4x4& p_mat)
+	{
+		return &p_mat[0].x;
 	}
 
 

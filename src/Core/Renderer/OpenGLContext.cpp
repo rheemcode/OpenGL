@@ -89,5 +89,27 @@ void OpenGLContext::ReleaseCurrent()
 
 void OpenGLContext::SwapBuffer()
 {
+	if (isVysnc)
+	{
+		BOOL enabled;
+		if (SUCCEEDED(DwmIsCompositionEnabled(&enabled)) && enabled)
+		{
+			DwmFlush();
+		}
+	}
 	SwapBuffers(hDC);
+}
+
+void OpenGLContext::SetUseVysnc(bool useVysnc)
+{
+	BOOL enabled;	
+	SUCCEEDED(DwmIsCompositionEnabled(&enabled));
+	bool compsitionEnabled = useVysnc && enabled;
+
+	if (wglSwapIntervalEXT) {
+		int swap_interval = (useVysnc && !compsitionEnabled) ? 1 : 0;
+		wglSwapIntervalEXT(swap_interval);
+	}
+
+	isVysnc = useVysnc;
 }

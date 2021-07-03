@@ -127,7 +127,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;glew32s.lib;opengl32.lib;user32.lib;gdi32.lib;shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;glew32s.lib;opengl32.lib;user32.lib;gdi32.lib;shell32.lib;dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Deps\GLFW\lib-vc2019;$(SolutionDir)Deps\GLEW\lib\Release\x64</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -146,14 +146,17 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;glew32s.lib;opengl32.lib;user32.lib;gdi32.lib;shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;glew32s.lib;opengl32.lib;user32.lib;gdi32.lib;shell32.lib;dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Deps\GLFW\lib-vc2019;$(SolutionDir)Deps\GLEW\lib\Release\x64</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Tests\Quad.cpp" />
     <ClCompile Include="src\Core\Camera.cpp" />
+    <ClCompile Include="src\Core\Renderer\Debug.cpp" />
     <ClCompile Include="src\Core\Input\Input.cpp" />
-    <ClCompile Include="src\Core\OpenGLContext.cpp" />
+    <ClCompile Include="src\Core\Renderer\OpenGLContext.cpp" />
+    <ClCompile Include="src\Core\Renderer\Texture.cpp" />
     <ClCompile Include="src\Math\Math.cpp" />
     <ClCompile Include="src\Math\Matrix3x3.cpp" />
     <ClCompile Include="src\Math\Matrix4x4.cpp" />
@@ -161,23 +164,23 @@
     <ClCompile Include="src\Math\SimpleVec.cpp" />
     <ClCompile Include="src\Math\Vector2.cpp" />
     <ClCompile Include="src\Math\Vector3.cpp" />
-    <ClCompile Include="src\test.cpp" />
     <ClCompile Include="src\Tests\Cube.cpp" />
     <ClCompile Include="Deps\glm\detail\glm.cpp" />
-    <ClCompile Include="src\Core\Renderer.cpp" />
-    <ClCompile Include="src\Core\Shader.cpp" />
-    <ClCompile Include="src\App.cpp" />
+    <ClCompile Include="src\Core\Renderer\Renderer.cpp" />
+    <ClCompile Include="src\Core\Renderer\Shader.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\Core\VertexBuffer.cpp" />
-    <ClCompile Include="src\Core\IndexBuffer.cpp" />
-    <ClCompile Include="src\Core\VertexArray.cpp" />
-    <ClCompile Include="src\Core\VertexBufferLayout.cpp" />
+    <ClCompile Include="src\Core\Renderer\Buffers\VertexBuffer.cpp" />
+    <ClCompile Include="src\Core\Renderer\Buffers\IndexBuffer.cpp" />
+    <ClCompile Include="src\Core\Renderer\VertexArray.cpp" />
+    <ClCompile Include="src\Core\Renderer\Buffers\VertexBufferLayout.cpp" />
     <ClCompile Include="src\Tests\Sphere.cpp" />
     <ClCompile Include="src\Tests\Torus.cpp" />
     <ClCompile Include="src\Core\Window\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Tests\Quad.h" />
     <ClInclude Include="src\Core\Camera.h" />
+    <ClInclude Include="src\Core\Renderer\Debug.h" />
     <ClInclude Include="src\Core\Events\ApplicationEvent.h" />
     <ClInclude Include="src\Core\Events\Event.h" />
     <ClInclude Include="src\Core\Events\KeyEvent.h" />
@@ -185,7 +188,8 @@
     <ClInclude Include="src\Core\Input\Input.h" />
     <ClInclude Include="src\Core\Input\KeyCode.h" />
     <ClInclude Include="src\Core\Input\Mouse.h" />
-    <ClInclude Include="src\Core\OpenGLContext.h" />
+    <ClInclude Include="src\Core\Renderer\OpenGLContext.h" />
+    <ClInclude Include="src\Core\Renderer\Texture.h" />
     <ClInclude Include="src\Math\fdecl.h" />
     <ClInclude Include="src\Math\Math.h" />
     <ClInclude Include="src\Math\Matrix3x3.h" />
@@ -337,14 +341,14 @@
     <ClInclude Include="Deps\glm\vec3.hpp" />
     <ClInclude Include="Deps\glm\vec4.hpp" />
     <ClInclude Include="Deps\glm\vector_relational.hpp" />
-    <ClInclude Include="src\Core\IndexBuffer.h" />
-    <ClInclude Include="src\Core\Renderer.h" />
-    <ClInclude Include="src\Core\Shader.h" />
+    <ClInclude Include="src\Core\Renderer\Buffers\IndexBuffer.h" />
+    <ClInclude Include="src\Core\Renderer\Renderer.h" />
+    <ClInclude Include="src\Core\Renderer\Shader.h" />
     <ClInclude Include="src\Tests\Object.h" />
     <ClInclude Include="src\Tests\Primitive.h" />
-    <ClInclude Include="src\Core\VertexBuffer.h" />
-    <ClInclude Include="src\Core\VertexArray.h" />
-    <ClInclude Include="src\Core\VertexBufferLayout.h" />
+    <ClInclude Include="src\Core\Renderer\Buffers\VertexBuffer.h" />
+    <ClInclude Include="src\Core\Renderer\VertexArray.h" />
+    <ClInclude Include="src\Core\Renderer\Buffers\VertexBufferLayout.h" />
     <ClInclude Include="src\Tests\Sphere.h" />
     <ClInclude Include="src\Tests\Torus.h" />
     <ClInclude Include="src\Core\Window\Window.h" />
@@ -459,10 +463,13 @@
     <None Include="Deps\glm\gtx\vector_angle.inl" />
     <None Include="Deps\glm\gtx\vector_query.inl" />
     <None Include="Deps\glm\gtx\wrap.inl" />
-    <None Include="src\shader.shader" />
+    <None Include="src\Shaders\default.shader" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Deps\glm\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="src\creepycreep.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

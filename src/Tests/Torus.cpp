@@ -6,6 +6,7 @@
 #include "Math/Matrix4x4.h"
 #include "Math/SimpleVec.h"
 #include <iostream>
+#include <vector>
 
 Torus::Torus(const Torus& t)
 {
@@ -25,7 +26,6 @@ Torus::Torus(int mainSegments, int tubeSegments, float mainRadius, float tubeRad
 
     GenIndicies();
 
-    m_Ib->BufferData();
     m_Shader = std::make_unique<Shader>("src/shader.shader");
     EnableAttribs();
 
@@ -122,7 +122,8 @@ void Torus::GenTorusVertices()
 }
 
 void Torus::GenIndicies()
-{
+{  
+    std::vector<unsigned int> indicies;
     unsigned int currentVertexOffset = 0;
 
     for (int i = 0; i < m_MainSegments; i++)
@@ -130,18 +131,21 @@ void Torus::GenIndicies()
         for (int j = 0; j <= m_TubeSegments; j++)
         {
             unsigned int vertexIndexA = currentVertexOffset;
-            m_Ib->AddData(vertexIndexA);
+            indicies.push_back(vertexIndexA);
+            
 
             unsigned int vertexIndexB = currentVertexOffset + m_TubeSegments + 1;
-            m_Ib->AddData(vertexIndexB);
+            indicies.push_back(vertexIndexB);
             currentVertexOffset++;
         }
 
         if (i != m_MainSegments - 1)
         {
-            m_Ib->AddData(m_RestartIndex);
+            indicies.push_back(m_RestartIndex);
         }
     }
+
+    m_Ib->BufferData(indicies.data(), sizeof(unsigned int) * indicies.size(), indicies.size());
 }
 
 void Torus::EnableAttribs()

@@ -2,27 +2,6 @@
 
 class Torus : public Primitive
 {
-public:
-    Torus(const Torus& t);
-    Torus(int mainSegments, int tubeSegments, float mainRadius, float tubeRadius);
-    ~Torus();
-
-public:
-    void Draw(const class Camera& camera) override;
-    void Rotate();
-    void Scale();
-
-private:
-    void GenTorusVertices();
-    void GenIndicies();
-
-    void EnableAttribs() override;
-    void CreateVertexArray() override;
-    void CreateVertexBuffer() override;
-    void CreateIndexBuffer() override;
-
-
-private:
     std::vector<vec4> m_VertexPositions;
     int m_MainSegments,
         m_TubeSegments,
@@ -34,5 +13,23 @@ private:
 
     int m_MvpLocation;
     int m_UniformLocation;
+
+    void GenTorusVertices();
+    void GenIndicies();
+
+    void EnableAttribs() override;
+    void CreateVertexArray() override;
+    void CreateVertexBuffer() override;
+    void CreateIndexBuffer() override;
+
+
+public:
+    Torus(const Torus& t);
+    Torus(int mainSegments, int tubeSegments, float mainRadius, float tubeRadius);
+    ~Torus();
+
+    void Draw(const class Camera& camera) override;
+    void Rotate();
+    void Scale();
 };
 

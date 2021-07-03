@@ -20,6 +20,8 @@ int Window::Init()
 	return 0;
 }
 
+void Window::UseVysnc(bool use) { windowData.context.SetUseVysnc(use); }
+
 void Window::WindowFocused()
 {
 	SetHasFocus(true);

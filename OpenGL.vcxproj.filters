@@ -15,28 +15,25 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\App.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Core\Shader.cpp">
+    <ClCompile Include="src\Core\Renderer\Shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Deps\glm\detail\glm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Core\Renderer.cpp">
+    <ClCompile Include="src\Core\Renderer\Renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Core\IndexBuffer.cpp">
+    <ClCompile Include="src\Core\Renderer\Buffers\IndexBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Core\VertexBuffer.cpp">
+    <ClCompile Include="src\Core\Renderer\Buffers\VertexBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Core\VertexArray.cpp">
+    <ClCompile Include="src\Core\Renderer\VertexArray.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Core\VertexBufferLayout.cpp">
+    <ClCompile Include="src\Core\Renderer\Buffers\VertexBufferLayout.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\main.cpp">
@@ -52,9 +49,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Core\Window\Window.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Math\Matrix3x3.cpp">
@@ -81,15 +75,24 @@
     <ClCompile Include="src\Tests\Sphere.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Core\OpenGLContext.cpp">
+    <ClCompile Include="src\Core\Renderer\OpenGLContext.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Core\Input\Input.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Core\Renderer\Debug.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\Renderer\Texture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Tests\Quad.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Core\Shader.h">
+    <ClInclude Include="src\Core\Renderer\Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Deps\glm\detail\_features.hpp">
@@ -518,19 +521,19 @@
     <ClInclude Include="Deps\glm\vector_relational.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Core\Renderer.h">
+    <ClInclude Include="src\Core\Renderer\Renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Core\VertexBuffer.h">
+    <ClInclude Include="src\Core\Renderer\Buffers\VertexBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Core\IndexBuffer.h">
+    <ClInclude Include="src\Core\Renderer\Buffers\IndexBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Core\VertexArray.h">
+    <ClInclude Include="src\Core\Renderer\VertexArray.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Core\VertexBufferLayout.h">
+    <ClInclude Include="src\Core\Renderer\Buffers\VertexBufferLayout.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Tests\Primitive.h">
@@ -578,7 +581,7 @@
     <ClInclude Include="src\Tests\Sphere.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Core\OpenGLContext.h">
+    <ClInclude Include="src\Core\Renderer\OpenGLContext.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Core\Events\ApplicationEvent.h">
@@ -602,9 +605,18 @@
     <ClInclude Include="src\Core\Input\Mouse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Core\Renderer\Debug.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Renderer\Texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Tests\Quad.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\shader.shader" />
+    <None Include="src\Shaders\default.shader" />
     <None Include="Deps\glm\detail\func_common.inl">
       <Filter>Header Files</Filter>
     </None>
@@ -935,5 +947,10 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="Deps\glm\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="src\creepycreep.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

@@ -23,7 +23,6 @@ Sphere::Sphere(int stackSegments, int sectorSegments, float radius)
 
     GenIndicies();
 
-    m_Ib->BufferData();
     m_Shader = std::make_unique<Shader>("src/shader.shader");
     EnableAttribs();
     m_NumIndicies = m_Ib->GetCount();
@@ -111,16 +110,16 @@ void Sphere::GenIndicies()
         {
             if (i != 0)
             {
-                m_Ib->AddData(k1);
-                m_Ib->AddData(k2);
-                m_Ib->AddData(k1 + 1);
+               // m_Ib->AddData(k1);
+                //m_Ib->AddData(k2);
+                //m_Ib->AddData(k1 + 1);
             }
 
             if (i != (m_StackSegments - 1))
             {
-                m_Ib->AddData(k1 + 1);
-                m_Ib->AddData(k2);
-                m_Ib->AddData(k2 + 1);
+               // m_Ib->AddData(k1 + 1);
+               // m_Ib->AddData(k2);
+                //m_Ib->AddData(k2 + 1);
             }
 
             k1++;

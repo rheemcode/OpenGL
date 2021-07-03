@@ -2,9 +2,9 @@
 #include <vector>
 #include <memory>
 #include "Object.h"
-#include "Shader.h"
-#include "IndexBuffer.h"
-#include "VertexArray.h"
+#include "Renderer/Shader.h"
+#include "Renderer/Buffers/IndexBuffer.h"
+#include "Renderer/VertexArray.h"
 #include <glm/glm.hpp>
 #include "glm/gtc/matrix_transform.hpp"
 #include "Math/Matrix4x4.h"
