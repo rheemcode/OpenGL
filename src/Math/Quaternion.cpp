@@ -1,8 +1,8 @@
 
+#include "Quaternion.h"
+#include "Vector3.h"
 #include "Matrix4x4.h"
 #include "Matrix3x3.h"
-#include "Vector3.h"
-#include "Quaternion.h"
 #include <cassert>
 
 
@@ -17,6 +17,8 @@ Quaternion::Quaternion(const Vector3& p_eulerAngles)
 	this->y = c.x * c.y * s.z - s.x * s.y * s.z;
 }
 
+Quaternion::Quaternion(const float& p_s, const Vector3& p_eulerAngles)
+	: x(p_eulerAngles.x), y(p_eulerAngles.y), z(p_eulerAngles.z), w(p_s) {}
 
 Quaternion::Quaternion(const Matrix4x4& p_mat)
 {

@@ -1,6 +1,6 @@
 
-#include "Math/SimpleVec.h"
-
+#include "SimpleVec.h"
+#include "Vector3.h"
 SimpleVec3 SimpleVec3::operator =(const SimpleVec4& p_vec)
 {
 	SimpleVec3 res;
@@ -25,6 +25,10 @@ SimpleVec3::SimpleVec3(const SimpleVec4& p_vec3)
 
 SimpleVec4::SimpleVec4()
 	: x(0), y(0), z(0), w(0) {}
+SimpleVec4::SimpleVec4(const float& p_val)
+	: x(p_val), y(p_val), z(p_val), w(p_val)
+{
+}
 SimpleVec4::SimpleVec4(const float& p_x, const float& p_y, const float& p_z, const float& p_w)
 	: x(p_x), y(p_y), z(p_z), w(p_w) {}
 SimpleVec4::SimpleVec4(const SimpleVec4& p_vec4)

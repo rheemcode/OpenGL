@@ -1,8 +1,9 @@
 #pragma once
 #include <math.h>
 #include <cstdint>
+#ifndef NO_FDECL
 #include "fdecl.h"
-
+#endif
 namespace Math
 {
 	#define EPSILON 0.00001

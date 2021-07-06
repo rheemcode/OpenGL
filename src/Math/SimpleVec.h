@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Vector3.h"
-
 struct SimpleVec3
 {
 	union
@@ -187,7 +185,7 @@ struct SimpleVec3
 	SimpleVec3(const float& p_x, const float& p_y, const float& p_z);
 	SimpleVec3(const float& p_x, const float& p_y);
 	SimpleVec3(const SimpleVec3& p_vec3);
-	SimpleVec3(const Vector3& p_vec3);
+	SimpleVec3(const struct Vector3& p_vec3);
 	SimpleVec3(const SimpleVec4& p_vec3);
 };
 
@@ -382,11 +380,13 @@ struct SimpleVec4
 
 
 	SimpleVec4();
+	SimpleVec4(const float& p_val);
 	SimpleVec4(const float& p_x, const float& p_y, const float& p_z, const float& p_w);
 	SimpleVec4(const struct SimpleVec4& p_vec4);
 	SimpleVec4(const SimpleVec3& p_vec3, const float& p_w = 1);
-	SimpleVec4(const Vector3& p_vec3, const float& p_w = 1);
+	SimpleVec4(const struct Vector3& p_vec3, const float& p_w = 1);
 };
 
 typedef SimpleVec3 Point2;
 typedef SimpleVec3 Size2;
+typedef SimpleVec4 Vector4;

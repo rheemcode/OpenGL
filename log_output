@@ -1,93 +1,13 @@
-ERROR: 0:4: 'attribute' : not available in current GLSL version 5
-ERROR: 0:5: 'attribute' : not available in current GLSL version 5
-ERROR: 0:6: 'varying' : not available in current GLSL version 5
+ERROR: 0:20: '*' : wrong operand types no operation '*' exists that takes a left-hand operand of type '4X4 (default)row_major matrix of highp float' and a right operand of type 'attribute 3-component vector of highp float' (or there is no acceptable conversion)
+ERROR: 0:21: ';' : syntax error syntax error
 
-ERROR: 0:3: 'varying' : not available in current GLSL version 5
-ERROR: 0:? : 'gl_FragColor' : variable is removed in Forward Compatible context 
+[OPEN GL Error] {1281}glAttachShader(program, vs)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Shader.cpp57
+ERROR: 0:23: 'lightDir' : undeclared identifier 
+ERROR: 0:24: 'reflect' : no matching overloaded function found (using implicit conversion) 
+ERROR: 0:23: '=' :  cannot convert from 'const highp float' to '3-component vector of highp float'
+ERROR: 0:25: 'float' : syntax error syntax error
 
-ERROR: 0:4: 'attribute' : not available in current GLSL version 7
-ERROR: 0:5: 'attribute' : not available in current GLSL version 7
-ERROR: 0:6: 'varying' : not available in current GLSL version 7
+[OPEN GL Error] {1281}glAttachShader(program, fs)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Shader.cpp58
+ERROR: 0:26: 'float' : syntax error syntax error
 
-ERROR: 0:3: 'varying' : not available in current GLSL version 7
-ERROR: 0:? : 'gl_FragColor' : variable is removed in Forward Compatible context 
-
-ERROR: 0:4: 'attribute' : not available in current GLSL version 7
-ERROR: 0:5: 'attribute' : not available in current GLSL version 7
-ERROR: 0:6: 'varying' : not available in current GLSL version 7
-
-ERROR: 0:3: 'varying' : not available in current GLSL version 7
-ERROR: 0:? : 'gl_FragColor' : variable is removed in Forward Compatible context 
-
-ERROR: 0:15: 'vCol' : undeclared identifier 
-ERROR: 0:15: 'assign' :  cannot convert from 'highp float' to 'varying 4-component vector of highp float'
-
-ERROR: 0:5: ';' : syntax error syntax error
-
-ERROR: 0:5: 'projMatrix' : undeclared identifier 
-ERROR: 0:5: 'viewMatrix' : undeclared identifier 
-ERROR: 0:5: 'modelMatrix' : undeclared identifier 
-
-ERROR: 0:5: 'vec' : undeclared identifier 
-ERROR: 0:6: 'vec' : function name expected 
-ERROR: 0:5: 'assign' :  cannot convert from 'const highp float' to 'FragUserData 4-component vector of highp float'
-
-ERROR: 0:6: 'constructor' : too many arguments 
-
-[OPEN GL Error] {1282}glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0)C:\Users\rheen\source\repos\OpenGL\src\main.cpp116
-[OPEN GL Error] {1282}glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0)C:\Users\rheen\source\repos\OpenGL\src\main.cpp118
-[OPEN GL Error] {1282}glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0)C:\Users\rheen\source\repos\OpenGL\src\main.cpp118
-[OPEN GL Error] {1281}glAttachShader(program, vs)C:\Users\rheen\source\repos\OpenGL\src\main.cpp89
-[OPEN GL Error] {1282}glUseProgram(program)C:\Users\rheen\source\repos\OpenGL\src\main.cpp102
-[OPEN GL Error] {1282}glUseProgram(program)C:\Users\rheen\source\repos\OpenGL\src\main.cpp130
-[OPEN GL Error] {1282}glUseProgram(program)C:\Users\rheen\source\repos\OpenGL\src\main.cpp130
-[OPEN GL Error] {1282}glUseProgram(program)C:\Users\rheen\source\repos\OpenGL\src\main.cpp108
-[OPEN GL Error] {1282}glUseProgram(program)C:\Users\rheen\source\repos\OpenGL\src\main.cpp124
-[OPEN GL Error] {1282}glUseProgram(program)C:\Users\rheen\source\repos\OpenGL\src\main.cpp121
-[OPEN GL Error] {1282}glUseProgram(program)C:\Users\rheen\source\repos\OpenGL\src\main.cpp131
-[OPEN GL Error] {1282}glUseProgram(program)C:\Users\rheen\source\repos\OpenGL\src\main.cpp131
-ERROR: 0:8: 'assign' :  cannot convert from 'attribute 2-component vector of highp float' to 'varying 4-component vector of highp float'
-
-ERROR: 0:8: 'texture' : no matching overloaded function found (using implicit conversion) 
-ERROR: 0:7: 'assign' :  cannot convert from 'const highp float' to 'FragUserData 4-component vector of highp float'
-
-[OPEN GL Error] {1281}glAttachShader(program, vs)C:\Users\rheen\source\repos\OpenGL\src\main.cpp100
-ERROR: 0:9: 'vpos' : undeclared identifier 
-ERROR: 0:9: 'y' : field selection requires structure, vector, or matrix on left hand side 
-
-[OPEN GL Error] {1281}glAttachShader(program, vs)C:\Users\rheen\source\repos\OpenGL\src\main.cpp101
-[OPEN GL Error] {1282}glUseProgram(program)C:\Users\rheen\source\repos\OpenGL\src\main.cpp134
-[OPEN GL Error] {1282}glUseProgram(program)C:\Users\rheen\source\repos\OpenGL\src\main.cpp135
-[OPEN GL Error] {1282}glUseProgram(program)C:\Users\rheen\source\repos\OpenGL\src\main.cpp133
-[OPEN GL Error] {1280}glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA8, GL_UNSIGNED_BYTE, img)C:\Users\rheen\source\repos\OpenGL\src\main.cpp122
-[OPEN GL Error] {1282}glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, GL_STATIC_DRAW)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Buffers\IndexBuffer.cpp42
-ERROR: 0:3: 'in' : syntax error syntax error
-
-[OPEN GL Error] {1281}glAttachShader(program, fs)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Shader.cpp57
-ERROR: 0:3: 'in' : syntax error syntax error
-
-[OPEN GL Error] {1281}glAttachShader(program, fs)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Shader.cpp57
-[OPEN GL Error] {1282}glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Buffers\IndexBuffer.cpp31
-[OPEN GL Error] {1282}glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Buffers\IndexBuffer.cpp31
-[OPEN GL Error] {1282}glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Buffers\IndexBuffer.cpp31
-[OPEN GL Error] {1282}glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Buffers\IndexBuffer.cpp31
-[OPEN GL Error] {1282}glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Buffers\IndexBuffer.cpp31
-[OPEN GL Error] {1282}glBindBuffer(GL_ARRAY_BUFFER, m_RendererID)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Buffers\VertexBuffer.cpp36
-[OPEN GL Error] {1282}glBindBuffer(GL_ARRAY_BUFFER, m_RendererID)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Buffers\VertexBuffer.cpp36
-[OPEN GL Error] {1282}glBindBuffer(GL_ARRAY_BUFFER, m_RendererID)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Buffers\VertexBuffer.cpp36
-[OPEN GL Error] {1282}glBindBuffer(GL_ARRAY_BUFFER, m_RendererID)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Buffers\VertexBuffer.cpp36
-[OPEN GL Error] {1282}glBindBuffer(GL_ARRAY_BUFFER, m_RendererID)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Buffers\VertexBuffer.cpp36
-[OPEN GL Error] {1282}glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0)C:\Users\rheen\source\repos\OpenGL\src\Tests\Quad.cpp110
-[OPEN GL Error] {1282}glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0)C:\Users\rheen\source\repos\OpenGL\src\Tests\Quad.cpp110
-ERROR: 0:13: 'constructor' : too many arguments 
-
-[OPEN GL Error] {1281}glAttachShader(program, vs)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Shader.cpp56
-[OPEN GL Error] {1282}glBindBuffer(GL_ARRAY_BUFFER, m_RendererID)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Buffers\VertexBuffer.cpp36
-[OPEN GL Error] {1282}glBindBuffer(GL_ARRAY_BUFFER, m_RendererID)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Buffers\VertexBuffer.cpp36
-[OPEN GL Error] {1282}glBindBuffer(GL_ARRAY_BUFFER, m_RendererID)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Buffers\VertexBuffer.cpp36
-[OPEN GL Error] {1282}glBindBuffer(GL_ARRAY_BUFFER, m_RendererID)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Buffers\VertexBuffer.cpp36
-ERROR: 0:10: 'texCoord' : undeclared identifier 
-ERROR: 0:11: 'texture' : no matching overloaded function found (using implicit conversion) 
-ERROR: 0:10: 'assign' :  cannot convert from 'const highp float' to 'FragUserData 4-component vector of highp float'
-
-[OPEN GL Error] {1281}glAttachShader(program, fs)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Shader.cpp57
+[OPEN GL Error] {1281}glAttachShader(program, fs)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Shader.cpp58

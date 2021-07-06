@@ -1,7 +1,7 @@
 
 
 #include "Vector2.h"
-#include "Math/Vector3.h"
+#include "Vector3.h"
 #include "Quaternion.h"
 
 Vector3::Vector3(const Vector2& p_vec)
@@ -71,3 +71,4 @@ Vector3 operator*(const float& p_scalar, const Vector3& p_vec)
 {
 	return Vector3(p_vec.x * p_scalar, p_vec.y * p_scalar, p_vec.z * p_scalar);
 }
+

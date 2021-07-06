@@ -33,13 +33,10 @@
     <ClCompile Include="src\Core\Renderer\VertexArray.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Core\Renderer\Buffers\VertexBufferLayout.cpp">
+    <ClCompile Include="src\Core\Renderer\Buffers\BufferLayout.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Tests\Torus.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Tests\Cube.cpp">
@@ -72,9 +69,6 @@
     <ClCompile Include="src\Math\Math.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Tests\Sphere.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\Core\Renderer\OpenGLContext.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -87,7 +81,16 @@
     <ClCompile Include="src\Core\Renderer\Texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Tests\Sprite.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\Renderer\Scene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\Tests\Quad.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Tests\Sphere.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -533,13 +536,10 @@
     <ClInclude Include="src\Core\Renderer\VertexArray.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Core\Renderer\Buffers\VertexBufferLayout.h">
+    <ClInclude Include="src\Core\Renderer\Buffers\BufferLayout.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Tests\Primitive.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Tests\Torus.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Tests\Cube.h">
@@ -578,9 +578,6 @@
     <ClInclude Include="src\Math\Vector3.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Tests\Sphere.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\Core\Renderer\OpenGLContext.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -611,7 +608,13 @@
     <ClInclude Include="src\Core\Renderer\Texture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Tests\Quad.h">
+    <ClInclude Include="src\Tests\Sprite.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Renderer\Scene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Tests\Sphere.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -944,6 +947,7 @@
     <None Include="Deps\glm\gtx\wrap.inl">
       <Filter>Header Files</Filter>
     </None>
+    <None Include="src\Shaders\lighting.shader" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Deps\glm\CMakeLists.txt" />

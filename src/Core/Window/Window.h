@@ -1,6 +1,6 @@
 #pragma once
 #include <Windows.h>
-
+#include <fstream>
 #include <array>
 #include "../Tests/Object.h"
 #include "../Renderer/OpenGLContext.h"
@@ -8,7 +8,7 @@
 #include "Math/SimpleVec.h"
 #include <Events/KeyEvent.h>
 
-typedef uint8_t WindowID;
+typedef int WindowID;
 constexpr int MAIN_WINDOW_ID = 1;
 
 
@@ -199,7 +199,14 @@ public:
 				window->UseVysnc(use);
 		}
 	}
-	void SwapBuffer() { if (focusedWindow != -1) m_Windows[focusedWindow]->SwapBuffers(); else return; }
+	void SwapBuffer()
+	{
+		if (focusedWindow != -1)
+		{
+			m_Windows[focusedWindow]->SwapBuffers();
+			return;
+		}
+	}
 	void ShowWindow(WindowID windowID);
 	static Display* GetSingleton();
 	void ProcessEvents();

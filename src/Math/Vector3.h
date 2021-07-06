@@ -1,18 +1,21 @@
 #pragma once
 
+#define NO_FDECL
 #include "Math/Math.h"
-
+#include "Vector2.h"
+#include "SimpleVec.h"
 
 struct Vector3
 {
 	Vector3() : x(0), y(0), z(0) {}
 	Vector3(float p_x, float p_y, float p_z) 
 			:x (p_x), y(p_y), z(p_z) {}
-	Vector3(const Vector2& p_vec);
+	Vector3(const struct Vector2& p_vec);
 	Vector3(const Vector3& p_vec) 
 		: x(p_vec.x), y(p_vec.y), z(p_vec.z) {}
 
 	inline float operator[](int p_axis) const { return coord[p_axis]; }
+	inline float& operator[](int p_axis) { return coord[p_axis]; }
 
 	static inline Vector3 Abs(const Vector3& p_vec);
 	static inline Vector3 Floor(const Vector3& p_vec);
@@ -53,7 +56,7 @@ struct Vector3
 	inline Vector3 operator*(const Vector3& p_v) const;
 	inline Vector3& operator/=(const Vector3& p_v);
 	inline Vector3 operator/(const Vector3& p_v) const;
-
+	inline Vector3& operator=(const SimpleVec4& p_v);
 	inline Vector3& operator*=(float p_scalar);
 	inline Vector3 operator*(float p_scalar) const;
 	friend Vector3 operator*(const float& p_scalar, const Vector3& p_vec);
@@ -253,6 +256,7 @@ inline Vector3 Vector3::operator/(const Vector3& p_v) const {
 	return Vector3(x / p_v.x, y / p_v.y, z / p_v.z);
 }
 
+
 inline Vector3& Vector3::operator*=(float p_scalar) {
 	x *= p_scalar;
 	y *= p_scalar;
@@ -326,4 +330,13 @@ inline bool Vector3::operator>=(const Vector3& p_v) const {
 		return y > p_v.y;
 	}
 	return x > p_v.x;
+}
+
+
+inline Vector3& Vector3::operator=(const SimpleVec4& p_v)
+{
+	this->x = p_v.x;
+	this->y = p_v.y;
+	this->z = p_v.z;
+	return *this;
 }

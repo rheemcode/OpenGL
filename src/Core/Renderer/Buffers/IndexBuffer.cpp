@@ -2,9 +2,23 @@
 #include "IndexBuffer.h"
 
 IndexBuffer::IndexBuffer()
-	: m_RendererID(0)
+	: m_RendererID(0), m_Count(0)
 {
 	//GLCall(glGenBuffers(1, &m_RendererID));
+}
+
+IndexBuffer::IndexBuffer(IndexBuffer&& ib) noexcept
+{
+	m_RendererID = ib.m_RendererID;
+	m_Count = ib.m_Count;
+	ib.m_RendererID = 0;
+	ib.m_Count = 0;
+}
+
+IndexBuffer::IndexBuffer(const IndexBuffer& ib)
+{
+	m_RendererID = ib.m_RendererID;
+	m_Count = ib.m_Count;
 }
 
 IndexBuffer::IndexBuffer(int count)

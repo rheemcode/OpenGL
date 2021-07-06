@@ -3,10 +3,11 @@
 #include "Math/Math.h"
 #include "Math/Vector3.h"
 #include "Matrix4x4.h"
-#include "Matrix3x3.h"
 #include "Quaternion.h"
 #include <cassert>
 #include <iostream>
+
+
 
 const Matrix4x4 Matrix4x4::Identity = Matrix4x4(1.f, 0.f, 0.f, 0.f,
 	0.f, 1.f, 0.f, 0.f,
@@ -70,6 +71,24 @@ const SimpleVec4& Matrix4x4::operator[](const int& p_index) const
 SimpleVec4& Matrix4x4::operator[](const int& p_index)
 {
 	return m_data[p_index];
+}
+
+Vector4 operator*(const Matrix4x4& p_mat, const Vector4& p_vec)
+{
+
+	Vector4 const Mov0(p_vec[0]);
+	Vector4 const Mov1(p_vec[1]);
+	Vector4 const Mul0 = p_mat[0] * Mov0;
+	Vector4 const Mul1 = p_mat[1] * Mov1;
+	Vector4 const Add0 = Mul0 + Mul1;
+	Vector4 const Mov2(p_vec[2]);
+	Vector4 const Mov3(p_vec[3]);
+	Vector4 const Mul2 = p_mat[2] * Mov2;
+	Vector4 const Mul3 = p_mat[3] * Mov3;
+	Vector4 const Add1 = Mul2 + Mul3;
+	Vector4 const Add2 = Add0 + Add1;
+	return Add2;
+
 }
 
 Matrix4x4 operator*(const Matrix4x4& p_mat, const Matrix4x4& p_mat2)
@@ -183,6 +202,15 @@ Matrix4x4 Matrix4x4::Inverse(const Matrix4x4& m)
 	float OneOverDeterminant = 1.f / Dot1;
 
 	return Inverse * OneOverDeterminant;
+}
+
+Matrix4x4& Matrix4x4::operator*(const float& p_s)
+{
+	this->m_data[0] *= p_s;
+	this->m_data[1] *= p_s;
+	this->m_data[2] *= p_s;
+	this->m_data[3] *= p_s;
+	return *this;
 }
 
 Matrix4x4& Matrix4x4::operator*=(const Matrix4x4& p_matrix)

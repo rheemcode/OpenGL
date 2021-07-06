@@ -151,7 +151,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Core\Renderer\Scene.cpp" />
     <ClCompile Include="src\Tests\Quad.cpp" />
+    <ClCompile Include="src\Tests\Sphere.cpp" />
+    <ClCompile Include="src\Tests\Sprite.cpp" />
     <ClCompile Include="src\Core\Camera.cpp" />
     <ClCompile Include="src\Core\Renderer\Debug.cpp" />
     <ClCompile Include="src\Core\Input\Input.cpp" />
@@ -172,13 +175,13 @@
     <ClCompile Include="src\Core\Renderer\Buffers\VertexBuffer.cpp" />
     <ClCompile Include="src\Core\Renderer\Buffers\IndexBuffer.cpp" />
     <ClCompile Include="src\Core\Renderer\VertexArray.cpp" />
-    <ClCompile Include="src\Core\Renderer\Buffers\VertexBufferLayout.cpp" />
-    <ClCompile Include="src\Tests\Sphere.cpp" />
-    <ClCompile Include="src\Tests\Torus.cpp" />
+    <ClCompile Include="src\Core\Renderer\Buffers\BufferLayout.cpp" />
     <ClCompile Include="src\Core\Window\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Tests\Quad.h" />
+    <ClInclude Include="src\Core\Renderer\Scene.h" />
+    <ClInclude Include="src\Tests\Sphere.h" />
+    <ClInclude Include="src\Tests\Sprite.h" />
     <ClInclude Include="src\Core\Camera.h" />
     <ClInclude Include="src\Core\Renderer\Debug.h" />
     <ClInclude Include="src\Core\Events\ApplicationEvent.h" />
@@ -348,9 +351,7 @@
     <ClInclude Include="src\Tests\Primitive.h" />
     <ClInclude Include="src\Core\Renderer\Buffers\VertexBuffer.h" />
     <ClInclude Include="src\Core\Renderer\VertexArray.h" />
-    <ClInclude Include="src\Core\Renderer\Buffers\VertexBufferLayout.h" />
-    <ClInclude Include="src\Tests\Sphere.h" />
-    <ClInclude Include="src\Tests\Torus.h" />
+    <ClInclude Include="src\Core\Renderer\Buffers\BufferLayout.h" />
     <ClInclude Include="src\Core\Window\Window.h" />
   </ItemGroup>
   <ItemGroup>
@@ -464,6 +465,7 @@
     <None Include="Deps\glm\gtx\vector_query.inl" />
     <None Include="Deps\glm\gtx\wrap.inl" />
     <None Include="src\Shaders\default.shader" />
+    <None Include="src\Shaders\lighting.shader" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Deps\glm\CMakeLists.txt" />

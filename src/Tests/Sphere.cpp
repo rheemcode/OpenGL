@@ -6,6 +6,7 @@
 #include "Math/Matrix4x4.h"
 #include "Math/SimpleVec.h"
 #include <iostream>
+
 Sphere::Sphere(const Sphere& t)
 {
 
@@ -14,51 +15,10 @@ Sphere::Sphere(const Sphere& t)
 Sphere::Sphere(int stackSegments, int sectorSegments, float radius)
     : m_StackSegments(stackSegments), m_SectorSegments(sectorSegments), m_radius(radius)
 {
-    //glm::perspective()
-    std::cout << "Created";
-    GenSphereVertices();
-    CreateVertexArray();
-    CreateVertexBuffer();
-    CreateIndexBuffer();
-
-    GenIndicies();
-
-    m_Shader = std::make_unique<Shader>("src/shader.shader");
-    EnableAttribs();
-    m_NumIndicies = m_Ib->GetCount();
-    transform = Matrix4x4::Translate(transform, Vector3(3.7f, 1.f, 0.f));
-
-}
-
-void Sphere::CreateIndexBuffer()
-{
-    m_Ib = std::make_unique<IndexBuffer>(m_NumIndicies);
-}
-
-void Sphere::CreateVertexArray()
-{
-
     m_Va = std::make_unique<VertexArray>();
-}
-
-void Sphere::CreateVertexBuffer()
-{
-    m_Vb = std::make_unique<VertexBuffer>(m_VertexPositions.data(), (sizeof(float) * 4) * m_VertexPositions.size());
-}
-
-static Matrix4x4 p;
-
-void Sphere::Draw(const Camera& camera)
-{
-    m_Va->Bind();
-    glUseProgram(m_Shader->GetProgram());
-
-    glUniform4f(m_UniformLocation, 1.f, 0.f, 0.f, 1.f);
-    glUniformMatrix4fv(viewLocation, 1, GL_FALSE, &camera.GetViewMatrix()[0].x);
-    glUniformMatrix4fv(modelLocation, 1, GL_FALSE, &transform[0].x);
-    glUniformMatrix4fv(projLocation, 1, GL_FALSE, &camera.GetProjectionMatrix()[0].x);
-
-    glDrawElements(GL_TRIANGLES, m_NumIndicies, GL_UNSIGNED_INT, NULL);
+    GenIndicies();
+    GenSphereVertices();
+    m_Shader = std::make_unique<Shader>("src/Shaders/lighting.shader");
 }
 
 void Sphere::Rotate()
@@ -74,9 +34,12 @@ void Sphere::Scale()
 
 void Sphere::GenSphereVertices()
 {
+    std::vector<VertexAttrib> attrib;
+
     float sectorStep = 2 * PI / m_SectorSegments;
     float stackStep = PI / m_StackSegments;
     
+    float lengthInv = 1.0f / m_radius;
     float sectorAngle, stackAngle;
     float z, xy;
     
@@ -91,17 +54,47 @@ void Sphere::GenSphereVertices()
             sectorAngle = j * sectorStep;
             float x = xy * Math::Cos(sectorAngle);
             float y = xy * Math::Sin(sectorAngle);
-            m_VertexPositions.push_back({x,y,z, 1.f});
+
+            VertexAttrib a;
+            a.vertices = { x, y, z };
+            a.normals = { x * lengthInv, y * lengthInv, z * lengthInv, };
+            a.uv = { (float) j / m_SectorSegments, (float) i / m_StackSegments };
+
+
+            attrib.push_back(a);
         }
 
     }
 
+    m_Vb = std::make_unique<VertexBuffer>(attrib.data(), attrib.size() * sizeof(VertexAttrib));
+    m_Vb->SetLayout
+    ({ {GL_FLOAT, 0,  3, GL_FALSE},
+        {GL_FLOAT, 1, 3, GL_FALSE},
+        {GL_FLOAT, 2, 2, GL_FALSE},
+        });
+    m_Va->AddBuffer(*m_Vb);
+
+}
+
+const Matrix4x4& Sphere::GetTransform() const
+{
+    return transform;
+}
+
+const VertexArray& Sphere::GetVertexAttribs() const
+{
+    return *m_Va;
+}
+
+const Shader& Sphere::GetShader() const
+{
+    return *m_Shader;
 }
 
 void Sphere::GenIndicies()
 {
     int k1, k2;
-
+    std::vector<uint32_t> indices;
     for (int i = 0; i < m_StackSegments; i++)
     {
         k1 = i * (m_SectorSegments + 1);
@@ -110,39 +103,26 @@ void Sphere::GenIndicies()
         {
             if (i != 0)
             {
-               // m_Ib->AddData(k1);
-                //m_Ib->AddData(k2);
-                //m_Ib->AddData(k1 + 1);
+               indices.push_back(k1);
+               indices.push_back(k2);
+               indices.push_back(k1 + 1);
             }
 
             if (i != (m_StackSegments - 1))
             {
-               // m_Ib->AddData(k1 + 1);
-               // m_Ib->AddData(k2);
-                //m_Ib->AddData(k2 + 1);
+                indices.push_back(k1 + 1);
+                indices.push_back(k2);
+                indices.push_back(k2 + 1);
             }
 
             k1++;
             k2++;
         }
     }
+
+    m_Va->SetIndices(indices.data(), indices.size());
 }
 
-void Sphere::EnableAttribs()
-{
-    unsigned int shader = m_Shader->GetProgram();
-
-    m_UniformLocation = glGetUniformLocation(shader, "u_Color");
-    int vPosLocation = glGetAttribLocation(shader, "vPos");
-
-
-    viewLocation = glGetUniformLocation(shader, "viewMatrix");
-    modelLocation = glGetUniformLocation(shader, "modelMatrix");
-    projLocation = glGetUniformLocation(shader, "projMatrix");
-
-    GLCall(glEnableVertexAttribArray(vPosLocation));
-    GLCall(glVertexAttribPointer(vPosLocation, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4, (void*)0));
-}
 
 Sphere::~Sphere()
 {

@@ -1,5 +1,6 @@
 #include "Input.h"
 #include <Windows.h>
+#include <cstdint>
 
 Input* Input::s_Instance;
 Input* Input::GetSingleton() { return s_Instance; }

@@ -2,6 +2,7 @@
 
 #include "KeyCode.h"
 #include "Mouse.h"
+#include "../Events/Event.h"
 #include "Math/SimpleVec.h"
 
 class Input
@@ -11,6 +12,7 @@ class Input
 public:
 	
 	Point2 GetMousePosition() { return mousePos; }
+	void OnEvent(const Event& event);
 	void SetMousePos(const Point2& p_pos) { };
 	void SetMousePos(const double& p_posX, const double& p_posY) {  }
 	void SetMousePos(const int& p_posX, const int& p_posY) { }

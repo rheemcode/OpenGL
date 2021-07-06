@@ -2,14 +2,14 @@
 #include <Windows.h>
 #include <GL/glew.h>
 
-
 class OpenGLContext
 {
 	HWND hwnd;
 	HDC hDC;
 	HGLRC hRC;
-	bool isVysnc;
-	int swapInterval;
+	bool isVysnc =false;
+	bool isVysncViaCompositor = false;
+	int swapInterval = 0;
 
 public:
 	int Init(HWND p_Hwnd);

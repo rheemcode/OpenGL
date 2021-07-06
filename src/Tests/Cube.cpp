@@ -6,118 +6,119 @@
 
 Cube::Cube()
 {
+
+
+	m_Va = std::make_unique<VertexArray>();
 	GenVertices();
-
-	CreateVertexArray();
-	CreateVertexBuffer();
-	CreateIndexBuffer();
-
-	m_Shader = std::make_unique<Shader>("src/shader.shader");
-	EnableAttribs();
-	
-	transform = Matrix4x4::Translate(transform, Vector3(-3.7f, 0, 0));
+	m_Shader = std::make_unique<Shader>("src/Shaders/lighting.shader");
+	//Quaternion::RotateY(Math::Deg2Rad(14.0f));
+	//transform = Matrix4x4::Translate(transform, Vector3(10.f, 0, 0.f));
+	transform = Matrix4x4::Rotate(transform, Vector3(0,0, 1.f), Math::Deg2Rad(35.f));
 }
+
+const Matrix4x4& Cube::GetTransform() const 
+{
+	return transform;
+}
+
+const VertexArray& Cube::GetVertexAttribs() const
+{
+	return *m_Va;
+}
+
+const Shader& Cube::GetShader() const
+{
+	return *m_Shader;
+}
+
+static float t = 0;
+void Cube::OnUpdate()
+{
+	t += 0.001;
+	if (t == 100)
+	{
+		t = 0;
+	}
+	transform = Matrix4x4::Rotate(transform, Vector3(1.f, 1.f, 1.f), Math::Deg2Rad(t));
+}
+
 
 void Cube::GenVertices()
 {
-	vec4 currentVertex;
 
-	float x = -1.f, y = -1.f, z = 1.f;
-	int n = -1;
+	std::vector<VertexAttrib> attrib;
 
-	for (int i = 0; i < 8; i++)
+	for (int i = 0;i < 6;i++) 
 	{
-		for (int _x = 0; _x < 1; _x++)
-		{
-			for (int _y = 0; _y < 1; _y++)
-			{
-				for (int _z = 0; _z < 1; _z++)
+		Vector3 face_points[4];
+		Vector3 normal_points[4];
+		float uv_points[8] = { 0,0,0,1,1,1,1,0 };
+
+		for (int j = 0; j < 4; j++) {
+
+
+			float v[3];
+			v[0] = 1.0;
+			v[1] = 1 - 2 * ((j >> 1) & 1);
+			v[2] = v[1] * (1 - 2 * (j & 1));
+
+			for (int k = 0;k < 3;k++) {
+
+				if (i < 3)
 				{
-					if (i != 0 && !(i % 4) && x != 1.f)
-						x = 1.f;
-					
-					n += 1;
-					if (n == 2 || n == 3)
-					{
-						y = 1.f;
-						if (n == 3)
-							n = -1;
-					}
-					else y = -1.f;
-
-					if (z == 1.f)
-						z = -1.f;
-					else
-						z = 1.f;
-
-					currentVertex = { x, y, z, 1.f };
-					 
-
+					face_points[j][(i + k) % 3] = v[k] * (i >= 3 ? -1 : 1);
+				}
+				else
+				{
+					face_points[3 - j][(i + k) % 3] = v[k] * (i >= 3 ? -1 : 1);
 				}
 			}
+
+		
+			normal_points[j] = Vector3();
+			normal_points[j][i % 3] = (i >= 3 ? -1 : 1);
 		}
 
-		m_VertexPositions.push_back(currentVertex);
+		VertexAttrib a;
+		a.vertices = face_points[0];
+		a.normals = normal_points[0];
+		a.uv = Vector2(uv_points[0 * 2 + 0], uv_points[0 * 2 + 1]);
+		attrib.push_back(a);
+		a.vertices = face_points[1];
+		a.normals = normal_points[1];
+		a.uv = Vector2(uv_points[1 * 2 + 0], uv_points[1 * 2 + 1]);
+		attrib.push_back(a);
+		a.vertices = face_points[2];
+		a.normals = normal_points[2];
+		a.uv = Vector2(uv_points[2 * 2 + 0], uv_points[2 * 2 + 1]);
+		attrib.push_back(a);
+		a.vertices = face_points[2];
+		a.normals = normal_points[2];
+		a.uv = Vector2(uv_points[2 * 2 + 0], uv_points[2 * 2 + 1]);
+		attrib.push_back(a);
+		a.vertices = face_points[3];
+		a.normals = normal_points[3];
+		a.uv = Vector2(uv_points[3 * 2 + 0], uv_points[3 * 2 + 1]);
+		attrib.push_back(a);
+		a.vertices = face_points[0];
+		a.normals = normal_points[0];
+		a.uv = Vector2(uv_points[0 * 2 + 0], uv_points[0 * 2 + 1]);
+		attrib.push_back(a);
 	}
-}
 
-void Cube::EnableAttribs()
-{
-	unsigned int shader = m_Shader->GetProgram();
+	std::vector<uint32_t> indices;
+	for (int i = 0; i < 36; i++)
+		indices.push_back(i);
+	
 
-	viewLocation = glGetUniformLocation(shader, "viewMatrix");
-	modelLocation = glGetUniformLocation(shader, "modelMatrix");
-	projLocation = glGetUniformLocation(shader, "projMatrix");
-
-
-	m_UniformLocation = glGetUniformLocation(shader, "u_Color");
-	int vPosLocation = glGetAttribLocation(shader, "vPos");
-
-	GLCall(glEnableVertexAttribArray(vPosLocation));
-	GLCall(glVertexAttribPointer(vPosLocation, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 4, (void*)0));
-}
-
-void Cube::CreateVertexArray()
-{
-	m_Va = std::make_unique<VertexArray>();
-}
-
-void Cube::CreateVertexBuffer()
-{
-	m_Vb = std::make_unique<VertexBuffer>(m_VertexPositions.data(), (sizeof(float) * 4) * m_VertexPositions.size());
-}
-
-void Cube::CreateIndexBuffer()
-{
-	uint32_t ci[] =
-	{
-		0, 1, 2, 3, 6, 7, 4, 5,
-		0xFFFF,
-		2, 6, 0, 4, 1, 5, 3, 7 
-	};
-
-	m_Ib = std::make_unique<IndexBuffer>(ci, 17);
-}
-static Quaternion rot;
-static glm::quat rot2;
-static glm::mat4x4 ma(1.f);
-static Matrix4x4 mmm(1.f);
-
-void Cube::Draw(const Camera& camera)
-{
-	m_Va->Bind();
-	glUseProgram(m_Shader->GetProgram());
-
-
-	glUniform4f(m_UniformLocation, 1.f, 0.f, 0.f, 1.f);
-	glUniformMatrix4fv(viewLocation, 1, GL_FALSE, &(camera.GetViewMatrix()[0].x));
-	glUniformMatrix4fv(modelLocation, 1, GL_FALSE, &(transform[0].x));
-	glUniformMatrix4fv(projLocation, 1, GL_FALSE, &(camera.GetProjectionMatrix()[0].x));
-
-
-
-	glEnable(GL_PRIMITIVE_RESTART);
-	glPrimitiveRestartIndex(0xFFFF);
-	glDrawElementsInstanced(GL_TRIANGLE_STRIP, 17, GL_UNSIGNED_INT, NULL, 12);
-	//glDrawElements(GL_TRIANGLE_STRIP, 17, GL_UNSIGNED_INT, NULL);
+	m_Vb = std::make_unique<VertexBuffer>(attrib.data(), sizeof(attrib) * sizeof(VertexAttrib));
+	m_Vb->SetLayout
+	({ {GL_FLOAT, 0,  3, 0},
+		{GL_FLOAT, 1, 3, 0},
+		{GL_FLOAT, 2, 2, 0},
+		});
+	
+	m_Va->SetIndices(indices.data(), indices.size());
+	m_Va->AddBuffer(*m_Vb);
+	
 }

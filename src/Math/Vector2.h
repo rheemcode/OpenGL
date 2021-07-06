@@ -1,14 +1,15 @@
 #pragma once
 
-
+#define NO_FDECL
 #include "Math/Math.h"
+#include "Vector3.h"
 
 struct Vector2
 {
 	Vector2() :x(0), y(0) {};
 	Vector2(float p_x, float p_y) : x(p_x), y(p_y) {}
 	Vector2(const Vector2& p_vec) : x(p_vec.x), y(p_vec.y) {}
-	Vector2(const Vector3& p_vec);
+	Vector2(const struct Vector3& p_vec);
 
 	static inline Vector2 Normalize(const Vector2& p_vec);
 	static inline Vector2 Abs(Vector2& p_vec);
@@ -21,7 +22,7 @@ struct Vector2
 	static inline Vector2 AngleToDir(float p_angleRad);
 	static inline float DirToAngle(const Vector2& p_dir);
 	static inline Vector2 Rotate(const Vector2& p_vec, const float angleRad);
-	static inline float AngleToPoint(const Vector2& p_vecA, const Vector2& p_vec);	
+	static inline float AngleToPoint(const Vector2& p_vecA, const Vector2& p_vec);
 	static inline float Dot(const Vector2& p_vecA, const Vector2& p_vecB);
 	static inline float Cross(const Vector2& p_vecA, const Vector2& p_vecB);
 	static inline Vector2 Clamp(const Vector2& p_vec);
@@ -34,7 +35,13 @@ struct Vector2
 	static inline Vector2 Ceil(const Vector2& p_vec);
 	static inline Vector2 Round(const Vector2& p_vec);
 	inline float& operator[](int p_axis) { return p_axis ? x : y; }
-	inline Vector2 operator=(const Vector2& p_vec);
+	inline Vector2 operator=(const Vector2& p_vec)
+	{
+		this->x = p_vec.x;
+		this->y = p_vec.y;
+		return *this;
+	}
+
 	inline Vector2 operator=(const Vector3& p_vec);
 	inline Vector2 operator+(const Vector2& p_v) const;
 	inline void operator+=(const Vector2& p_v);
@@ -59,16 +66,9 @@ struct Vector2
 	inline bool operator<=(const Vector2& p_vec2) const { return x == p_vec2.x ? (y <= p_vec2.y) : (x < p_vec2.x); }
 	inline bool operator>=(const Vector2& p_vec2) const { return x == p_vec2.x ? (y >= p_vec2.y) : (x > p_vec2.x); }
 
-	union
-	{
-		float x;
-		float width;
-	};
 
-	union
-	{
-		float y;
-		float height;
-	};
+	float x, y;
+	//float width;
 
 };
+

@@ -9,11 +9,15 @@ struct VertexBufferElement
 	unsigned int count;
 	unsigned char normalized;
 
-	static unsigned int GetSizeOfType(unsigned int type)
+	VertexBufferElement(uint32_t p_type, uint32_t p_id, uint32_t p_count, uint8_t p_normalized = 0)
+		: type(p_type), id(p_id), count(p_count), normalized(p_normalized) {}
+
+	static uint32_t GetSizeOfType(unsigned int type)
 	{
 		switch (type)
 		{
 			case GL_FLOAT: return sizeof(float);
+			case GL_INT: return sizeof(int);
 			case GL_UNSIGNED_INT: return sizeof(unsigned int); 
 			case GL_UNSIGNED_BYTE: return sizeof(unsigned char);
 		}
@@ -21,7 +25,7 @@ struct VertexBufferElement
 	}
 };
 
-class VertexBufferLayout
+class BufferLayout
 {
 private:
 	std::vector<VertexBufferElement> m_Element;
@@ -30,17 +34,24 @@ private:
 public:
 	enum ElementSize : uint32_t
 	{
-		VEC1 = 1,
+		Float = 1,
 		VEC2,
 		VEC3,
 		VEC4
 	};
 
-	VertexBufferLayout()
+	BufferLayout()
 		: m_Stride{ 0 }
 	{
 
 	}
+
+	BufferLayout(std::initializer_list<VertexBufferElement> elems)
+		: m_Element(elems), m_Stride(0)
+	{
+		CalculateStride();
+	}
+
 
 	template<typename T>
 	void Push(ElementSize count, unsigned int id)
@@ -67,6 +78,15 @@ public:
 	{
 		m_Element.push_back({GL_UNSIGNED_BYTE, id, (uint32_t )count, GL_TRUE });
 		m_Stride += sizeof(char) * count;
+	}
+
+	void CalculateStride()
+	{
+		m_Stride = 0;
+		for (auto& element : m_Element)
+		{
+			m_Stride += element.count * VertexBufferElement::GetSizeOfType(element.type);
+		}
 	}
 
 	inline const std::vector<VertexBufferElement>& GetElements() const { return m_Element; }

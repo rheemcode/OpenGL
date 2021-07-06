@@ -10,7 +10,11 @@
 #include "Renderer/Renderer.h"
 #include <iostream>
 #include <fstream>
+#include <Tests/Sprite.h>
 #include <Tests/Quad.h>
+#include <Renderer/Scene.h>
+
+
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PWSTR pCmdLine, int nCmdShow)
 {
@@ -22,17 +26,27 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PWSTR pCmdLine,
 
 	Display::Create(hInstance, (WindowFlags)flags, WINDOW_MODE_WINDOWED, size);
 	Display* display = Display::GetSingleton();
+	display->m_Windows[0]->MakeCurrent();
 	display->UseVysnc(true);
-	Quad quad;
-	quad.AddTextureImage("C:\\Users\\rheen\\source\\repos\\OpenGL\\src\\creepycreep.png");
 
-	Renderer renderer;
+	Scene* scene = new Scene();
+
+
+	Renderer2D renderer2D;
+
+
+	Renderer::Init();
+
+	renderer2D.Init();
+
+
 
 	while (!Display::isCloseRequest)
 	{
-		renderer.BeginScene();
-		quad.Draw();
-		display->ProcessEvents();
+		Renderer::SetClearColor(1, 1, 1, 1);
+		Renderer::Clear();
+		scene->OnUpdate();
 		display->SwapBuffer();
+		display->ProcessEvents();
 	}
 }

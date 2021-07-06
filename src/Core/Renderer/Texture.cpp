@@ -4,9 +4,20 @@
 #include <stb_image.h>
 #include <Renderer/Debug.h>
 
+uint32_t Texture::texCount = 0;
+uint32_t Texture::texturesIDs[32];
+
 void Texture::Bind()
 {
+
+	glActiveTexture(GL_TEXTURE0 + (m_ID - 1));
 	glBindTexture(GL_TEXTURE_2D, m_ID);
+}
+
+void Texture::Bind(uint32_t p_val)
+{
+	GLCall(glActiveTexture(GL_TEXTURE0 + p_val));
+	GLCall(glBindTexture(GL_TEXTURE_2D, m_ID));
 }
 
 void Texture::UnBind()
@@ -42,16 +53,41 @@ void Texture::BufferData(unsigned char* data, int width, int height, DataFormat 
 	}
 }
 
-Texture::Texture()
-	: m_Width(1920), m_Height(1080), m_Components(3), m_DataFormat(RGB), m_InternalFormat(RGB8)
+
+Texture::Texture(uint32_t count)
+	: m_Width(1920), m_Height(1080), m_Components(4), m_DataFormat(RGBA), m_InternalFormat(RGBA8)
 {
+
+
+	//GLCall(glActiveTexture(GL_TEXTURE0 + texCount));
 	glGenTextures(1, &m_ID);
+	glTextureStorage2D(m_ID, 1, m_InternalFormat, m_Width, m_Height);
 	GLCall(glBindTexture(GL_TEXTURE_2D, m_ID));
 
 	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
 	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
 	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
 	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+
+
+}
+
+Texture::Texture(uint32_t width, uint32_t height)
+	: m_Width(width), m_Height(height), m_Components(4), m_DataFormat(RGB), m_InternalFormat(RGB8)
+{
+
+
+	//GLCall(glActiveTexture(GL_TEXTURE0 + texCount));
+	glGenTextures(1, &m_ID);
+	glTextureStorage2D(m_ID, 1, m_InternalFormat, m_Width, m_Height);
+	GLCall(glBindTexture(GL_TEXTURE_2D, m_ID));
+
+	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
+	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
+	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+
+
 }
 
 void Texture::AddImage(const std::string& filepath)
@@ -72,24 +108,25 @@ void Texture::AddImage(const std::string& filepath)
 	}
 	if (imgData)
 	{
-		GLCall(glTexImage2D(GL_TEXTURE_2D, 0, m_InternalFormat, m_Width, m_Height, 0, m_DataFormat, GL_UNSIGNED_BYTE, imgData));
+		glTextureSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, imgData);
 		GLCall(glGenerateMipmap(GL_TEXTURE_2D));
 	}
 
 	stbi_image_free((void*)imgData);
 }
 
-Texture::Texture(const std::string& filename)
+void Texture::AddImage(const std::string& filepath, uint32_t slot)
 {
-	GLCall(glGenTextures(1, &m_ID));
-	GLCall(glBindTexture(GL_TEXTURE_2D, m_ID));
+}
 
-	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
-	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
-	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-
+Texture::Texture(const std::string& filename, uint32_t count)
+{
 	const unsigned char* imgData = stbi_load(filename.c_str(), &m_Width, &m_Height, &m_Components, 0);
+	if (!imgData)
+	{
+		stbi_image_free((void*)imgData);
+		return;
+	}
 
 	if (m_Components == 3)
 	{
@@ -102,13 +139,16 @@ Texture::Texture(const std::string& filename)
 		m_DataFormat = RGBA;
 		m_InternalFormat = RGBA8;
 	}
-	if (imgData)
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, m_InternalFormat, m_Width, m_Height, 0, m_DataFormat, GL_UNSIGNED_BYTE, imgData);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
 
-	stbi_image_free((void*)imgData);
+	glGenTextures(1, &m_ID);
+	Bind();
+	GLCall(glTexStorage2D(GL_TEXTURE_2D, 1, m_InternalFormat, m_Width, m_Height));
+	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
+	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
+	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+	GLCall(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, imgData));
+	GLCall(glGenerateMipmap(GL_TEXTURE_2D));
 }
 
 Texture::~Texture()

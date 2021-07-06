@@ -168,12 +168,12 @@ inline Vector2 operator*(const Vector2& p_vec, const Vector2& p_vecB)
 	return Vector2(p_vec.x * p_vecB.x, p_vec.y * p_vecB.y);
 }
 
-inline Vector2 Vector2::operator=(const Vector2& p_vec)
-{
-	this->x = p_vec.x;
-	this->y = p_vec.y;
-	return *this;
-}
+//inline Vector2 Vector2::operator=(const Vector2& p_vec)
+//{
+//	this->x = p_vec.x;
+//	this->y = p_vec.y;
+//	return *this;
+//}
 
 inline Vector2 Vector2::operator=(const Vector3& p_vec)
 {

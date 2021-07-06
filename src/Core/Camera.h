@@ -1,4 +1,6 @@
 #pragma once
+#include "Math/Vector2.h"
+#include "Math/Vector3.h"
 #include "Math/Matrix4x4.h"
 #include "Tests/Object.h"
 
@@ -10,6 +12,8 @@ enum class CameraMode
 
 struct CameraSettings
 {
+	CameraSettings() {}
+
 	CameraSettings(CameraMode _mode, float _ratio, float _fovY)
 		: mode(_mode), ratio(_ratio), fovY(_fovY)
 
@@ -32,24 +36,23 @@ public:
 
 class Camera : public Transform
 {
+
+	Matrix4x4 MakeProjectionMatrix(const CameraMode& projectionMode);
+	Matrix4x4 MakeProjectionMatrix(const CameraSettings& setting);
+	Matrix4x4 MakeViewMatrix();
+
 public:
 	Camera();
 	Camera(const CameraMode& mode);
 	Camera(const CameraSettings& setting);
 
-	Matrix4x4 MakeProjectionMatrix(const CameraMode& projectionMode);
-	Matrix4x4 MakeProjectionMatrix(const CameraSettings& setting);
-
-	Matrix4x4 MakeViewMatrix();
-
 	const Matrix4x4& GetViewMatrix() const;
 	const Matrix4x4& GetProjectionMatrix() const;
+	const Matrix4x4& GetViewProjectionMatrix() const;
 
 	void Translate(Vector3 postion);
 	void Rotate(float angle, Vector3 direction);
-
 	void Update();
-
 
 private:
 	Matrix4x4 m_ProjectionMatrix;

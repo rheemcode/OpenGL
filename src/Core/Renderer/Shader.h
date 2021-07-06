@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include "Math/Vector2.h"
 #include <Math/Matrix4x4.h>
 
 struct Shader
@@ -16,15 +17,16 @@ struct Shader
 	Type shaderType = Type::NONE;
 	unsigned int program;
 	unsigned int CompileShader(const std::string& src, unsigned int type);
+	void Bind() const;
 	void CreateShader();
 
-	void UploadUniformMat4(const std::string& name, const Matrix4x4& p_mat4);
-	void UploadUniformVec4(const std::string& name, const SimpleVec4& p_vec4);
-	void UploadUniformVec3(const std::string& name, const Vector3& p_vec3);
-	void UploadUniformVec2(const std::string& name, const Vector2& p_vec2);
-	void UploadUniformInt(const std::string& name, int p_val);
-	void UploadUniformFloat(const std::string& name, float p_val);
-	void UploadUniformIntArray(const std::string& name, int* p_val, uint32_t count);
+	void UploadUniformMat4(const std::string& name, const Matrix4x4& p_mat4) const ;
+	void UploadUniformVec4(const std::string& name, const SimpleVec4& p_vec4) const ;
+	void UploadUniformVec3(const std::string& name, const Vector3& p_vec3) const;
+	void UploadUniformVec2(const std::string& name, const Vector2& p_vec2) const;
+	void UploadUniformInt(const std::string& name, int p_val) const;
+	void UploadUniformFloat(const std::string& name, float p_val) const;
+	void UploadUniformIntArray(const std::string& name, int* p_val, uint32_t count) const;
 
 public:
 	Shader();

@@ -1,6 +1,7 @@
 #pragma once
 #include "Math/SimpleVec.h"
-
+#include "Matrix3x3.h"
+#include "Math/Matrix4x4.h"
 
 class Matrix4x4
 {
@@ -8,7 +9,7 @@ class Matrix4x4
 public:
 	Matrix4x4();
 	Matrix4x4(const Matrix4x4& p_mat);
-	Matrix4x4(const Matrix3x3& p_mat);
+	Matrix4x4(const class Matrix3x3& p_mat);
 	Matrix4x4(const colType& col1, const colType& col2, const colType& col3, const colType& col4 );
 	Matrix4x4(const float& s);
 	Matrix4x4
@@ -30,8 +31,9 @@ public:
 		return &p_mat[0].x;
 	}
 
-
+	friend Vector4 operator*(const Matrix4x4& p_mat, const Vector4& p_vec);
 	friend Matrix4x4 operator*(const Matrix4x4& p_left, const Matrix4x4& p_right);
+	Matrix4x4& operator*(const float& p_s);
 	Matrix4x4& operator*=(const Matrix4x4& p_matrix);
 	const SimpleVec4& operator[](const int& p_index) const;
 	SimpleVec4& operator[](const int& p_index);
@@ -43,9 +45,9 @@ public:
 	Matrix4x4 Inverse(const Matrix4x4& p_matrix);
 
 	static Matrix4x4 CreateScale(const float& xScale, const float& yScale, const float& zScale);
-	static Matrix4x4 CreateScale(const Vector3& scaleVector);
+	static Matrix4x4 CreateScale(const struct Vector3& scaleVector);
 	static Matrix4x4 CreateScale(const float& scale);
-	static Matrix4x4 Scale(const Matrix4x4& p_matrix, const Vector3& scaleVector);
+	static Matrix4x4 Scale(const Matrix4x4& p_matrix, const struct Vector3& scaleVector);
 	static Matrix4x4 CreateRotationX(const float& theta);
 	static Matrix4x4 CreateRotationY(const float& theta);
 	static Matrix4x4 CreateRotationZ(const float& theta);
@@ -54,15 +56,15 @@ public:
 	static Matrix4x4 RotateX(const Matrix4x4& p_matrix, const float& theta);
 	static Matrix4x4 RotateY(const Matrix4x4& p_matrix, const float& theta);
 	static Matrix4x4 RotateZ(const Matrix4x4& p_matrix, const float& theta);
-	static Matrix4x4 Rotate(const Quaternion& p_rotation);
-	static Matrix4x4 Rotate(const Matrix4x4& p_matrix, const Quaternion& q);
-	static Matrix4x4 Rotate(const Matrix4x4& p_matrix, const Vector3& p_axis, const float& p_theta);
-	static Matrix4x4 CreateTranslation(const Vector3& trans);
+	static Matrix4x4 Rotate(const struct Quaternion& p_rotation);
+	static Matrix4x4 Rotate(const Matrix4x4& p_matrix, const struct Quaternion& q);
+	static Matrix4x4 Rotate(const Matrix4x4& p_matrix, const struct Vector3& p_axis, const float& p_theta);
+	static Matrix4x4 CreateTranslation(const struct Vector3& trans);
 
-	static Matrix4x4 Translate(const Matrix4x4& p_matrix, const Vector3& trans);
+	static Matrix4x4 Translate(const Matrix4x4& p_matrix, const struct Vector3& trans);
 
-	static Matrix4x4 CreateLookAt(const Vector3& eye, const Vector3& target, const Vector3& up);
-	static Matrix4x4 LookAt(const Matrix4x4& p_matrix, const Vector3& eye, const Vector3& target, const Vector3& up);
+	static Matrix4x4 CreateLookAt(const struct Vector3& eye, const struct Vector3& target, const struct Vector3& up);
+	static Matrix4x4 LookAt(const Matrix4x4& p_matrix, const struct Vector3& eye, const struct Vector3& target, const struct Vector3& up);
 
 	static float Determinant(const Matrix4x4& p_matrix);
 	static Matrix4x4 Transpose(const Matrix4x4& p_matrix);

@@ -4,18 +4,12 @@
 
 class Cube : public Primitive
 {
+    void GenVertices();
+
 public:
     Cube();
-    void Draw(const class Camera& camera);
-
-private:
-    void GenVertices();
-     void EnableAttribs() override;
-     void CreateVertexArray() override;
-     void CreateVertexBuffer() override;
-     void CreateIndexBuffer() override;
-private:
-    std::vector<vec4> m_VertexPositions;
-    int m_UniformLocation;
-    int m_MvpLocation;
+    virtual const Matrix4x4& GetTransform() const override;
+    virtual const VertexArray& GetVertexAttribs() const override;
+    virtual const Shader& GetShader() const override;
+    virtual void OnUpdate() override;
 };

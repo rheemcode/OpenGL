@@ -61,8 +61,6 @@ Matrix4x4 Camera::MakeProjectionMatrix(const CameraMode& projectionMode)
 		}
 		case (CameraMode::PERSPECTIVE):
 		{
-			auto s = glm::perspective(Math::Deg2Rad(65.f), 1.f, 0.1f, 2000.f);
-			auto r = Matrix4x4::CreatePerspective(Math::Deg2Rad(65.f), 1.f, 0.1f, 2000.f);
 			return Matrix4x4::CreatePerspective(Math::Deg2Rad(65.f), 1.f, 0.1f, 2000.f);
 		}
 	}
@@ -76,13 +74,11 @@ Matrix4x4 Camera::MakeProjectionMatrix(const CameraSettings& setting)
 	{
 		case (CameraMode::ORTHOGRAPHIC):
 		{
-			return Matrix4x4::CreateOrtho(-4.f, 4.f, 3.f, -3.f, 3.f, -300.f);
+			return Matrix4x4::CreateOrtho(-1 ,1, 1, -1, 1.f, -300.f);
 		}
 		case (CameraMode::PERSPECTIVE):
 		{
-			auto s = glm::perspective(Math::Deg2Rad(65.f), 1.f, 0.1f, 2000.f);
-			auto r = Matrix4x4::CreatePerspective(Math::Deg2Rad(65.f), 1.f, 0.1f, 2000.f);
-			return Matrix4x4::CreatePerspective(Math::Deg2Rad(setting.fovY), setting.ratio, 0.f, 200.f);
+			return Matrix4x4::CreatePerspective(Math::Deg2Rad(setting.fovY), setting.ratio, 0.1f, 2000.f);
 		}
 	}
 
@@ -91,6 +87,7 @@ Matrix4x4 Camera::MakeProjectionMatrix(const CameraSettings& setting)
 
 void Camera::Translate(Vector3 position)
 {
+	pos = position;
 	Matrix4x4 mat;
 	mat = Matrix4x4::Rotate(mat, Vector3( 0.f, 1.f, 0.f ), Math::Deg2Rad(rot.y));
 	m_ViewMatrix = Matrix4x4::Translate(mat, -position);
@@ -98,12 +95,17 @@ void Camera::Translate(Vector3 position)
 
 void Camera::Rotate(float angle, Vector3 axis)
 {
-	Matrix4x4::Rotate(m_ViewMatrix,axis, angle);
+	m_ViewMatrix = Matrix4x4::Rotate(m_ViewMatrix,axis, angle);
 }
 
 const Matrix4x4& Camera::GetProjectionMatrix() const
 {
 	return m_ProjectionMatrix;
+}
+
+const Matrix4x4& Camera::GetViewProjectionMatrix() const
+{
+	return  m_ProjectionMatrix * m_ViewMatrix;
 }
 
 const Matrix4x4& Camera::GetViewMatrix() const

@@ -1,5 +1,7 @@
 #pragma once
+#include "SimpleVec.h"
 
+struct Matrix4x4;
 class Matrix3x3
 {
 	typedef SimpleVec3 colType;
@@ -36,14 +38,14 @@ public:
 	static Matrix3x3 AffineInverse(const Matrix3x3& p_matrix);
 
 	static Matrix3x3 CreateScale(const float& xScale, const float& yScale, const float& zScale);
-	static Matrix3x3 CreateScale(const Vector3& scaleVector);
+	static Matrix3x3 CreateScale(const struct Vector3& scaleVector);
 	static Matrix3x3 CreateScale(const float& scale);
-	static Matrix3x3 Scale(const Matrix3x3& p_matrix, const Vector3& scaleVector);
+	static Matrix3x3 Scale(const Matrix3x3& p_matrix, const struct Vector3& scaleVector);
 	static Matrix3x3 Scale(const Matrix3x3& p_matrix, const float& xScale, const float& yScale, const float& zScale);
 	static Matrix3x3 Scale(const Matrix3x3& p_matrix, const float& scale);
 	static Matrix3x3 Rotate(const Matrix3x3& p_matrix, const float& p_theta);
-	static Matrix3x3 CreateTranslation(const Vector3& trans);
-	static Matrix3x3 Translate(const Matrix3x3& p_matrix, const Vector3& trans);
+	static Matrix3x3 CreateTranslation(const struct Vector3& trans);
+	static Matrix3x3 Translate(const Matrix3x3& p_matrix, const struct Vector3& trans);
 	static float Determinant(const Matrix3x3& p_matrix);
 	static Matrix3x3 Transpose(const Matrix3x3& p_matrix);
 	
@@ -53,3 +55,4 @@ public:
 private:
 	colType m_data[3];
 };
+

@@ -52,6 +52,7 @@ LRESULT Display::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam)
 		if (window->GetNativeWindow() == hwnd)
 		{
 			windowID = window->GetID();
+			focusedWindow = windowID;
 			windowCreated = true;
 		}
 	}
@@ -75,6 +76,7 @@ LRESULT Display::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam)
 
 			}
 
+			focusedWindow = windowID;
 			break;
 		}
 
@@ -106,7 +108,6 @@ LRESULT Display::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam)
 		{
 			m_Windows[windowID]->SetHasFocus(false);
 			focusedWindow = windowID;
-
 			if (m_mouseMode == MOUSE_MODE_CAPTURED || m_mouseMode == MOUSE_MODE_HIDDEN)
 			{
 				ReleaseCapture();
@@ -149,7 +150,7 @@ LRESULT Display::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam)
 				m_Windows[windowID]->SetHasFocus(false);
 			}
 
-
+			focusedWindow = windowID;
 			return 0;
 		}
 
@@ -1220,7 +1221,8 @@ void Display::Create(HINSTANCE p_hInstance, WindowFlags p_flags, WindowMode p_ma
 
 Display::Display(HINSTANCE p_hInstance, WindowFlags p_flags, WindowMode p_mainWindowMode, Size2 p_windowSize)
 {
-
+	
+	focusedWindow = -1;
 	memset(&wc, 0, sizeof(WNDCLASSEXW));
 	wc.cbSize = sizeof(WNDCLASSEXW);
 	wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC | CS_DBLCLKS;

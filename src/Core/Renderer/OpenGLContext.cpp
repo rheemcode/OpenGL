@@ -2,6 +2,11 @@
 #include "OpenGLContext.h"
 
 #include <GL/wglew.h>
+#include <exception>
+#include <fstream>
+
+
+
 
 int OpenGLContext::Init(HWND p_Hwnd)
 {
@@ -71,6 +76,8 @@ int OpenGLContext::Init(HWND p_Hwnd)
 		{
 			return 1; // Return FALSE
 		}
+
+
 	}
 
 	return 0;
@@ -87,27 +94,48 @@ void OpenGLContext::ReleaseCurrent()
 	wglMakeCurrent(hDC, nullptr);
 }
 
+bool vsyncViaCompositor() {
+
+	BOOL dwm_enabled;
+
+	if (SUCCEEDED(DwmIsCompositionEnabled(&dwm_enabled))) {
+		return dwm_enabled;
+	}
+
+	return false;
+}
+
 void OpenGLContext::SwapBuffer()
 {
+
 	if (isVysnc)
 	{
-		BOOL enabled;
-		if (SUCCEEDED(DwmIsCompositionEnabled(&enabled)) && enabled)
-		{
+		bool vcmp = vsyncViaCompositor();
+		if (vcmp && wglGetSwapIntervalEXT() == 0)
 			DwmFlush();
-		}
+
+		if (vcmp != isVysncViaCompositor)
+			SetUseVysnc(true);
 	}
-	SwapBuffers(hDC);
+
+	if (!SwapBuffers(hDC))
+	{
+		DWORD error = GetLastError();
+		std::ofstream fs("log_output", std::ios_base::app);
+		fs << error << std::endl;
+		fs.flush();
+		fs.close();
+
+	}
+
 }
 
 void OpenGLContext::SetUseVysnc(bool useVysnc)
 {
-	BOOL enabled;	
-	SUCCEEDED(DwmIsCompositionEnabled(&enabled));
-	bool compsitionEnabled = useVysnc && enabled;
+	isVysncViaCompositor = useVysnc && vsyncViaCompositor();
 
 	if (wglSwapIntervalEXT) {
-		int swap_interval = (useVysnc && !compsitionEnabled) ? 1 : 0;
+		int swap_interval = (useVysnc && !isVysncViaCompositor) ? 1 : 0;
 		wglSwapIntervalEXT(swap_interval);
 	}
 
