@@ -18,7 +18,8 @@ Sphere::Sphere(int stackSegments, int sectorSegments, float radius)
     m_Va = std::make_unique<VertexArray>();
     GenIndicies();
     GenSphereVertices();
-    m_Shader = std::make_unique<Shader>("src/Shaders/lighting.shader");
+    transform = Matrix4x4::Translate(transform, Vector3(-2.f, 0, -10.f));
+//    m_Shader = std::make_unique<Shader>("src/Shaders/lighting.shader");
 }
 
 void Sphere::Rotate()

@@ -43,7 +43,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PWSTR pCmdLine,
 
 	while (!Display::isCloseRequest)
 	{
-		Renderer::SetClearColor(1, 1, 1, 1);
+		Renderer::SetClearColor(.4f, .4f, .4f, 1);
 		Renderer::Clear();
 		scene->OnUpdate();
 		display->SwapBuffer();

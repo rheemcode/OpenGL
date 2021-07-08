@@ -3,6 +3,7 @@
 #include "Math/Vector3.h"
 #include "Camera.h"
 #include "Renderer/VertexArray.h"
+#include "Renderer/Buffers/UniformBuffer.h"
 #include <Tests/Sprite.h>
 #include <Tests/Cube.h>
 #include <array>
@@ -53,10 +54,17 @@ struct Renderer2DData {
 
 };
 
+struct RendererData
+{
+    std::unique_ptr<UniformBuffer> ubo;
+    Matrix4x4 view;
+    Matrix4x4 proj;
+};
+
 class Renderer
 {
-    static Matrix4x4 view;
-    static Matrix4x4 proj;
+    static RendererData renderData;
+
 public:
 
     enum PRIMITIVE_MODE

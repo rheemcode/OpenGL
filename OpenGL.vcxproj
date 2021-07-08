@@ -151,6 +151,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Core\Renderer\Buffers\UniformBuffer.cpp" />
     <ClCompile Include="src\Core\Renderer\Scene.cpp" />
     <ClCompile Include="src\Tests\Quad.cpp" />
     <ClCompile Include="src\Tests\Sphere.cpp" />
@@ -179,6 +180,7 @@
     <ClCompile Include="src\Core\Window\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Core\Renderer\Buffers\UniformBuffer.h" />
     <ClInclude Include="src\Core\Renderer\Scene.h" />
     <ClInclude Include="src\Tests\Sphere.h" />
     <ClInclude Include="src\Tests\Sprite.h" />

@@ -13,3 +13,14 @@ public:
     virtual const Shader& GetShader() const override;
     virtual void OnUpdate() override;
 };
+
+class Plane : public Primitive
+{
+public:
+    Plane();
+
+    virtual const Matrix4x4& GetTransform() const override;
+    virtual const VertexArray& GetVertexAttribs() const override;
+    virtual const Shader& GetShader() const override;
+    virtual void OnUpdate() override;
+};

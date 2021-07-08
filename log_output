@@ -1,13 +1,34 @@
-ERROR: 0:20: '*' : wrong operand types no operation '*' exists that takes a left-hand operand of type '4X4 (default)row_major matrix of highp float' and a right operand of type 'attribute 3-component vector of highp float' (or there is no acceptable conversion)
-ERROR: 0:21: ';' : syntax error syntax error
+ERROR: 0:132: 'Dir' : undeclared identifier 
 
-[OPEN GL Error] {1281}glAttachShader(program, vs)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Shader.cpp57
-ERROR: 0:23: 'lightDir' : undeclared identifier 
-ERROR: 0:24: 'reflect' : no matching overloaded function found (using implicit conversion) 
-ERROR: 0:23: '=' :  cannot convert from 'const highp float' to '3-component vector of highp float'
-ERROR: 0:25: 'float' : syntax error syntax error
+[OPEN GL Error] {1281}[Invalid Value]glAttachShader(program, fs)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Shader.cpp58
+ERROR: 0:132: 'viewPosition' : undeclared identifier 
 
-[OPEN GL Error] {1281}glAttachShader(program, fs)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Shader.cpp58
-ERROR: 0:26: 'float' : syntax error syntax error
+[OPEN GL Error] {1281}[Invalid Value]glAttachShader(program, fs)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Shader.cpp58
+ERROR: 0:156: 'CalculateDirectionalLight' : function already has a body 
 
-[OPEN GL Error] {1281}glAttachShader(program, fs)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Shader.cpp58
+[OPEN GL Error] {1281}[Invalid Value]glAttachShader(program, fs)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Shader.cpp58
+ERROR: 0:132: 'viewPosition' : undeclared identifier 
+ERROR: 0:136: 'diffuse' : undeclared identifier 
+
+[OPEN GL Error] {1281}[Invalid Value]glAttachShader(program, fs)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Shader.cpp58
+ERROR: 0:136: 'diffuse' : undeclared identifier 
+
+[OPEN GL Error] {1281}[Invalid Value]glAttachShader(program, fs)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Shader.cpp58
+ERROR: 0:143: 'constructor' : not enough data provided for construction 
+
+[OPEN GL Error] {1281}[Invalid Value]glAttachShader(program, fs)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Shader.cpp58
+ERROR: 0:142: 'assign' :  cannot convert from 'const int' to '4-component vector of highp float'
+
+[OPEN GL Error] {1281}[Invalid Value]glAttachShader(program, fs)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Shader.cpp58
+ERROR: 0:142: 'assign' :  cannot convert from 'const int' to '4-component vector of highp float'
+
+[OPEN GL Error] {1281}[Invalid Value]glAttachShader(program, fs)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Shader.cpp58
+ERROR: 0:142: 'assign' :  cannot convert from 'const int' to '4-component vector of highp float'
+
+[OPEN GL Error] {1281}[Invalid Value]glAttachShader(program, fs)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Shader.cpp58
+ERROR: 0:143: 'constructor' : not enough data provided for construction 
+
+[OPEN GL Error] {1281}[Invalid Value]glAttachShader(program, fs)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Shader.cpp58
+ERROR: 0:132: 'viewPosition' : undeclared identifier 
+
+[OPEN GL Error] {1281}[Invalid Value]glAttachShader(program, fs)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Shader.cpp58

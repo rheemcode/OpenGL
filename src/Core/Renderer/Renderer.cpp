@@ -3,9 +3,7 @@
 #include "Renderer.h"
 #include <Renderer/Scene.h>
 
-
-Matrix4x4 Renderer::view;
-Matrix4x4 Renderer::proj;
+RendererData Renderer::renderData;
 
 void Renderer::Init()
 {
@@ -20,46 +18,52 @@ void Renderer::Clear()
 
 void Renderer::BeginScene(const Camera& camera )
 {
-	view = camera.GetViewMatrix();
-	proj = camera.GetProjectionMatrix();
+	renderData.view = camera.GetViewMatrix();
+	renderData.proj = camera.GetProjectionMatrix();
+	
+	Scene::sceneShader->UploadUniformMat4("view", renderData.view);
+	Scene::sceneShader->UploadUniformMat4("proj", renderData.proj);
 }
 
 
 void Renderer::Render(const Primitive& primitive)
 {
-	auto envLight = Scene::GetEnviromentLight();
-	const auto& attribs = primitive.GetVertexAttribs();
-	attribs.Bind();
-	const auto& shader = primitive.GetShader();
-	shader.UploadUniformMat4("view", view);
-	shader.UploadUniformMat4("proj", proj);
-	shader.UploadUniformMat4("model", primitive.GetTransform());
-	shader.UploadUniformVec3("LightPosition", envLight.lightPos);
-	shader.UploadUniformVec4("AmbientColor", envLight.ambientColor);
-	shader.UploadUniformVec4("LightColor", envLight.lightColor);
-	shader.UploadUniformFloat("AmbientStrength", envLight.ambientStrength);
-	shader.UploadUniformFloat("Shininess", .45f);
-	shader.UploadUniformVec3("viewPosition", envLight.lightPos);
-	RenderCommand::DrawIndexed(attribs);
+	//auto envLight = Scene::GetEnviromentLight();
+	//const auto& attribs = primitive.GetVertexAttribs();
+	//attribs.Bind();
+	//const auto& shader = primitive.GetShader();
+	//shader.UploadUniformMat4("view", view);
+	//shader.UploadUniformMat4("proj", proj);
+	//shader.UploadUniformMat4("model", primitive.GetTransform());
+
+	//shader.UploadUniformVec3("LightPosition", envLight.lightPos);
+	//shader.UploadUniformVec4("AmbientColor", envLight.ambientColor);
+	//shader.UploadUniformVec4("LightColor", envLight.lightColor);
+	//shader.UploadUniformFloat("AmbientStrength", envLight.ambientStrength);
+	//shader.UploadUniformFloat("Shininess", .45f);
+	//shader.UploadUniformVec3("ViewPosition", envLight.lightPos);
+	//RenderCommand::DrawIndexed(attribs);
 
 	
 }
 
 void Renderer::Render(const std::unique_ptr<Primitive>& primitive)
 {
-	auto envLight = Scene::GetEnviromentLight();
+	const auto& envLight = Scene::GetEnviromentLight();
+	const auto& light = Scene::GetLight();
+
 	const auto& attribs = primitive->GetVertexAttribs();
 	attribs.Bind();
-	const auto& shader = primitive->GetShader();
-	shader.UploadUniformMat4("view", view);
-	shader.UploadUniformMat4("proj", proj);
+	const auto& shader = *Scene::sceneShader;
+
 	shader.UploadUniformMat4("model", primitive->GetTransform());
-	shader.UploadUniformVec3("LightPosition", envLight.lightPos);
-	shader.UploadUniformVec4("AmbientColor", envLight.ambientColor);
-	shader.UploadUniformVec4("LightColor", envLight.lightColor);
-	shader.UploadUniformFloat("AmbientStrength", envLight.ambientStrength);
-	shader.UploadUniformFloat("Shininess", .45f);
-	shader.UploadUniformVec3("ViewPosition", envLight.lightPos);
+	shader.UploadUniformVec4("AmbientColor", envLight.Ambient);
+	shader.UploadUniformFloat("AmbientStrength", envLight.Energy);
+	//material
+	shader.UploadUniformFloat("Shininess", 1.0f);
+	shader.UploadUniformFloat("SpecularStrength", light.SpecularStrength);
+	shader.UploadUniformVec4("ViewPosition", { renderData.view[3].x, renderData.view[3].y, renderData.view[3].z, 1.0f });
+
 	RenderCommand::DrawIndexed(attribs);
 	
 }

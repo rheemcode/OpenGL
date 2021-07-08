@@ -6,14 +6,40 @@
 
 Cube::Cube()
 {
-
-
 	m_Va = std::make_unique<VertexArray>();
 	GenVertices();
-	m_Shader = std::make_unique<Shader>("src/Shaders/lighting.shader");
-	//Quaternion::RotateY(Math::Deg2Rad(14.0f));
-	//transform = Matrix4x4::Translate(transform, Vector3(10.f, 0, 0.f));
-	transform = Matrix4x4::Rotate(transform, Vector3(0,0, 1.f), Math::Deg2Rad(35.f));
+//	m_Shader = std::make_unique<Shader>("src/Shaders/lighting.shader");
+	transform = Matrix4x4::Translate(transform, Vector3(0, 0, -15.f));
+}
+
+
+Plane::Plane()
+{
+	m_Va = std::make_unique<VertexArray>();
+
+	float vertexAttribs[] =
+	{
+		-0.5f, 0.f,  0.5f,  0.f, 1.f, 0.f, 0.f, 0.f,
+		0.5f,  0.f,  0.5f,  0.f, 1.f, 0.f, 1.f, 0.f,
+		0.5f, 0.f,  -0.5f,  0.f, 1.f, 0.f, 1.f, 1.f,
+		-0.5f, 0.f, -0.5f, 0.f, 1.f, 0.f, 0.f, 1.f
+	};
+
+	uint32_t indices[] = { 0, 1, 3, 3, 2, 1 };
+
+	m_Va->SetIndices(indices, 6);
+	m_Vb = std::make_unique<VertexBuffer>(vertexAttribs, sizeof(vertexAttribs));
+	m_Vb->SetLayout(
+		{
+			{GL_FLOAT, 0, 3, GL_FALSE},
+			{GL_FLOAT, 1, 3, GL_FALSE},
+			{GL_FLOAT, 2, 2, GL_FALSE}
+		});
+	m_Va->AddBuffer(*m_Vb);
+
+	transform = Matrix4x4::Scale(transform, 10.f);
+
+
 }
 
 const Matrix4x4& Cube::GetTransform() const 
@@ -31,17 +57,43 @@ const Shader& Cube::GetShader() const
 	return *m_Shader;
 }
 
+const Matrix4x4& Plane::GetTransform() const 
+{
+	return transform;
+}
+
+const VertexArray& Plane::GetVertexAttribs() const
+{
+	return *m_Va;
+}
+
+const Shader& Plane::GetShader() const
+{
+	return *m_Shader;
+}
+
 static float t = 0;
+static Quaternion rot;
 void Cube::OnUpdate()
 {
-	t += 0.001;
-	if (t == 100)
+	t += 0.1;
+	if (t >= 100)
 	{
 		t = 0;
 	}
-	transform = Matrix4x4::Rotate(transform, Vector3(1.f, 1.f, 1.f), Math::Deg2Rad(t));
+	rot = Quaternion::RotateY(Math::Deg2Rad(t + 0.012f));
+	//rot = rot * Quaternion::RotateZ(Math::Deg2Rad(t));
+	// = rot * Quaternion::RotateX(-Math::Deg2Rad(t));
+	//transform = Matrix4x4::Rotate(transform, rot);
+
+	//transform = Matrix4x4::Rotate(transform, Quaternion::Roll(Math::Deg2Rad(t)));
 }
 
+
+void Plane::OnUpdate()
+{
+
+}
 
 void Cube::GenVertices()
 {
@@ -111,7 +163,7 @@ void Cube::GenVertices()
 		indices.push_back(i);
 	
 
-	m_Vb = std::make_unique<VertexBuffer>(attrib.data(), sizeof(attrib) * sizeof(VertexAttrib));
+	m_Vb = std::make_unique<VertexBuffer>(attrib.data(), attrib.size() * sizeof(VertexAttrib));
 	m_Vb->SetLayout
 	({ {GL_FLOAT, 0,  3, 0},
 		{GL_FLOAT, 1, 3, 0},
