@@ -7,6 +7,7 @@
 #include "Input/KeyCode.h"
 #include "Math/SimpleVec.h"
 #include <Events/KeyEvent.h>
+#include <functional>
 
 typedef int WindowID;
 constexpr int MAIN_WINDOW_ID = 1;
@@ -100,9 +101,13 @@ struct WindowData
 	bool resizeable;
 };
 
+using EventCallback = std::function<void(const Event&)>;
+
 class Window
 {
 	WindowData windowData;	
+	EventCallback callback;
+
 public:
 	int Init();
 
@@ -120,15 +125,23 @@ public:
 	void ReleaseCurrent() { windowData.context.ReleaseCurrent(); }
 
 	MouseMode GetMouseMode(MouseMode p_mouseMode) { return windowData.mouseMode;  }
+	
 	int GetWidth() const { return windowData.width;  }
 	void SetWidth(int width) { windowData.width = width; }
 	void SetHeight(int height) { windowData.height = height; }
 	int GetHeight() const { return windowData.height; }
+	
 	float GetAspectRatio() const { return windowData.width / windowData.height; }
 	void WindowFocused();
+	
 	bool IsFocused() { return windowData.hasFocus; }
 	void SwapBuffers();
 
+	void BindEventCallback(EventCallback p_callback);
+	void EventDispatcher(const Event& event);
+
+	// Callbacks
+	void WindowResized(int width, int height);
 	Window();
 	~Window();
 
@@ -141,13 +154,15 @@ class Display
 	MSG m_msg = { 0 };
 
 	double oldMouseX, oldMouseY;
+	Point2 mouseCenter;
+
 	bool isShift, isControl, isAlt;
 	bool frameAction;
 	MouseMode m_mouseMode = MouseMode::MOUSE_MODE_VISIBLE;
 	CursorShape m_cursorShape = CursorShape::CURSOR_ARROW;
-	KeyPressedEvent pEventBuffer[512];
-	KeyReleasedEvent rEventBuffer[512];
-	int pEventPos, rEventPos;
+	KeyEvent keyEventBuffer[512];
+	
+	int keyEventPos, rEventPos;
 	HCURSOR cursors[CursorShape::CURSOR_MAX] = { nullptr };
 	HCURSOR hCursor;
 
@@ -157,6 +172,7 @@ class Display
 	bool oldMouseInvalid;
 	bool mouseOutside;
 	bool useRawInput;
+
 	WNDCLASSEXW wc;
 	uint8_t m_windowCount = -1;
 	Display(HINSTANCE p_hInstance, WindowFlags p_flags, WindowMode p_mainWindowMode, Size2 p_windowSize);
@@ -191,6 +207,7 @@ public:
 	Size2 GetWindowSize(WindowID windowID);
 	int GetKeyBoardLayouts();
 	void SetKeyBoardLayout(int p_index);
+	void ProcessKeyEvents();
 	void UseVysnc(bool use) 
 	{ 
 		for (auto window : m_Windows)

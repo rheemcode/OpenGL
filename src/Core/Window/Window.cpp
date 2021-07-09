@@ -2,15 +2,15 @@
 #include <cassert>
 #include <string>
 #include "Input/Input.h"
+#include <functional>
 #include <windowsx.h>
 #include <Events/MouseEvent.h>
 
-Window::Window()
-{
-}
+
 
 int Window::Init()
 {
+	
 	if (windowData.context.Init(windowData.hwnd))
 	{
 		MessageBoxW(nullptr, L"FAILED", L"FAILEd", 1);
@@ -31,6 +31,26 @@ void Window::SwapBuffers()
 {
 	windowData.context.SwapBuffer();
 }
+
+void Window::BindEventCallback(EventCallback p_eventCallback)
+{
+	callback = p_eventCallback;
+}
+
+void Window::EventDispatcher(const Event& event)
+{
+	callback(event);
+}
+
+void Window::WindowResized(int width, int height)
+{
+	glViewport(0, 0, width, height);
+}
+
+Window::Window()
+{
+}
+
 
 Window::~Window()
 {
@@ -183,29 +203,60 @@ LRESULT Display::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam)
 			int dx, dy;
 			if (raw->header.dwType == RIM_TYPEMOUSE)
 			{
+				MouseMovedEvent mm;
+
+				Point2 c(m_Windows[windowID]->GetWidth() / 2, m_Windows[windowID]->GetHeight() / 2, 0);
+				
+				POINT pos = { int(c.x), (int)c.y };
+				ClientToScreen(m_Windows[windowID]->GetNativeWindow(), &pos);
+				SetCursorPos(pos.x, pos.y);
+
+				mm.SetPosition(pos.x, pos.y);
+				Input::GetSingleton()->SetMousePos(pos.x, pos.y);
+				mm.SetSpeed(0, 0);
 				if (raw->data.mouse.usFlags & MOUSE_MOVE_ABSOLUTE)
 				{
-					dx = raw->data.mouse.lLastX - oldMouseX;
-					dy = raw->data.mouse.lLastY - oldMouseY;
+					int nScreenWidth = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+					int nScreenHeight = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+					int nScreenLeft = GetSystemMetrics(SM_XVIRTUALSCREEN);
+					int nScreenTop = GetSystemMetrics(SM_YVIRTUALSCREEN);
+
+					Point2 absPos((double(raw->data.mouse.lLastX) - 65536.0 / (nScreenWidth))* nScreenWidth / 65536.0 + nScreenLeft,
+						(double(raw->data.mouse.lLastY) - 65536.0 / (nScreenHeight))* nScreenHeight / 65536.0 + nScreenTop);
+
+					POINT coords;
+					coords.x = absPos.x;
+					coords.y = absPos.y;
+
+					ScreenToClient(m_Windows[windowID]->GetNativeWindow(), &coords);
+
+					dx = coords.x - oldMouseX;
+					dy = coords.y - oldMouseY;
+					mm.SetRelative(dx, dy);
+					oldMouseX = coords.x;
+					oldMouseY = coords.y;
+
+
 				}
 				else
 				{
 					dx = raw->data.mouse.lLastX;
 					dy = raw->data.mouse.lLastY;
+					mm.SetRelative(dx, dy);
 				}
 			}
-
-			oldMouseX += dx;
-			oldMouseY += dy;
+			delete[] lpb;
 			break;
 		}
 		case WM_MOUSEMOVE:
 		{
 			if (m_mouseMode == MouseMode::MOUSE_MODE_CAPTURED && useRawInput)
 				break;
-
+			
 			const int x = GET_X_LPARAM(lparam);
 			const int y = GET_Y_LPARAM(lparam);
+			MouseMovedEvent mm(x, y);
+			Input::GetSingleton()->SetMousePos(x, y);
 			if (mouseOutside)
 			{
 				CursorShape c = m_cursorShape;
@@ -227,19 +278,27 @@ LRESULT Display::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam)
 				break;
 
 
-			if (m_mouseMode == MouseMode::MOUSE_MODE_CAPTURED)
+			if (m_mouseMode == MOUSE_MODE_CAPTURED)
 			{
 				Point2 c(m_Windows[windowID]->GetWidth() / 2, m_Windows[windowID]->GetHeight() / 2, 0);
 				oldMouseX = c.x;
 				oldMouseY = c.y;
 
+				if (Input::GetSingleton()->GetMousePosition() == c)
+				{
+					mouseCenter = c;
+					return 0;
+				}
 
+				Point2 newCenter = Input::GetSingleton()->GetMousePosition();
+				mouseCenter = newCenter;
 				POINT pos = { (int)c.x, (int)c.y };
 				ClientToScreen(m_Windows[windowID]->GetNativeWindow(), &pos);
 				SetCursorPos(pos.x, pos.y);
 			}
 
 			Input::GetSingleton()->SetMousePos(Point2(x, y));
+			
 
 			if (oldMouseInvalid)
 			{
@@ -250,7 +309,8 @@ LRESULT Display::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam)
 
 			const int dx = x - oldMouseX;
 			const int dy = y - oldMouseY;
-
+			mm.SetRelative(dx, dy);
+			m_Windows[windowID]->EventDispatcher(mm);
 			oldMouseX = x;
 			oldMouseY = y;
 
@@ -277,55 +337,97 @@ LRESULT Display::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam)
 				case WM_LBUTTONDOWN:
 				{
 					MouseButtonPressedEvent mb(1);
+					m_Windows[windowID]->EventDispatcher(mb);
 				} break;
-				case WM_LBUTTONUP: {
+				case WM_LBUTTONUP: 
+				{
 					MouseButtonReleasedEvent mb(1);
+					m_Windows[windowID]->EventDispatcher(mb);
 				} break;
-				case WM_MBUTTONDOWN: {
+				case WM_MBUTTONDOWN: 
+				{
 					MouseButtonPressedEvent mb(3);
+					m_Windows[windowID]->EventDispatcher(mb);
 				} break;
-				case WM_MBUTTONUP: {
+				case WM_MBUTTONUP: 
+				{
 					MouseButtonReleasedEvent mb(3);
+					m_Windows[windowID]->EventDispatcher(mb);
 				} break;
-				case WM_RBUTTONDOWN: {
+				case WM_RBUTTONDOWN: 
+				{
 					MouseButtonPressedEvent mb(2);
+					m_Windows[windowID]->EventDispatcher(mb);
 				} break;
-				case WM_RBUTTONUP: {
+				case WM_RBUTTONUP: 
+				{
 					MouseButtonReleasedEvent mb(2);
+					m_Windows[windowID]->EventDispatcher(mb);
 				} break;
-				case WM_LBUTTONDBLCLK: {
+				case WM_LBUTTONDBLCLK: 
+				{
 					MouseButtonPressedEvent mb(1);
+					m_Windows[windowID]->EventDispatcher(mb);
 				} break;
-				case WM_RBUTTONDBLCLK: {
+				case WM_RBUTTONDBLCLK: 
+				{
 					MouseButtonPressedEvent mb(2);
+					m_Windows[windowID]->EventDispatcher(mb);
 				} break;
-				case WM_MBUTTONDBLCLK: {
+				case WM_MBUTTONDBLCLK: 
+				{
 					MouseButtonPressedEvent mb(3);
+					m_Windows[windowID]->EventDispatcher(mb);
 				} break;
-				case WM_MOUSEWHEEL: {
+				case WM_MOUSEWHEEL: 
+				{
 					MouseScrolledEvent mb(0, (short)HIWORD(wParam) / (double)WHEEL_DELTA);
-
+					m_Windows[windowID]->EventDispatcher(mb);
 				} break;
-				case WM_MOUSEHWHEEL: {
+				case WM_MOUSEHWHEEL: 
+				{
 					MouseScrolledEvent mb(-(short)HIWORD(wParam) / (double)WHEEL_DELTA, 0.f);
+					m_Windows[windowID]->EventDispatcher(mb);
 				} break;
-				case WM_XBUTTONDOWN: {
+				case WM_XBUTTONDOWN: 
+				{
 					if (HIWORD(wParam) == XBUTTON1)
+					{
 						MouseButtonPressedEvent mb(Mouse::BUTTON_4);
+						m_Windows[windowID]->EventDispatcher(mb);
+					}
 					else
+					{
 						MouseButtonPressedEvent mb(Mouse::BUTTON_5);
+						m_Windows[windowID]->EventDispatcher(mb);
+					}
+						
 				} break;
-				case WM_XBUTTONUP: {
+				case WM_XBUTTONUP: 
+				{
 					if (HIWORD(wParam) == XBUTTON1)
+					{
 						MouseButtonReleasedEvent mb(Mouse::BUTTON_4);
+						m_Windows[windowID]->EventDispatcher(mb);
+					}
 					else
+					{
 						MouseButtonReleasedEvent mb(Mouse::BUTTON_5);
+						m_Windows[windowID]->EventDispatcher(mb);
+					}
 				} break;
-				case WM_XBUTTONDBLCLK: {
+				case WM_XBUTTONDBLCLK: 
+				{
 					if (HIWORD(wParam) == XBUTTON1)
+					{
 						MouseButtonPressedEvent mb(Mouse::BUTTON_4);
+						m_Windows[windowID]->EventDispatcher(mb);
+					}
 					else
+					{
 						MouseButtonPressedEvent mb(Mouse::BUTTON_5);
+						m_Windows[windowID]->EventDispatcher(mb);
+					}
 				} break;
 				default:
 				{
@@ -441,6 +543,7 @@ LRESULT Display::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam)
 				{
 					m_Windows[windowID]->SetWidth(windowW);
 					m_Windows[windowID]->SetHeight(windowH);
+					m_Windows[windowID]->WindowResized(windowW, windowH);
 				}
 			}
 		
@@ -511,37 +614,28 @@ LRESULT Display::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam)
 			if (wParam == VK_MENU)
 				isAlt = (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN);
 
+			[[fallthrough]];
 		}
 		case WM_CHAR:
 		{
 			if (uMsg == WM_SYSKEYDOWN || uMsg == WM_KEYDOWN)
 			{
-				KeyPressedEvent ke;
+				KeyEvent ke;
 				ke.shift = (wParam != VK_SHIFT) ? isShift : false;
 				ke.alt = (!(wParam == VK_MENU && (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN))) ? isAlt : false;
 				ke.control = (wParam != VK_CONTROL) ? isControl : false;
-				ke.action = WM_KEYDOWN;
-				pEventBuffer[pEventPos++] = ke;
+				ke.action = uMsg;
+
+				if (uMsg == WM_SYSKEYDOWN || uMsg == WM_KEYDOWN)
+					ke.action = WM_KEYDOWN;
+				if (uMsg == WM_SYSKEYUP || uMsg == WM_KEYUP)
+					ke.action = WM_KEYUP;
+				ke.wparam = wParam;
+				ke.lParam = lparam;
+				keyEventBuffer[keyEventPos++] = ke;
+				m_Windows[windowID]->EventDispatcher(ke);
 			}
-			if (uMsg == WM_SYSKEYUP || uMsg == WM_KEYUP)
-			{
-				KeyReleasedEvent ke;
-				ke.shift = (wParam != VK_SHIFT) ? isShift : false;
-				ke.alt = (!(wParam == VK_MENU && (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN))) ? isAlt : false;
-				ke.control = (wParam != VK_CONTROL) ? isControl : false;
-				ke.action = WM_KEYUP;
-				rEventBuffer[rEventPos++] = ke;
-			}
-			if (uMsg == WM_SYSCHAR || uMsg == WM_CHAR)
-			{
-				KeyReleasedEvent ke;
-				ke.shift = (wParam != VK_SHIFT) ? isShift : false;
-				ke.alt = (!(wParam == VK_MENU && (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN))) ? isAlt : false;
-				ke.control = (wParam != VK_CONTROL) ? isControl : false;
-				ke.action = WM_CHAR;
-				rEventBuffer[rEventPos++] = ke;
-			}
-		}
+		} break;
 
 		case WM_SETCURSOR:
 		{
@@ -905,6 +999,8 @@ void Display::ProcessEvents()
 		TranslateMessage(&m_msg);
 		DispatchMessageW(&m_msg);
 	}
+
+	ProcessKeyEvents();
 }
 
 int Display::GetKeyBoardLayouts()
@@ -1089,6 +1185,49 @@ void Display::SetKeyBoardLayout(int p_index)
 	free(layouts);
 }
 
+void Display::ProcessKeyEvents()
+{
+	for (int i = 0; i < keyEventPos; i++)
+	{
+		KeyEvent ke = keyEventBuffer[i];
+		switch (ke.action) {
+			case WM_CHAR: {
+				static char32_t prev_wc = 0;
+				char32_t unicode = keyEventBuffer[i].wparam;
+				if ((unicode & 0xfffffc00) == 0xd800) {
+					break; // Skip surrogate.
+				}
+				else if ((unicode & 0xfffffc00) == 0xdc00) {
+					if (prev_wc == 0) {
+						break; // Skip invalid surrogate.
+					}
+					unicode = (prev_wc << 10UL) + unicode - ((0xd800 << 10UL) + 0xdc00 - 0x10000);
+					prev_wc = 0;
+				}
+				else {
+					prev_wc = 0;
+				}
+
+				ke.SetKeyPressed(true);
+				ke.SetKeyCode(Input::GetKeySym(ke.wparam));
+
+				m_Windows[focusedWindow]->EventDispatcher(ke);
+
+			} break;
+			case WM_KEYDOWN:
+			case WM_KEYUP:
+			{
+				ke.SetKeyPressed(ke.action == WM_KEYDOWN);
+				ke.SetKeyCode(Input::GetKeySym(ke.wparam));
+
+				m_Windows[focusedWindow]->EventDispatcher(ke);
+			} break;
+		}
+	}
+
+	keyEventPos = 0;
+}
+
 void Display::ShowWindow(WindowID windowID)
 {
 	if (!::ShowWindow(m_Windows[windowID]->GetNativeWindow(), m_Windows[windowID]->GetWindowData().canFocus ? SW_SHOW : SW_SHOWNOACTIVATE))
@@ -1242,6 +1381,8 @@ Display::Display(HINSTANCE p_hInstance, WindowFlags p_flags, WindowMode p_mainWi
 		MessageBoxA(nullptr, "Failed To Register The Window Class.", "ERROR", MB_OK | MB_ICONEXCLAMATION);
 		return;
 	}
+
+	Input::Init();
 
 	m_mouseMode = MOUSE_MODE_VISIBLE;
 	mouseOutside = true;

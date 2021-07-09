@@ -83,6 +83,7 @@ public:
    //void Render(const Primitive& primitive, const Light& light);
    static void Render(const Primitive& primitive);
    static void Render(const std::unique_ptr<Primitive>& primitive);
+   void SetViewport(float x, float y, float width, float height);
    static void EndScene();
 
 };

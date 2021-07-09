@@ -31,7 +31,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PWSTR pCmdLine,
 
 	Scene* scene = new Scene();
 
-
 	Renderer2D renderer2D;
 
 

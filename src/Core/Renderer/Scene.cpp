@@ -1,4 +1,7 @@
 #include "Scene.h"
+#include <functional>
+#include <Window/Window.h>
+#include "Events/MouseEvent.h"
 
 Scene::EnviromentLight Scene::m_EnviromentLight;
 std::unique_ptr<Shader> Scene::sceneShader;
@@ -55,6 +58,12 @@ void Scene::AddObject(std::unique_ptr<Primitive>& primitive)
 
 void Scene::OnEvent(const Event& event)
 {
+	if (event.GetEventType() == EventType::MouseMoved)
+	{
+		const MouseMovedEvent& mm = (MouseMovedEvent&)event;
+		sceneCamera->Rotate(Math::Deg2Rad(mm.GetRelativeX()), { 0, 1, 0 });
+		sceneCamera->Rotate(Math::Deg2Rad(mm.GetRelativeY()), { 1, 0, 0 });
+	}
 }
 
 void Scene::InitLightUniforms()
@@ -76,6 +85,9 @@ void Scene::InitLightUniforms()
 
 Scene::Scene()
 {
+
+	Display* display = Display::GetSingleton();
+	display->m_Windows[0]->BindEventCallback(std::bind(&Scene::OnEvent, this, std::placeholders::_1));
 
 	CameraSettings cameraSettings;
 

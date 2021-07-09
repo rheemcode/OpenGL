@@ -7,12 +7,26 @@
 	class MouseMovedEvent : public Event
 	{
 	public: 
-		MouseMovedEvent(const float x, const float y)
+		MouseMovedEvent(const float x = 0, const float y = 0)
 			: m_MouseX(x), m_MouseY(y) {}
 
 		float GetX() const { return m_MouseX;  }
 		float GetY() const { return m_MouseY;  }
 
+		void SetPosition(float p_x, float p_y) { m_MouseX = p_x; m_MouseY = p_y; }
+		void SetX(float p_val) { m_MouseX = p_val; }
+		void SetY(float p_val) { m_MouseY = p_val;  }
+
+		
+		void SetSpeed(float p_speedX, float p_speedY) { speedX = p_speedX; }
+		
+		void SetRelative(float p_x, float p_y)
+		{
+			relativeX = p_x;
+			relativeY = p_y;
+		}
+		float GetRelativeX() const { return relativeX; }
+		float GetRelativeY() const { return relativeY; }
 
 		std::string ToString() const override
 		{
@@ -25,9 +39,9 @@
 		EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
 
 	private:
-		float m_MouseX, m_MouseY;
+		float m_MouseX, m_MouseY, speedX, speedY,
+			relativeX, relativeY;
 	};
-
 
 	class MouseScrolledEvent : public Event
 	{

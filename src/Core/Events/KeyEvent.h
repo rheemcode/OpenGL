@@ -11,17 +11,22 @@ public:
 	bool shift;
 	bool alt;
 	bool control;
+	bool pressed;
 	int action;
 	WPARAM wparam;
 	LPARAM lParam;
 
+	void SetKeyCode(KeyCode p_keycode) { m_KeyCode = p_keycode; }
+	void SetKeyPressed(bool p_pressed) {p_pressed = pressed; }
 	inline KeyCode GetKeyCode() const { return m_KeyCode; }
 
 	EVENT_CLASS_CATEGORY(EventCategoryKeyboard | EventCategoryInput)
-protected:
-	KeyEvent(KeyCode key)
+	EVENT_CLASS_TYPE(KeyEvent)
+
+	KeyEvent(KeyCode key = -1)
 		: m_KeyCode(key) {}
 
+protected:
 	KeyCode m_KeyCode;
 };
 

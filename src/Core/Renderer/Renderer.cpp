@@ -68,6 +68,11 @@ void Renderer::Render(const std::unique_ptr<Primitive>& primitive)
 	
 }
 
+void Renderer::SetViewport(float x, float y, float width, float height)
+{
+	glViewport(x, y, width, height);
+}
+
 void Renderer::EndScene()
 {
 }

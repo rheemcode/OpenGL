@@ -4,6 +4,20 @@
 
 Input* Input::s_Instance;
 Input* Input::GetSingleton() { return s_Instance; }
+
+void Input::Init()
+{
+	if (!s_Instance)
+	{
+		s_Instance = new Input();
+	}
+}
+
+Input::~Input()
+{
+	delete s_Instance;
+}
+
 struct _WinTranslatePair
 {
 	uint32_t keysym;
