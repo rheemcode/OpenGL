@@ -1,13 +1,12 @@
 
 #include "SimpleVec.h"
 #include "Vector3.h"
-SimpleVec3 SimpleVec3::operator =(const SimpleVec4& p_vec)
+SimpleVec3& SimpleVec3::operator =(const SimpleVec4& p_vec)
 {
-	SimpleVec3 res;
-	res.x = p_vec.x;
-	res.y = p_vec.y;
-	res.z = p_vec.z;
-	return res;
+	this->x = p_vec.x;
+	this->y = p_vec.y;
+	this->z = p_vec.z;
+	return *this;
 }
 
 SimpleVec3::SimpleVec3()

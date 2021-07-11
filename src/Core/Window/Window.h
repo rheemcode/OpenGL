@@ -6,6 +6,7 @@
 #include "../Renderer/OpenGLContext.h"
 #include "Input/KeyCode.h"
 #include "Math/SimpleVec.h"
+#include "Math/Vector2.h"
 #include <Events/KeyEvent.h>
 #include <functional>
 
@@ -144,6 +145,18 @@ public:
 	void WindowResized(int width, int height);
 	Window();
 	~Window();
+
+};
+
+class Console
+{
+	static Console* s_Instance;
+	void Init();
+public:
+
+	
+	static void Log(const char* msg);
+	static void Create();
 
 };
 

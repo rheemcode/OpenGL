@@ -175,6 +175,7 @@ namespace detail
 	template <typename T, precision P>
 	GLM_FUNC_QUALIFIER tquat<T, P>::tquat(tvec3<T, P> const & eulerAngle)
 	{
+		
 		tvec3<T, P> c = glm::cos(eulerAngle * T(0.5));
 		tvec3<T, P> s = glm::sin(eulerAngle * T(0.5));
 		

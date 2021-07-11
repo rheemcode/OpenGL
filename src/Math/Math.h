@@ -111,6 +111,8 @@ namespace Math
 	template<typename T>
 	static T Deg2Rad(T p_y) { return static_cast<T>(p_y * (PI / 180.0)); }
 	template<typename T>
+	static T Deg2Rad2(T p_y) { return static_cast<T>(p_y * (PI / 360.0)); }
+	template<typename T>
 	static T Rad2deg(T p_y) { return static_cast<T>(p_y * (180.0 / PI)); }
 	template<typename T>
 	static T Lerp(T p_from, T p_to, T p_t) { return p_from + (p_to - p_from) * p_t; }
@@ -136,11 +138,8 @@ namespace Math
 		 return p_current + Sign(p_target - p_current) * p_maxdelta;
 	 }
 
-
 	static  double Round(double p_val) { return (p_val >= 0) ? Floor(p_val + 0.5) : -Floor(-p_val + 0.5); }
 	static  float Round(float p_val) { return (p_val >= 0.f) ? Floor(p_val + 0.5f) : -Floor(-p_val + 0.5f); }
-
-
 
 	static  float Clamp(float p_val, float p_min, float p_max)
 	 {

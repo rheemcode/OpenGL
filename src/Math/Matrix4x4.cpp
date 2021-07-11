@@ -128,7 +128,7 @@ Matrix4x4::Matrix4x4(const colType& col1, const colType& col2, const colType& co
 	m_data[0] = col1;
 	m_data[1] = col2;
 	m_data[2] = col3;
-	m_data[3] = col3;
+	m_data[3] = col4;
 }
 Matrix4x4& Matrix4x4::operator+=(const Matrix4x4& p_mat)
 {

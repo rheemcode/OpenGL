@@ -4,6 +4,8 @@
 
 Input* Input::s_Instance;
 Input* Input::GetSingleton() { return s_Instance; }
+Point2 Input::mousePos;
+Input::MouseAxis Input::mouseAxis;
 
 void Input::Init()
 {
@@ -221,6 +223,104 @@ static _WinTranslatePair _scancodeToKeycode[] = {
 	{ Key::F16, 0x67 },
 };
 
+Input::MouseDown Input::mouseButtons[3] =
+{
+	{Mouse::LEFT, false},
+	{Mouse::MIDDLE, false},
+	{Mouse::RIGHT, false},
+
+};
+
+Input::KeyPresses Input::keys[88] = {
+	{ Key::ESCAPE, false },
+	{ Key::K1, false },
+	{ Key::K2, false },
+	{ Key::K3, false },
+	{ Key::K4, false },
+	{ Key::K5, false },
+	{ Key::K6, false },
+	{ Key::K7, false },
+	{ Key::K8, false },
+	{ Key::K9, false },
+	{ Key::K0, false },
+	{ Key::MINUS, false },
+	{ Key::EQUAL, false },
+	{ Key::BACKSPACE, false },
+	{ Key::TAB, false },
+	{ Key::Q, false },
+	{ Key::W, false },
+	{ Key::E, false },
+	{ Key::R, false },
+	{ Key::T, false },
+	{ Key::Y, false },
+	{ Key::U, false },
+	{ Key::I, false },
+	{ Key::O, false },
+	{ Key::P, false },
+	{ Key::LEFT_BRACKET,false },
+	{ Key::RIGHT_BRACKET, false },
+	{ Key::ENTER, false },
+	{ Key::LEFT_CONTROL, false },
+	{ Key::A, false },
+	{ Key::S, false },
+	{ Key::D, false },
+	{ Key::F, false },
+	{ Key::G, false },
+	{ Key::H, false },
+	{ Key::J, false },
+	{ Key::K, false },
+	{ Key::L, false },
+	{ Key::SEMICOLON,  false },
+	{ Key::APOSTROPHE, false },
+	{ Key::LEFT_SHIFT, false },
+	{ Key::BACKSLASH,  false },
+	{ Key::Z, false },
+	{ Key::X, false },
+	{ Key::C, false },
+	{ Key::V, false },
+	{ Key::B, false },
+	{ Key::N, false },
+	{ Key::M, false },
+	{ Key::COMMA,  false },
+	{ Key::PERIOD, false },
+	{ Key::SLASH,  false },
+	{ Key::RIGHT_SHIFT, false },
+	{ Key::RIGHT_ALT,false },
+	{ Key::SPACE,false },
+	{ Key::CAPSLOCK, false },
+	{ Key::F1, false },
+	{ Key::F2, false },
+	{ Key::F3, false },
+	{ Key::F4, false },
+	{ Key::F5, false },
+	{ Key::F6, false },
+	{ Key::F7, false },
+	{ Key::F8, false },
+	{ Key::F9, false },
+	{ Key::F10,false },
+	{ Key::NUMLOCK, false },
+	{ Key::SCROLLLOCK,false },
+	{ Key::HOME,false },
+	{ Key::UP,false },
+	{ Key::PAGE_UP, false },
+	{ Key::KP_SUBTRACT, false },
+	{ Key::LEFT, false },
+	{ Key::KP_5, false },
+	{ Key::RIGHT, false },
+	{ Key::KP_ADD, false },
+	{ Key::END, false },
+	{ Key::DOWN, false },
+	{ Key::PAGE_DOWN, false },
+	{ Key::INSERT, false },
+	{ Key::KDELETE, false },
+	{ Key::F11, false },
+	{ Key::F12, false },
+	{ Key::MENU,false },
+	{ Key::F13, false },
+	{ Key::F14, false },
+	{ Key::F15, false },
+	{ Key::F16, false },
+};
 unsigned int Input::GetKeySym(unsigned int p_code) {
 	for (int i = 0; _vkToKeyCode[i].keysym != 0; i++) {
 		if (_vkToKeyCode[i].keycode == p_code) {

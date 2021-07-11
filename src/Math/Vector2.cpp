@@ -151,81 +151,9 @@ Vector2 Vector2::Round(const Vector2& p_vec) {
 }
 
 
-inline Vector2 operator*(float p_scalar, const Vector2& p_vec) {
-	return Vector2(p_vec.x * p_scalar, p_vec.x * p_scalar);
-}
-
-inline Vector2 operator*(double p_scalar, const Vector2& p_vec) {
-	return Vector2(float(p_vec.x * p_scalar), float(p_vec.x * p_scalar));
-}
-
-inline Vector2 operator*(int p_scalar, const Vector2& p_vec) {
-	return Vector2(float(p_vec.x * p_scalar), float(p_vec.x * p_scalar));
-}
-
-inline Vector2 operator*(const Vector2& p_vec, const Vector2& p_vecB)
-{
-	return Vector2(p_vec.x * p_vecB.x, p_vec.y * p_vecB.y);
-}
-
-//inline Vector2 Vector2::operator=(const Vector2& p_vec)
-//{
-//	this->x = p_vec.x;
-//	this->y = p_vec.y;
-//	return *this;
-//}
-
-inline Vector2 Vector2::operator=(const Vector3& p_vec)
+Vector2 Vector2::operator=(const Vector3& p_vec)
 {
 	this->x = p_vec.x;
 	this->y = p_vec.y;
 	return *this;
-}
-
-inline Vector2 Vector2::operator+(const Vector2& p_v) const {
-	return Vector2(x + p_v.x, y + p_v.y);
-}
-
-inline void Vector2::operator+=(const Vector2& p_v) {
-	x += p_v.x;
-	y += p_v.y;
-}
-
-inline Vector2 Vector2::operator-(const Vector2& p_v) const {
-	return Vector2(x - p_v.x, y - p_v.y);
-}
-
-inline void Vector2::operator-=(const Vector2& p_v) {
-	x -= p_v.x;
-	y -= p_v.y;
-}
-
-inline void Vector2::operator*=(const float& rvalue) {
-	x *= rvalue;
-	y *= rvalue;
-}
-
-inline Vector2 Vector2::operator/(const Vector2& p_v1) const {
-	return Vector2(x / p_v1.x, y / p_v1.y);
-}
-
-inline Vector2 Vector2::operator/(const float& rvalue) const {
-	return Vector2(x / rvalue, y / rvalue);
-}
-
-inline void Vector2::operator/=(const float& rvalue) {
-	x /= rvalue;
-	y /= rvalue;
-}
-
-inline Vector2 Vector2::operator-() const {
-	return Vector2(-x, -y);
-}
-
-inline bool Vector2::operator==(const Vector2& p_vec2) const {
-	return x == p_vec2.x && y == p_vec2.y;
-}
-
-inline bool Vector2::operator!=(const Vector2& p_vec2) const {
-	return x != p_vec2.x || y != p_vec2.y;
 }

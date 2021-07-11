@@ -20,7 +20,7 @@ struct SimpleVec3
 		return *this;
 	}
 
-	SimpleVec3 operator +(const SimpleVec3& p_vec) const
+	SimpleVec3& operator +(const SimpleVec3& p_vec) const
 	{
 		SimpleVec3 res = *this;
 		res.x += p_vec.x;
@@ -30,7 +30,8 @@ struct SimpleVec3
 		return res;
 	}
 	
-	SimpleVec3 operator =(const struct SimpleVec4& p_vec);
+	SimpleVec3& operator =(const struct SimpleVec4& p_vec);
+
 	SimpleVec3 operator -(const SimpleVec3& p_vec) const
 	{
 		SimpleVec3 res = *this;
@@ -387,6 +388,4 @@ struct SimpleVec4
 	SimpleVec4(const struct Vector3& p_vec3, const float& p_w = 1);
 };
 
-typedef SimpleVec3 Point2;
-typedef SimpleVec3 Size2;
 typedef SimpleVec4 Vector4;

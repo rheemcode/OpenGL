@@ -3,6 +3,7 @@
 #include "Tests/Object.h"
 #include <Tests/Primitive.h>
 #include <Renderer/Renderer.h>
+#include "Math/Transform.h"
 #include <Events/Event.h>
 
 struct Light
@@ -88,7 +89,7 @@ class Scene
 
 	std::vector<std::unique_ptr<Primitive>> m_Primitives;
 	std::unique_ptr<UniformBuffer> m_LightsBuffer;
-	std::unique_ptr<Camera> sceneCamera;
+	std::unique_ptr<SceneCamera> sceneCamera;
 	static std::unique_ptr<Shader> sceneShader;
 	
 

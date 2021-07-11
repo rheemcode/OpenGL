@@ -1,54 +1,16 @@
 #include "Camera.h"
 #include "Window/Window.h"
-#include <glm/gtc/matrix_transform.hpp>
+#include "Math/Quaternion.h"
+#include "Events/MouseEvent.h"
 
 Camera::Camera(const CameraMode& mode)
 {
 	m_ProjectionMatrix = MakeProjectionMatrix(mode);
-	m_ViewMatrix = Matrix4x4::Translate(m_ViewMatrix, -Vector3(0, 0, -20.f));
 }
 
 Camera::Camera(const CameraSettings& setting)
 {
 	m_ProjectionMatrix = MakeProjectionMatrix(setting);
-	pos = Vector3(0, 0, 40.f);
-	//m_ViewMatrix = Matrix4x4::Translate(m_ViewMatrix, Vector3(0, 0, -40.f));
-}
-
-void Camera::Update()
-{/*
-	if (Window::isQkey)
-	{
-		rot.y += .6f;
-
-
-	}
-	if (Window::isEkey)
-	{
-		rot.y -= .6f;
-
-	}
-	if (Window::isWkey)
-	{
-		pos.x += -Math::Cos(Math::Deg2Rad(rot.y + 90.f)) * .1f;
-		pos.z += -Math::Sin(Math::Deg2Rad(rot.y + 90.f)) * .1f;
-	}
-	if (Window::isSkey)
-	{
-		pos.x += Math::Cos(Math::Deg2Rad(rot.y + 90.f)) * .1f;
-		pos.z += Math::Sin(Math::Deg2Rad(rot.y + 90.f)) * .1f;
-	}
-	if (Window::isAkey)
-	{	
-		pos.x += -Math::Cos(Math::Deg2Rad(rot.y)) * .1f;
-		pos.z += -Math::Sin(Math::Deg2Rad(rot.y)) * .1f;
-	}
-	if (Window::isDkey)
-	{
-		pos.x += Math::Cos(Math::Deg2Rad(rot.y)) * .1f;
-		pos.z += Math::Sin(Math::Deg2Rad(rot.y)) * .1f;
-	}*/
-		Translate(pos);
 }
 
 Matrix4x4 Camera::MakeProjectionMatrix(const CameraMode& projectionMode)
@@ -85,18 +47,42 @@ Matrix4x4 Camera::MakeProjectionMatrix(const CameraSettings& setting)
 	return Matrix4x4(1);
 }
 
-void Camera::Translate(Vector3 position)
+void SceneCamera::OnEvent(const Event& event)
 {
-	pos = position;
-	Matrix4x4 mat;
-	mat = Matrix4x4::Rotate(mat, Vector3( 0.f, 1.f, 0.f ), Math::Deg2Rad(rot.y));
-	m_ViewMatrix = Matrix4x4::Translate(mat, -position);
+	if (event.GetEventType() == EventType::MouseMoved)
+	{
+		auto& mm = (MouseMovedEvent&)event;
+		cameraController.HandleMouseInput(transform, mm.GetX(), mm.GetY());
+	}
 }
 
-void Camera::Rotate(float angle, Vector3 axis)
-{
-	m_ViewMatrix = Matrix4x4::Rotate(m_ViewMatrix,axis, angle);
-}
+//
+//void Camera::Translate(Vector3 p_position)
+//{	
+//	glm::eye
+//	glm::scale()
+//	glm::quat q(rotation.w, rotation.x, rotation.y, rotation.z);
+//	glm::mat4 mat = glm::translate(glm::mat4_cast(q), { p_position.x, p_position.y, p_position.z });
+//	auto forward = q * glm::vec3( 0, 0, -1 );
+//	m_ViewMatrix = Matrix4x4::Translate(Quaternion::ToMatrix4x4(rotation), -p_position);
+//	position = p_position;
+//	position2 = p_position;
+//}
+//
+//void Camera::Rotate(float angle, Vector3 axis)
+//{
+//	rotation = Quaternion::Rotate(rotation, angle, axis);
+//	m_ViewMatrix =  Quaternion::ToMatrix4x4(rotation) * Matrix4x4::CreateTranslation(-position);
+//	eulerAngles = Quaternion::EulerAngles(rotation);
+//
+//}
+//
+//void Camera::SetRotation(const Quaternion& quat)
+//{
+//	rotation = quat;
+//	m_ViewMatrix = Quaternion::ToMatrix4x4(rotation) * Matrix4x4::CreateTranslation(-position);
+//	eulerAngles = Quaternion::EulerAngles(rotation);
+//}
 
 const Matrix4x4& Camera::GetProjectionMatrix() const
 {

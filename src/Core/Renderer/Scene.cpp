@@ -2,6 +2,7 @@
 #include <functional>
 #include <Window/Window.h>
 #include "Events/MouseEvent.h"
+#include "Input/Input.h"
 
 Scene::EnviromentLight Scene::m_EnviromentLight;
 std::unique_ptr<Shader> Scene::sceneShader;
@@ -16,10 +17,7 @@ const Light& Scene::GetLight()
 {
 	return m_Light;
 }
-
 static float t = 0;
-
-
 void Scene::OnUpdate()
 {
 	lightsBufferOffsetData = lightsBufferData;
@@ -29,7 +27,6 @@ void Scene::OnUpdate()
 	lightsBufferOffsetData->Energy = m_Light.Energy;
 	lightsBufferOffsetData->Use = m_Light.Use;
 	
-
 	auto size = sizeof(LightUniformBuffer);
 	m_LightsBuffer->SetData(size, lightsBufferData, 0);
 
@@ -38,6 +35,10 @@ void Scene::OnUpdate()
 	{
 		t = 0;
 	}
+
+	
+	sceneCamera->OnUpdate();
+
 	Renderer::BeginScene(*sceneCamera);
 
 	m_Light.Position = Vector4(m_Light.Position.x, 10.f * Math::Cos(t * 20.f), m_Light.Position.z, 1.f);
@@ -56,13 +57,16 @@ void Scene::AddObject(std::unique_ptr<Primitive>& primitive)
 	m_Primitives.push_back(std::move(primitive));
 }
 
+
+
 void Scene::OnEvent(const Event& event)
 {
-	if (event.GetEventType() == EventType::MouseMoved)
+	sceneCamera->OnEvent(event);
+
+	if (event.GetEventType() == EventType::KeyEvent)
 	{
-		const MouseMovedEvent& mm = (MouseMovedEvent&)event;
-		sceneCamera->Rotate(Math::Deg2Rad(mm.GetRelativeX()), { 0, 1, 0 });
-		sceneCamera->Rotate(Math::Deg2Rad(mm.GetRelativeY()), { 1, 0, 0 });
+		std::stringstream ss;
+		const auto& ke = (KeyEvent&)event;
 	}
 }
 
@@ -98,9 +102,7 @@ Scene::Scene()
 	cameraSettings.ratio = 1.f;
 
 
-	sceneCamera = std::make_unique<Camera>(cameraSettings);
-	sceneCamera->Translate(Vector3(0.f, 3.f, 2.f));
-
+	sceneCamera = std::make_unique<SceneCamera>(cameraSettings);
 	sceneShader = std::make_unique<Shader>("src/Shaders/lighting.shader");
 	sceneShader->Bind();
 	

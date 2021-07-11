@@ -5,15 +5,51 @@
 #include <functional>
 #include <windowsx.h>
 #include <Events/MouseEvent.h>
+#include "Math/Vector2.h"
+
+Console* Console::s_Instance;
+
+void Console::Create()
+{
+	if (!s_Instance)
+	{
+		s_Instance = new Console();
+		s_Instance->Init();
+	}
+}
 
 
+void Console::Init()
+{
+	CONSOLE_SCREEN_BUFFER_INFO coninfo;
+	AllocConsole();
+	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &coninfo);
+
+	coninfo.dwSize.Y = 500;
+
+	WORD current_bg = coninfo.wAttributes & (BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_INTENSITY);
+
+	uint32_t basecol;
+
+	basecol = FOREGROUND_GREEN;
+	basecol |= current_bg;
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), basecol | FOREGROUND_INTENSITY);
+	SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), coninfo.dwSize);
+	SetConsoleTitle(L"OpenGL Debug");
+}
+
+
+void Console::Log(const char* msg)
+{
+	WriteConsoleA(GetStdHandle(STD_OUTPUT_HANDLE), msg, strlen(msg), nullptr, NULL);
+}
 
 int Window::Init()
 {
 	
 	if (windowData.context.Init(windowData.hwnd))
 	{
-		MessageBoxW(nullptr, L"FAILED", L"FAILEd", 1);
+		MessageBoxW(nullptr, L"Context Creation Failed", L"Error", 1);
 	}
 	glViewport(0, 0, windowData.width, windowData.height);
 	glClearColor(.1f, .1f, .1f, 1);
@@ -205,7 +241,7 @@ LRESULT Display::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam)
 			{
 				MouseMovedEvent mm;
 
-				Point2 c(m_Windows[windowID]->GetWidth() / 2, m_Windows[windowID]->GetHeight() / 2, 0);
+				Point2 c(m_Windows[windowID]->GetWidth() / 2, m_Windows[windowID]->GetHeight() / 2);
 				
 				POINT pos = { int(c.x), (int)c.y };
 				ClientToScreen(m_Windows[windowID]->GetNativeWindow(), &pos);
@@ -214,6 +250,7 @@ LRESULT Display::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam)
 				mm.SetPosition(pos.x, pos.y);
 				Input::GetSingleton()->SetMousePos(pos.x, pos.y);
 				mm.SetSpeed(0, 0);
+
 				if (raw->data.mouse.usFlags & MOUSE_MOVE_ABSOLUTE)
 				{
 					int nScreenWidth = GetSystemMetrics(SM_CXVIRTUALSCREEN);
@@ -232,6 +269,10 @@ LRESULT Display::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam)
 
 					dx = coords.x - oldMouseX;
 					dy = coords.y - oldMouseY;
+
+					Input::SetAxis(Input::AXIS_X, dx);
+					Input::SetAxis(Input::AXIS_Y, dy);
+
 					mm.SetRelative(dx, dy);
 					oldMouseX = coords.x;
 					oldMouseY = coords.y;
@@ -243,6 +284,8 @@ LRESULT Display::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam)
 					dx = raw->data.mouse.lLastX;
 					dy = raw->data.mouse.lLastY;
 					mm.SetRelative(dx, dy);
+					Input::SetAxis(Input::AXIS_X, dx);
+					Input::SetAxis(Input::AXIS_Y, dy);
 				}
 			}
 			delete[] lpb;
@@ -280,7 +323,7 @@ LRESULT Display::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam)
 
 			if (m_mouseMode == MOUSE_MODE_CAPTURED)
 			{
-				Point2 c(m_Windows[windowID]->GetWidth() / 2, m_Windows[windowID]->GetHeight() / 2, 0);
+				Point2 c(m_Windows[windowID]->GetWidth() / 2, m_Windows[windowID]->GetHeight() / 2);
 				oldMouseX = c.x;
 				oldMouseY = c.y;
 
@@ -309,6 +352,8 @@ LRESULT Display::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam)
 
 			const int dx = x - oldMouseX;
 			const int dy = y - oldMouseY;
+			Input::SetAxis(Input::AXIS_X, dx);
+			Input::SetAxis(Input::AXIS_Y, dy);
 			mm.SetRelative(dx, dy);
 			m_Windows[windowID]->EventDispatcher(mm);
 			oldMouseX = x;
@@ -337,36 +382,43 @@ LRESULT Display::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam)
 				case WM_LBUTTONDOWN:
 				{
 					MouseButtonPressedEvent mb(1);
+					Input::SetMouseDown(Mouse::LEFT, true);
 					m_Windows[windowID]->EventDispatcher(mb);
 				} break;
 				case WM_LBUTTONUP: 
 				{
 					MouseButtonReleasedEvent mb(1);
+					Input::SetMouseDown(Mouse::LEFT, false);
 					m_Windows[windowID]->EventDispatcher(mb);
 				} break;
 				case WM_MBUTTONDOWN: 
 				{
 					MouseButtonPressedEvent mb(3);
+					Input::SetMouseDown(Mouse::MIDDLE, true);
 					m_Windows[windowID]->EventDispatcher(mb);
 				} break;
 				case WM_MBUTTONUP: 
 				{
 					MouseButtonReleasedEvent mb(3);
+					Input::SetMouseDown(Mouse::MIDDLE, false);
 					m_Windows[windowID]->EventDispatcher(mb);
 				} break;
 				case WM_RBUTTONDOWN: 
 				{
 					MouseButtonPressedEvent mb(2);
+					Input::SetMouseDown(Mouse::RIGHT, true);
 					m_Windows[windowID]->EventDispatcher(mb);
 				} break;
 				case WM_RBUTTONUP: 
 				{
 					MouseButtonReleasedEvent mb(2);
+					Input::SetMouseDown(Mouse::RIGHT, false);
 					m_Windows[windowID]->EventDispatcher(mb);
 				} break;
 				case WM_LBUTTONDBLCLK: 
 				{
 					MouseButtonPressedEvent mb(1);
+					//Input::SetMouseDown(Mouse::LEFT, true);
 					m_Windows[windowID]->EventDispatcher(mb);
 				} break;
 				case WM_RBUTTONDBLCLK: 
@@ -511,8 +563,6 @@ LRESULT Display::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam)
 			break;
 		}
 
-
-
 		case WM_MOVE:
 		{
 			if (m_mouseMode == MOUSE_MODE_CAPTURED)
@@ -606,6 +656,7 @@ LRESULT Display::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam)
 		case WM_SYSKEYUP:
 		case WM_KEYUP:
 		case WM_KEYDOWN: 
+		case WM_CHAR:
 		{
 			if (wParam == VK_SHIFT)
 				isShift = (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN);
@@ -613,28 +664,24 @@ LRESULT Display::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam)
 				isControl = (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN);
 			if (wParam == VK_MENU)
 				isAlt = (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN);
-
-			[[fallthrough]];
-		}
-		case WM_CHAR:
-		{
+				
+			KeyEvent ke;
+			ke.shift = (wParam != VK_SHIFT) ? isShift : false;
+			ke.alt = (!(wParam == VK_MENU && (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN))) ? isAlt : false;
+			ke.control = (wParam != VK_CONTROL) ? isControl : false;
+			ke.action = uMsg;
 			if (uMsg == WM_SYSKEYDOWN || uMsg == WM_KEYDOWN)
 			{
-				KeyEvent ke;
-				ke.shift = (wParam != VK_SHIFT) ? isShift : false;
-				ke.alt = (!(wParam == VK_MENU && (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN))) ? isAlt : false;
-				ke.control = (wParam != VK_CONTROL) ? isControl : false;
-				ke.action = uMsg;
-
-				if (uMsg == WM_SYSKEYDOWN || uMsg == WM_KEYDOWN)
-					ke.action = WM_KEYDOWN;
-				if (uMsg == WM_SYSKEYUP || uMsg == WM_KEYUP)
-					ke.action = WM_KEYUP;
-				ke.wparam = wParam;
-				ke.lParam = lparam;
-				keyEventBuffer[keyEventPos++] = ke;
-				m_Windows[windowID]->EventDispatcher(ke);
+				ke.action = WM_KEYDOWN;
 			}
+			if (uMsg == WM_SYSKEYUP || uMsg == WM_KEYUP)
+			{
+				ke.action = WM_KEYUP;
+			}
+			ke.wparam = wParam;
+			ke.lParam = lparam;
+			keyEventBuffer[keyEventPos++] = ke;
+			
 		} break;
 
 		case WM_SETCURSOR:
@@ -845,7 +892,7 @@ Point2 Display::GetCursorPosition(WindowID windowID)
 	{
 
 		ScreenToClient(m_Windows[windowID]->GetNativeWindow(), &pos);
-		return Point2(pos.x, pos.y, 0);
+		return Point2(pos.x, pos.y);
 
 	}
 
@@ -860,7 +907,7 @@ Point2 Display::GetCursorPosition()
 		if (focusedWindow != -1)
 		{
 			ScreenToClient(m_Windows[focusedWindow]->GetNativeWindow(), &pos);
-			return Point2(pos.x, pos.y, 0);
+			return Point2(pos.x, pos.y);
 		}
 	}
 
@@ -1150,7 +1197,7 @@ Point2 Display::GetWindowPosition(WindowID windowID)
 
 	if (GetClientRect(windowData.hwnd, &rect))
 	{
-		return Point2(rect.left, rect.top, 0);
+		return Point2(rect.left, rect.top);
 	}
 
 	return Point2();
@@ -1208,8 +1255,9 @@ void Display::ProcessKeyEvents()
 					prev_wc = 0;
 				}
 
+				Input::SetKeyDown((uint16_t)Input::GetKeySym(ke.wparam), true);
 				ke.SetKeyPressed(true);
-				ke.SetKeyCode(Input::GetKeySym(ke.wparam));
+				ke.SetKeyCode((uint16_t)Input::GetKeySym(ke.wparam));
 
 				m_Windows[focusedWindow]->EventDispatcher(ke);
 
@@ -1217,9 +1265,9 @@ void Display::ProcessKeyEvents()
 			case WM_KEYDOWN:
 			case WM_KEYUP:
 			{
+				Input::SetKeyDown((uint16_t)Input::GetKeySym(ke.wparam), ke.action == WM_KEYDOWN);
 				ke.SetKeyPressed(ke.action == WM_KEYDOWN);
 				ke.SetKeyCode(Input::GetKeySym(ke.wparam));
-
 				m_Windows[focusedWindow]->EventDispatcher(ke);
 			} break;
 		}
@@ -1360,7 +1408,7 @@ void Display::Create(HINSTANCE p_hInstance, WindowFlags p_flags, WindowMode p_ma
 
 Display::Display(HINSTANCE p_hInstance, WindowFlags p_flags, WindowMode p_mainWindowMode, Size2 p_windowSize)
 {
-	
+	Console::Create();
 	focusedWindow = -1;
 	memset(&wc, 0, sizeof(WNDCLASSEXW));
 	wc.cbSize = sizeof(WNDCLASSEXW);
@@ -1415,4 +1463,5 @@ Display::Display(HINSTANCE p_hInstance, WindowFlags p_flags, WindowMode p_mainWi
 	}
 
 	ShowWindow(0);
+
 }

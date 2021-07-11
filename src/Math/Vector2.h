@@ -2,7 +2,6 @@
 
 #define NO_FDECL
 #include "Math/Math.h"
-#include "Vector3.h"
 
 struct Vector2
 {
@@ -42,16 +41,22 @@ struct Vector2
 		return *this;
 	}
 
-	inline Vector2 operator=(const Vector3& p_vec);
+	Vector2 operator=(const struct Vector3& p_vec);
 	inline Vector2 operator+(const Vector2& p_v) const;
 	inline void operator+=(const Vector2& p_v);
 	inline Vector2 operator-(const Vector2& p_v) const;
 	inline void operator-=(const Vector2& p_v);
 	inline void operator*=(const float& rvalue);
+	
 	friend inline Vector2 operator*(float p_scalar, const Vector2& p_vec);
 	friend inline Vector2 operator*(double p_scalar, const Vector2& p_vec);
 	friend inline Vector2 operator*(int p_scalar, const Vector2& p_vec);
+	
+	friend inline Vector2 operator*( const Vector2& p_vec, float p_scalar);
+	friend inline Vector2 operator*( const Vector2& p_vec, double p_scalar);
+	friend inline Vector2 operator*( const Vector2& p_vec, int p_scalar);
 	friend inline Vector2 operator*(const Vector2& p_vec, const Vector2& p_vecB);
+	
 	inline void operator*=(const Vector2& rvalue) { *this = *this * rvalue; }
 	inline Vector2 operator/(const Vector2& p_v1) const;
 	inline Vector2 operator/(const float& rvalue) const;
@@ -66,9 +71,100 @@ struct Vector2
 	inline bool operator<=(const Vector2& p_vec2) const { return x == p_vec2.x ? (y <= p_vec2.y) : (x < p_vec2.x); }
 	inline bool operator>=(const Vector2& p_vec2) const { return x == p_vec2.x ? (y >= p_vec2.y) : (x > p_vec2.x); }
 
+	union 
+	{
+		struct
+		{
+			float width;
+			float height;
+		};
 
-	float x, y;
-	//float width;
+		struct
+		{
+			float x, y;
+		};
+	};
 
 };
 
+typedef Vector2 Point2;
+typedef Vector2 Size2;
+
+
+
+inline Vector2 operator*(float p_scalar, const Vector2& p_vec) {
+	return Vector2(p_vec.x * p_scalar, p_vec.x * p_scalar);
+}
+
+inline Vector2 operator*(double p_scalar, const Vector2& p_vec) {
+	return Vector2(float(p_vec.x * p_scalar), float(p_vec.x * p_scalar));
+}
+
+inline Vector2 operator*(int p_scalar, const Vector2& p_vec) {
+	return Vector2(float(p_vec.x * p_scalar), float(p_vec.x * p_scalar));
+}
+
+inline Vector2 operator*(const Vector2& p_vec, float p_scalar) {
+	return Vector2(p_vec.x * p_scalar, p_vec.x * p_scalar);
+}
+
+inline Vector2 operator*(const Vector2& p_vec, double p_scalar) {
+	return Vector2(float(p_vec.x * p_scalar), float(p_vec.x * p_scalar));
+}
+
+inline Vector2 operator*(const Vector2& p_vec, int p_scalar) {
+	return Vector2(float(p_vec.x * p_scalar), float(p_vec.x * p_scalar));
+}
+
+inline Vector2 operator*(const Vector2& p_vec, const Vector2& p_vecB)
+{
+	return Vector2(p_vec.x * p_vecB.x, p_vec.y * p_vecB.y);
+}
+
+inline Vector2 Vector2::operator+(const Vector2& p_v) const {
+	return Vector2(x + p_v.x, y + p_v.y);
+}
+
+inline void Vector2::operator+=(const Vector2& p_v) {
+	x += p_v.x;
+	y += p_v.y;
+}
+
+inline Vector2 Vector2::operator-(const Vector2& p_v) const {
+	return Vector2(x - p_v.x, y - p_v.y);
+}
+
+inline void Vector2::operator-=(const Vector2& p_v) {
+	x -= p_v.x;
+	y -= p_v.y;
+}
+
+inline void Vector2::operator*=(const float& rvalue) {
+	x *= rvalue;
+	y *= rvalue;
+}
+
+inline Vector2 Vector2::operator/(const Vector2& p_v1) const {
+	return Vector2(x / p_v1.x, y / p_v1.y);
+}
+
+inline Vector2 Vector2::operator/(const float& rvalue) const {
+	return Vector2(x / rvalue, y / rvalue);
+}
+
+inline void Vector2::operator/=(const float& rvalue) {
+	x /= rvalue;
+	y /= rvalue;
+}
+
+inline Vector2 Vector2::operator-() const {
+	return Vector2(-x, -y);
+}
+
+inline bool Vector2::operator==(const Vector2& p_vec2) const {
+	return x == p_vec2.x && y == p_vec2.y;
+}
+
+inline bool Vector2::operator!=(const Vector2& p_vec2) const {
+	return x != p_vec2.x || y != p_vec2.y;
+}

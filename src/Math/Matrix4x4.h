@@ -1,5 +1,6 @@
 #pragma once
 #include "Math/SimpleVec.h"
+#include "Vector3.h"
 #include "Matrix3x3.h"
 #include "Math/Matrix4x4.h"
 
@@ -42,7 +43,7 @@ public:
 	bool operator==(const Matrix4x4& p_matrix);
 
 	//Matrix4x4 AffineInverse(const Matrix4x4& p_matrix);
-	Matrix4x4 Inverse(const Matrix4x4& p_matrix);
+	static Matrix4x4 Inverse(const Matrix4x4& p_matrix);
 
 	static Matrix4x4 CreateScale(const float& xScale, const float& yScale, const float& zScale);
 	static Matrix4x4 CreateScale(const struct Vector3& scaleVector);
@@ -65,6 +66,28 @@ public:
 
 	static Matrix4x4 CreateLookAt(const struct Vector3& eye, const struct Vector3& target, const struct Vector3& up);
 	static Matrix4x4 LookAt(const Matrix4x4& p_matrix, const struct Vector3& eye, const struct Vector3& target, const struct Vector3& up);
+	
+	inline Vector3 GetScale() const
+	{
+		return Vector3
+		(
+			Math::Sqrt(m_data[0].x * m_data[0].x + m_data[1].x * m_data[1].x + m_data[2].x * m_data[2].x),
+			Math::Sqrt(m_data[0].x * m_data[0].y + m_data[1].y * m_data[1].y + m_data[2].y * m_data[2].y),
+			Math::Sqrt(m_data[0].x * m_data[0].z + m_data[1].z * m_data[1].z + m_data[2].z * m_data[2].z)
+		);
+	}
+
+	inline Matrix3x3 GetRotation() const 
+	{
+		Vector3 invScale
+		(
+			1.f / Math::Sqrt(m_data[0].x * m_data[0].x + m_data[1].x * m_data[1].x + m_data[2].x * m_data[2].x),
+			1.f / Math::Sqrt(m_data[0].x * m_data[0].y + m_data[1].y * m_data[1].y + m_data[2].y * m_data[2].y),
+			1.f / Math::Sqrt(m_data[0].x * m_data[0].z + m_data[1].z * m_data[1].z + m_data[2].z * m_data[2].z)
+		);
+
+		return Matrix3x3::Scale(Matrix3x3(*this), invScale);
+	}
 
 	static float Determinant(const Matrix4x4& p_matrix);
 	static Matrix4x4 Transpose(const Matrix4x4& p_matrix);

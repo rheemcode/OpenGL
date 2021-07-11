@@ -3,6 +3,11 @@
 #include "Math/Vector3.h"
 #include "Math/Matrix4x4.h"
 #include "Tests/Object.h"
+#include "Math/Quaternion.h"
+#include "Math/Transform.h"
+#include "SceneCameraController.h"
+#include "glm/gtc/matrix_transform.hpp"
+
 
 enum class CameraMode
 {
@@ -26,43 +31,50 @@ struct CameraSettings
 	float ratio;
 };
 
-class Transform
+class Camera
 {
-public:
-	Vector3 pos;
-	Vector3 rot;
-};
 
+protected:
+	Matrix4x4 m_ProjectionMatrix;
+	Matrix4x4 m_ViewMatrix;
+	Matrix4x4 m_ViewProjectionMatrix;
 
-class Camera : public Transform
-{
+	float m_Width, m_Height;
 
 	Matrix4x4 MakeProjectionMatrix(const CameraMode& projectionMode);
 	Matrix4x4 MakeProjectionMatrix(const CameraSettings& setting);
 	Matrix4x4 MakeViewMatrix();
 
 public:
-	Camera();
-	Camera(const CameraMode& mode);
-	Camera(const CameraSettings& setting);
-
 	const Matrix4x4& GetViewMatrix() const;
 	const Matrix4x4& GetProjectionMatrix() const;
 	const Matrix4x4& GetViewProjectionMatrix() const;
 
-	void Translate(Vector3 postion);
-	void Rotate(float angle, Vector3 direction);
-	void Update();
+	Camera();
+	Camera(const CameraMode& mode);
+	Camera(const CameraSettings& setting);
 
-private:
-	Matrix4x4 m_ProjectionMatrix;
-	Matrix4x4 m_ViewMatrix;
-	Matrix4x4 m_ViewProjectionMatrix;
+};
 
-	float m_Width, m_Height;
-	Vector3 m_Rotation;
+class SceneCamera : public Camera
+{
+	Transform transform;
+	SceneCameraController cameraController;
 
-	Vector3 velocity;
+public:
+	SceneCamera(const CameraSettings& p_cameraSetting)
+		: Camera(p_cameraSetting){}
 	
-	class Window* m_Window;
+	void OnEvent(const Event& event);
+	void OnUpdate()
+	{
+		cameraController.HandleKeyboardInput(transform);
+		UpdateView();
+	}
+
+	void UpdateView()
+	{
+		auto mat = glm::inverse(glm::mat4(1));
+		m_ViewMatrix = Matrix4x4::Inverse(transform.GetWorldMatrix());
+	}
 };

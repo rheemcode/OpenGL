@@ -123,6 +123,7 @@
       <PreprocessorDefinitions>GLEW_STATIC;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Users\rheen\Documents\CPP_Libraries\glfw-3.3.4\glfw-3.3.4\deps;C:\Users\rheen\Documents\CPP_Libraries\glfw-3.3.4\glfw-3.3.4\deps;C:\Users\rheen\Documents\CPP_Libraries\glfw-3.3.4\glfw-3.3.4\deps;C:\Users\rheen\Documents\CPP_Libraries\glfw-3.3.4\glfw-3.3.4\deps\glad;$(SolutionDir)Deps;$(SolutionDir)Deps\GLFW\include; $(SolutionDir)Deps\GLEW\include;$(SolutionDir)\src\Core;$(SolutionDir)\src;</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -140,6 +141,7 @@
       <PreprocessorDefinitions>GLEW_STATIC;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Users\rheen\Documents\CPP_Libraries\glfw-3.3.4\glfw-3.3.4\deps;C:\Users\rheen\Documents\CPP_Libraries\glfw-3.3.4\glfw-3.3.4\deps;C:\Users\rheen\Documents\CPP_Libraries\glfw-3.3.4\glfw-3.3.4\deps;C:\Users\rheen\Documents\CPP_Libraries\glfw-3.3.4\glfw-3.3.4\deps\glad;$(SolutionDir)Deps;$(SolutionDir)Deps\GLFW\include; $(SolutionDir)Deps\GLEW\include;$(SolutionDir)\src\Core;$(SolutionDir)\src;</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -153,6 +155,9 @@
   <ItemGroup>
     <ClCompile Include="src\Core\Renderer\Buffers\UniformBuffer.cpp" />
     <ClCompile Include="src\Core\Renderer\Scene.cpp" />
+    <ClCompile Include="src\Core\SceneCameraController.cpp" />
+    <ClCompile Include="src\Math\Transform.h" />
+    <ClCompile Include="src\Math\Transform.cpp" />
     <ClCompile Include="src\Tests\Quad.cpp" />
     <ClCompile Include="src\Tests\Sphere.cpp" />
     <ClCompile Include="src\Tests\Sprite.cpp" />
@@ -182,6 +187,7 @@
   <ItemGroup>
     <ClInclude Include="src\Core\Renderer\Buffers\UniformBuffer.h" />
     <ClInclude Include="src\Core\Renderer\Scene.h" />
+    <ClInclude Include="src\Core\SceneCameraController.h" />
     <ClInclude Include="src\Tests\Sphere.h" />
     <ClInclude Include="src\Tests\Sprite.h" />
     <ClInclude Include="src\Core\Camera.h" />

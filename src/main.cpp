@@ -13,11 +13,12 @@
 #include <Tests/Sprite.h>
 #include <Tests/Quad.h>
 #include <Renderer/Scene.h>
-
+#include <string_view>
 
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PWSTR pCmdLine, int nCmdShow)
 {
+
 	uint32_t flags = 0;
 
 	Size2 size;
@@ -33,6 +34,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PWSTR pCmdLine,
 
 	Renderer2D renderer2D;
 
+	Console::Log("HELLO WORLD");
+
+	std::cout << "Hello World";
 
 	Renderer::Init();
 

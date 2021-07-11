@@ -12,7 +12,7 @@ Matrix3x3::Matrix3x3(const Matrix4x4& p_mat)
 {
 	this->m_data[0] = p_mat[0];
 	this->m_data[1] = p_mat[1];
-	this->m_data[2] = colType(0.f, 0.f, 1.f);
+	this->m_data[2] = p_mat[2];
 }
 
 Matrix3x3::Matrix3x3()
@@ -31,7 +31,6 @@ Matrix3x3::Matrix3x3(const Matrix3x3& p_mat)
 	m_data[0] = p_mat.m_data[0];
 	m_data[1] = p_mat.m_data[1];
 	m_data[2] = p_mat.m_data[2];
-	m_data[3] = p_mat.m_data[3];
 }
 
 Matrix3x3::Matrix3x3
@@ -114,7 +113,6 @@ Matrix3x3& Matrix3x3::operator=(const Matrix3x3& p_mat)
 	m_data[0] = p_mat.m_data[0];
 	m_data[1] = p_mat.m_data[1];
 	m_data[2] = p_mat.m_data[2];
-	m_data[3] = p_mat.m_data[3];
 	return *this;
 }
 

@@ -14,7 +14,7 @@ Quaternion::Quaternion(const Vector3& p_eulerAngles)
 	this->w = c.x * c.y * c.z + s.x * s.y * s.z;
 	this->x = s.x * c.y * c.z - c.x * s.y * s.z;
 	this->y = c.x * s.y * c.z + s.x * c.y * s.z;
-	this->y = c.x * c.y * s.z - s.x * s.y * s.z;
+	this->z = c.x * c.y * s.z - s.x * s.y * c.z;
 }
 
 Quaternion::Quaternion(const float& p_s, const Vector3& p_eulerAngles)
@@ -184,22 +184,43 @@ Quaternion Quaternion::Slerp(const Quat& p_quat, const Quat& p_quatB, const floa
 Quaternion Quaternion::FromEulerAngles(const Vector3& p_angles)
 {
 	Vector3 s, c;
-	s = Vector3::Sin(0.5f * p_angles);
-	c = Vector3::Cos(0.5f * p_angles);
+	s = Vector3::Sin(Vector3(0.5f * Math::Deg2Rad(p_angles.x), 0.5f * Math::Deg2Rad(p_angles.y), 0.5f * Math::Deg2Rad(p_angles.z)));
+	c = Vector3::Cos(Vector3(0.5f * Math::Deg2Rad(p_angles.x), 0.5f * Math::Deg2Rad(p_angles.y), 0.5f * Math::Deg2Rad(p_angles.z)));
 
 	return Quat
 	(
-		c.x * c.y * c.z + s.y * s.z * s.x,
-		s.x * c.y * c.z - s.y * s.z * c.x,
-		s.y * c.x * c.z + s.x * s.z * c.y,
-		s.z * c.x * c.y - s.x * s.y * c.z
+		c.x * c.y * c.z + s.x * s.y * s.z,
+		s.x * c.y * c.z - c.x * s.y * s.z,
+		c.x * s.y * c.z + s.x * c.y * s.z,
+		c.x * c.y * s.z - s.x * s.y * c.z
 	);
 
 }
 
-Vector3 Quaternion::EulerAngles(const Quat& p_quat)
+Vector3 Quaternion::EulerAngles(const Quat& p_target)
 {
-	return Vector3(Pitch(p_quat), Yaw(p_quat), Roll(p_quat));
+	if (p_target == Quaternion{ 0.5f, 0.5f, -0.5f, 0.5f }) return { 90.0f, 90.0f, 0.0f };
+	if (p_target == Quaternion{ 0.5f, 0.5f, 0.5f, -0.5f }) return { -90.0f, -90.0f, 0.0f };
+
+	// roll (x-axis rotation)
+	const float sinr_cosp = +2.0f * (p_target.w * p_target.x + p_target.y * p_target.z);
+	const float cosr_cosp = +1.0f - 2.0f * (p_target.x * p_target.x + p_target.y * p_target.y);
+	const float roll = atan2(sinr_cosp, cosr_cosp);
+
+	// pitch (y-axis rotation)
+	float pitch = 0.f;
+	const float sinp = +2.0f * (p_target.w * p_target.y - p_target.z * p_target.x);
+	if (fabs(sinp) >= 1)
+		pitch = static_cast<float>(copysign(PI / 2.0f, sinp)); // use 90 degrees if out of range
+	else
+		pitch = asin(sinp);
+
+	// yaw (z-axis rotation)
+	const float siny_cosp = +2.0f * (p_target.w * p_target.z + p_target.x * p_target.y);
+	const float cosy_cosp = +1.0f - 2.0f * (p_target.y * p_target.y + p_target.z * p_target.z);
+	const float yaw = atan2(siny_cosp, cosy_cosp);
+
+	return Vector3(Math::Rad2deg(roll), Math::Rad2deg(pitch), Math::Rad2deg(yaw));
 }
 
 Quaternion Quaternion::LookRotation(const Vector3& p_forward, const Vector3& p_up)
@@ -311,13 +332,13 @@ Quaternion operator*(const Quaternion& p_quat, const Quaternion& p_quatB)
 }
 
 // transforming a vector by quaternion
-Vector3 operator*(const Quaternion& p_quat, const Vector3& s)
+Vector3 operator*(const Quaternion& p_quat, const Vector3& p_vec)
 {
 	const Vector3 quatVec(p_quat.x, p_quat.y, p_quat.z);
-	const Vector3 uv(Vector3::Cross(quatVec, s));
+	const Vector3 uv(Vector3::Cross(quatVec, p_vec));
 	const Vector3 uuv(Vector3::Cross(quatVec, uv));
 	
-	return s + ((uv * p_quat.w) + uuv) * 2.f;
+	return p_vec + ((uv * p_quat.w) + uuv) * 2.f;
 }
 
 Vector3 operator*(const Vector3& p_vec, const Quaternion& p_quat)
@@ -353,7 +374,6 @@ Matrix3x3 Quaternion::ToMatrix3x3(const Quat& p_quat)
 	float wy(p_quat.w * p_quat.y);
 	float wz(p_quat.w * p_quat.z);
 
-	float s =1.f - 2.f * (xy + wz);
 	res[0][0] = 1.f - 2.f * (yy + zz);
 	res[0][1] = 2.f * (xy + wz);
 	res[0][2] = 2.f * (xz - wy);

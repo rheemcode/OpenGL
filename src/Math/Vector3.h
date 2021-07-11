@@ -48,6 +48,10 @@ struct Vector3
 	static inline Vector3 Bounce(const Vector3& p_vec, const Vector3& p_normal);
 	static inline Vector3 Reflect(const Vector3& p_vec, const Vector3& p_normal);
 
+	static inline Vector3 Forward();
+	static inline Vector3 Right();
+	static inline Vector3 Up();
+
 	inline Vector3& operator+=(const Vector3& p_v);
 	inline Vector3 operator+(const Vector3& p_v) const;
 	inline Vector3& operator-=(const Vector3& p_v);
@@ -212,6 +216,19 @@ inline Vector3 Vector3::Zero()
 }
 
 
+inline Vector3 Vector3::Forward()
+{
+	return Vector3(0, 0, -1.f);
+}
+inline Vector3 Vector3::Right()
+{
+	return Vector3(1.f, 0, 0);
+}
+inline Vector3 Vector3::Up()
+{
+	return Vector3(0, 1.f, 0);
+}
+
 inline Vector3& Vector3::operator+=(const Vector3& p_v) {
 	x += p_v.x;
 	y += p_v.y;
@@ -331,6 +348,7 @@ inline bool Vector3::operator>=(const Vector3& p_v) const {
 	}
 	return x > p_v.x;
 }
+
 
 
 inline Vector3& Vector3::operator=(const SimpleVec4& p_v)
