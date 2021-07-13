@@ -84,7 +84,7 @@ void main()
             continue;
 
         float attenuation;
-        vec3 normal = NormalInterp;
+        vec3 normal = Normal;
 
         if (Lights[light].LightType == 1) // Directional Light
         {
@@ -98,7 +98,6 @@ void main()
             float dist = min(length(lightDir), radius);
             lightDir = normalize(lightDir);
             attenuation = pow(max(1.0 - dist / radius, 0.0), Lights[light].LightAttenuation.x) * Lights[light].LightAttenuation.y;
-           // attenuation = radius / (pow(dist, 2.0) + 1.0);
         }
 
         else if (Lights[light].LightType == 3) // Spot Light
@@ -106,22 +105,18 @@ void main()
             lightDir = Lights[light].Position - FragPos;
             float radius = Lights[light].Radius;
             float dist = min(length(lightDir), radius);
-            
-            attenuation = 1.0 / (1 + Lights[light].LightAttenuation.x * dist + Lights[light].LightAttenuation.y * (dist * dist);
             lightDir = normalize(lightDir);
+
             attenuation = pow(max(1.0 - dist / radius, 0.0), Lights[light].LightAttenuation.x) * Lights[light].LightAttenuation.y;
-           
             vec3 spotLightDir = Lights[light].Direction;
             float lightCutoff = Lights[light].Cutoff;
             float lightOuterCutoff = Lights[light].OuterCutoff;
 
             float scos = max(dot(lightDir, -spotLightDir), lightOuterCutoff);
-            float rim = (1.0 - scos) / (1.0 - lightOuterCutoff);
-          //  attenuation *= 1.0 - pow(rim, lightCutoff);
-           // float epsilon = lightCutoff - lightOuterCutoff;
-            //float intensity = clamp((scos - lightOuterCutoff) / epsilon, 0.0, 1.0);
-            attenuation *= 1.0 - pow(rim, 1);
-            //attenuation *= intensity;
+
+            float epsilon = lightCutoff - lightOuterCutoff;
+            float intensity = clamp((scos - lightOuterCutoff) / epsilon, 0.0, 1.0);
+            attenuation *= intensity;
         }
 
         float NdotL = max(dot(normal, lightDir), 0.0);

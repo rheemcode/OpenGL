@@ -186,6 +186,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Core\Renderer\Buffers\UniformBuffer.h" />
+    <ClInclude Include="src\Core\Renderer\Material.h" />
     <ClInclude Include="src\Core\Renderer\Scene.h" />
     <ClInclude Include="src\Core\SceneCameraController.h" />
     <ClInclude Include="src\Tests\Sphere.h" />
@@ -473,7 +474,6 @@
     <None Include="Deps\glm\gtx\vector_query.inl" />
     <None Include="Deps\glm\gtx\wrap.inl" />
     <None Include="src\Shaders\default.shader" />
-    <None Include="src\Shaders\lighting.shader" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Deps\glm\CMakeLists.txt" />

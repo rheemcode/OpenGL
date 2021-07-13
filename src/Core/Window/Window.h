@@ -156,6 +156,7 @@ public:
 
 	
 	static void Log(const char* msg);
+	static void Error(const char* msg);
 	static void Create();
 
 };

@@ -8,8 +8,13 @@ Cube::Cube()
 {
 	m_Va = std::make_unique<VertexArray>();
 	GenVertices();
-//	m_Shader = std::make_unique<Shader>("src/Shaders/lighting.shader");
-	transform = Matrix4x4::Translate(transform, Vector3(0, 0, -15.f));
+	m_material = std::make_unique<Material>();
+	m_material->Color = { 1.f, .4f, .7f, 1.f };
+	m_material->Shininess = 12.f;
+	m_material->SpecularHighlights = 1.f;
+
+	transform = Matrix4x4::Scale(transform, { 2.f, 2.f, 2.f });
+	transform = Matrix4x4::Translate(transform, Vector3(0, -2.f, 0.f));
 }
 
 
@@ -20,12 +25,12 @@ Plane::Plane()
 	float vertexAttribs[] =
 	{
 		-0.5f, 0.f,  0.5f,  0.f, 1.f, 0.f, 0.f, 0.f,
-		 0.5f, 0.f,  0.5f,  0.f, 1.f, 0.f, 1.f, 0.f,
-		 0.5f, 0.f,  -0.5f, 0.f, 1.f, 0.f, 1.f, 1.f,
-		-0.5f, 0.f, -0.5f,  0.f, 1.f, 0.f, 0.f, 1.f
+		  0.5f, 0.f,  0.5f,  0.f, 1.f, 0.f, 1.f, 0.f,
+		 -0.5f, 0.f, -0.5f, 0.f, 1.f, 0.f, 1.f, 1.f,
+		 0.5f, 0.f, -0.5f,  0.f, 1.f, 0.f, 0.f, 1.f
 	};
 
-	uint32_t indices[] = { 0, 1, 3, 3, 2, 1 };
+	uint32_t indices[] = { 0, 1, 2, 2, 1, 3 };
 
 	m_Va->SetIndices(indices, 6);
 	m_Vb = std::make_unique<VertexBuffer>(vertexAttribs, sizeof(vertexAttribs));
@@ -36,10 +41,11 @@ Plane::Plane()
 			{GL_FLOAT, 2, 2, GL_FALSE}
 		});
 	m_Va->AddBuffer(*m_Vb);
-
-	transform = Matrix4x4::Scale(transform, 10.f);
-
-
+	
+	m_material = std::make_unique<Material>();
+	m_material->Color = { .7f, .0f, .7f, 1.f };
+	m_material->Shininess = 12.f;
+	m_material->SpecularHighlights = 1.f;
 }
 
 const Matrix4x4& Cube::GetTransform() const 

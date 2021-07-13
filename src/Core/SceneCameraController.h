@@ -39,6 +39,6 @@ public:
 		m_position = Vector3::Zero();
 		m_velocity = Vector3::Zero();
 		m_rotationVelocity = Vector3::Zero();
-		m_rotationSpeed = 5.f;
+ 		m_rotationSpeed = 5.f;
 	}
 };

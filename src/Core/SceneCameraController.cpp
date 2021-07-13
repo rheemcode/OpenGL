@@ -32,9 +32,6 @@ void SceneCameraController::HandleMouseInput(Transform& p_transform, float xPos,
 		if (eulerAngles.x > 180.0f) eulerAngles.x -= 360.0f;
 		if (eulerAngles.x < -180.0f) eulerAngles.x += 360.0f;
 
-		std::stringstream ss;
-		ss << "Setting World Rotation: Euler Angles (" << eulerAngles.x << "," << eulerAngles.y << "," << eulerAngles.z << ")\n";
-		Console::Log(ss.str().c_str());
 		float pitch = eulerAngles.x - m_rotationVelocity.y;
 		pitch = Math::Clamp(pitch, -84.f, 84.f);
 		float yaw = eulerAngles.y - m_rotationVelocity.x;

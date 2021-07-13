@@ -8,6 +8,7 @@
 #include <glm/glm.hpp>
 #include "glm/gtc/matrix_transform.hpp"
 #include "Math/Matrix4x4.h"
+#include "Renderer/Material.h"
 
 struct vec3 { float x, y, z; };
 struct vec4 { float x, y, z, w; };
@@ -19,13 +20,6 @@ struct VertexAttrib
     Vector2 uv;
 };
 
-struct Material
-{
-    Vector4 AlbedoColor;
-    float Shininess;
-    float Strength;
-};
-
 class Primitive : public Object
 {
 
@@ -33,13 +27,14 @@ protected:
     std::unique_ptr<Shader> m_Shader;
     std::unique_ptr<VertexArray> m_Va;
     std::unique_ptr<VertexBuffer> m_Vb;
-    
+    std::unique_ptr<Material> m_material;
 
 public:
 
     virtual const Matrix4x4& GetTransform() const { return transform; };
     virtual const VertexArray& GetVertexAttribs() const { return *m_Va; };
     virtual const Shader& GetShader() const { return *m_Shader; };
+    virtual const Material& GetMaterial() const { return *m_material; }
     virtual void OnUpdate() = 0;
     
     Primitive() {};

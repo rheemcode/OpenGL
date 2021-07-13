@@ -2,33 +2,29 @@
 #include <functional>
 #include <Window/Window.h>
 #include "Events/MouseEvent.h"
-#include "Input/Input.h"
+
 
 Scene::EnviromentLight Scene::m_EnviromentLight;
 std::unique_ptr<Shader> Scene::sceneShader;
-Light Scene::m_Light;
+std::array<std::unique_ptr<Light>, 10> Scene::m_lights;
+uint32_t Scene::lightCount;
 
 const Scene::EnviromentLight& Scene::GetEnviromentLight()
 {
 	return m_EnviromentLight;
 }
 
-const Light& Scene::GetLight()
+const std::array<std::unique_ptr<Light>, 10>& Scene::GetLight()
 {
-	return m_Light;
+	return m_lights;
 }
 static float t = 0;
+int Scene::GetLightCount()
+{
+	return 1;
+}
 void Scene::OnUpdate()
 {
-	lightsBufferOffsetData = lightsBufferData;
-
-	lightsBufferOffsetData->Direction = m_Light.Direction;
-	lightsBufferOffsetData->LightColor = m_Light.LightColor;
-	lightsBufferOffsetData->Energy = m_Light.Energy;
-	lightsBufferOffsetData->Use = m_Light.Use;
-	
-	auto size = sizeof(LightUniformBuffer);
-	m_LightsBuffer->SetData(size, lightsBufferData, 0);
 
 	t += 0.0001;
 	if (t > 100)
@@ -40,8 +36,6 @@ void Scene::OnUpdate()
 	sceneCamera->OnUpdate();
 
 	Renderer::BeginScene(*sceneCamera);
-
-	m_Light.Position = Vector4(m_Light.Position.x, 10.f * Math::Cos(t * 20.f), m_Light.Position.z, 1.f);
 	for (auto &object : m_Primitives)
 	{
 		object->OnUpdate();
@@ -68,24 +62,29 @@ void Scene::OnEvent(const Event& event)
 		std::stringstream ss;
 		const auto& ke = (KeyEvent&)event;
 	}
+
+
 }
 
-void Scene::InitLightUniforms()
-{
-	auto program = sceneShader->GetProgram();
-	lightsBufferBinding = glGetUniformBlockIndex(program, "U_DirectionalLight");
-	glGetActiveUniformBlockiv(program, lightsBufferBinding, GL_UNIFORM_BLOCK_DATA_SIZE, &lightsBufferSize);
-	lightsBufferData = new LightUniformBuffer();
-	auto si = sizeof(LightUniformBuffer);
-	const char* names[4] = { "U_DirectionalLight.Direction", "U_DirectionalLight.LightColor", "U_DirectionalLight.Energy", "U_DirectionalLight.use" };
-	glGetUniformIndices(program, 4, names, indices);
-
-	glGetActiveUniformsiv(program, 4, indices, GL_UNIFORM_OFFSET, offset);
-	glGetActiveUniformsiv(program, 4, indices, GL_UNIFORM_SIZE, size);
-	glGetActiveUniformsiv(program, 4, indices, GL_UNIFORM_TYPE, type);
-	
-	m_LightsBuffer = std::make_unique<UniformBuffer>(lightsBufferSize, lightsBufferBinding);
-}
+//void Scene::InitLightUniforms()
+//{
+//	auto program = sceneShader->GetProgram();
+//
+//	lightsBufferBinding = glGetUniformBlockIndex(program, "U_DirectionalLight");
+//
+//	glGetActiveUniformBlockiv(program, lightsBufferBinding, GL_UNIFORM_BLOCK_DATA_SIZE, &lightsBufferSize);
+//	lightsBufferData = new LightUniformBuffer();
+//	auto si = sizeof(LightUniformBuffer);
+//	const char* names[4] = {  "U_DirectionalLight.LightColor", "U_DirectionalLight.Direction", "U_DirectionalLight.Energy", "U_DirectionalLight.use" };
+//	glGetUniformIndices(program, 4, names, indices);
+//
+//	glGetActiveUniformsiv(program, 4, indices, GL_UNIFORM_OFFSET, offset);
+//	glGetActiveUniformsiv(program, 4, indices, GL_UNIFORM_SIZE, size);
+//	glGetActiveUniformsiv(program, 4, indices, GL_UNIFORM_TYPE, type);
+//	
+//	m_LightsBuffer = std::make_unique<UniformBuffer>(lightsBufferSize, lightsBufferBinding);
+//	delete names;
+//}
 
 Scene::Scene()
 {
@@ -106,22 +105,27 @@ Scene::Scene()
 	sceneShader = std::make_unique<Shader>("src/Shaders/lighting.shader");
 	sceneShader->Bind();
 	
-	InitLightUniforms();
+//	InitLightUniforms();
 
 	std::unique_ptr<Primitive> testCube = std::make_unique<Cube>();
 	std::unique_ptr<Primitive> testSphere = std::make_unique<Sphere>(18, 36, 1.2f);
 	std::unique_ptr<Primitive> testPlane = std::make_unique<Plane>();
 
-	m_EnviromentLight.Ambient = { .8f, .8f, .8f, 1.0f };
+	m_EnviromentLight.Ambient = { 1.f, 1.f, 1.f};
 	m_EnviromentLight.Energy = .19f;
-	DirectionalLight pLight;
-
-	pLight.LightColor = { 1.0f, 1.f, 1.0f, 1.0f };
-	pLight.SpecularStrength = 0.f;
-	pLight.Energy = 1.5f;
-	pLight.Direction = { 0, -0.6f, -1.f };
-	pLight.LightSource = Light::DIRECTIONAL_LIGHT;
-	m_Light = pLight;
+	
+	auto pLight = std::make_unique<SpotLight>();
+	pLight->LightColor = { .7f, .7f, .7f};
+	pLight->Energy = 1.5f;
+	pLight->Direction = { 0, -1.f, -.36f };
+	pLight->LightSource = Light::SPOT_LIGHT;
+	pLight->Position = { 0, 3.f, 0.f };
+	pLight->Radius = 5.2f;
+	pLight->LightAttenuation = { 1.004f, 1.002f };
+	pLight->innerCutoff = Math::Cos(Math::Deg2Rad(45.f));
+	pLight->outerCutoff = Math::Cos(Math::Deg2Rad(45.f));;
+	pLight->Use = true;
+	m_lights[0] = std::move(pLight);
 
 	AddObject(testCube);
 	AddObject(testSphere);

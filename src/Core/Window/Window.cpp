@@ -41,6 +41,28 @@ void Console::Init()
 
 void Console::Log(const char* msg)
 {
+	CONSOLE_SCREEN_BUFFER_INFO coninfo;
+	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &coninfo);
+
+	WORD current_bg = coninfo.wAttributes & (BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_INTENSITY);
+	uint32_t basecol;
+	basecol = FOREGROUND_GREEN;
+	basecol |= current_bg;
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), basecol | FOREGROUND_INTENSITY);
+	WriteConsoleA(GetStdHandle(STD_OUTPUT_HANDLE), msg, strlen(msg), nullptr, NULL);
+}
+
+
+void Console::Error(const char* msg)
+{
+	CONSOLE_SCREEN_BUFFER_INFO coninfo;
+	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &coninfo);
+
+	WORD current_bg = coninfo.wAttributes & (BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_INTENSITY);
+	uint32_t basecol;
+	basecol = FOREGROUND_RED;
+	basecol |= current_bg;
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), basecol | FOREGROUND_INTENSITY);
 	WriteConsoleA(GetStdHandle(STD_OUTPUT_HANDLE), msg, strlen(msg), nullptr, NULL);
 }
 

@@ -19,7 +19,11 @@ Sphere::Sphere(int stackSegments, int sectorSegments, float radius)
     GenIndicies();
     GenSphereVertices();
     transform = Matrix4x4::Translate(transform, Vector3(-2.f, 0, -10.f));
-//    m_Shader = std::make_unique<Shader>("src/Shaders/lighting.shader");
+    
+    m_material = std::make_unique<Material>();
+    m_material->Color = { .0f, .7f, .7f, 1.f };
+    m_material->Shininess = 12.f;
+    m_material->SpecularHighlights = 1.f;
 }
 
 void Sphere::Rotate()

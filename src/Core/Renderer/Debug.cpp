@@ -1,6 +1,7 @@
 #include "Debug.h"
 #include <iostream>
-#include <fstream>
+#include <sstream>
+#include "Window/Window.h"
 
 void GLClearError()
 {
@@ -11,7 +12,7 @@ bool GLLogCall(const char* function, const char* file, int line)
 {
     while (GLenum error = glGetError())
     {
-        std::ofstream fs("log_output", std::ios_base::app);
+        std::stringstream ss;
    
         std::string errorName;
 
@@ -36,10 +37,8 @@ bool GLLogCall(const char* function, const char* file, int line)
             errorName = "Out Of Memory";
             break;
         }
-        fs << "[OPEN GL Error] {" << error << "}" << "[" << errorName << "]" << function << file << line << std::endl;
-
-        fs.flush();
-        fs.close();
+        ss << "[OPEN GL Error] {" << error << "}" << "[" << errorName << "]" << function << file << line << std::endl;
+        Console::Log(ss.str().c_str());
         return false;
     }
 

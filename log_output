@@ -1,34 +1,3 @@
-ERROR: 0:132: 'Dir' : undeclared identifier 
 
-[OPEN GL Error] {1281}[Invalid Value]glAttachShader(program, fs)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Shader.cpp58
-ERROR: 0:132: 'viewPosition' : undeclared identifier 
+ERROR: 0:236: 'vec3' : syntax error syntax error
 
-[OPEN GL Error] {1281}[Invalid Value]glAttachShader(program, fs)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Shader.cpp58
-ERROR: 0:156: 'CalculateDirectionalLight' : function already has a body 
-
-[OPEN GL Error] {1281}[Invalid Value]glAttachShader(program, fs)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Shader.cpp58
-ERROR: 0:132: 'viewPosition' : undeclared identifier 
-ERROR: 0:136: 'diffuse' : undeclared identifier 
-
-[OPEN GL Error] {1281}[Invalid Value]glAttachShader(program, fs)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Shader.cpp58
-ERROR: 0:136: 'diffuse' : undeclared identifier 
-
-[OPEN GL Error] {1281}[Invalid Value]glAttachShader(program, fs)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Shader.cpp58
-ERROR: 0:143: 'constructor' : not enough data provided for construction 
-
-[OPEN GL Error] {1281}[Invalid Value]glAttachShader(program, fs)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Shader.cpp58
-ERROR: 0:142: 'assign' :  cannot convert from 'const int' to '4-component vector of highp float'
-
-[OPEN GL Error] {1281}[Invalid Value]glAttachShader(program, fs)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Shader.cpp58
-ERROR: 0:142: 'assign' :  cannot convert from 'const int' to '4-component vector of highp float'
-
-[OPEN GL Error] {1281}[Invalid Value]glAttachShader(program, fs)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Shader.cpp58
-ERROR: 0:142: 'assign' :  cannot convert from 'const int' to '4-component vector of highp float'
-
-[OPEN GL Error] {1281}[Invalid Value]glAttachShader(program, fs)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Shader.cpp58
-ERROR: 0:143: 'constructor' : not enough data provided for construction 
-
-[OPEN GL Error] {1281}[Invalid Value]glAttachShader(program, fs)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Shader.cpp58
-ERROR: 0:132: 'viewPosition' : undeclared identifier 
-
-[OPEN GL Error] {1281}[Invalid Value]glAttachShader(program, fs)C:\Users\rheen\source\repos\OpenGL\src\Core\Renderer\Shader.cpp58

@@ -1,9 +1,10 @@
 #include "Shader.h"	
 #include <GLEW/include/GL/glew.h>
 #include <iostream>
-#include <fstream>
+#include <sstream>
 #include "Debug.h"
 #include "Math/Vector2.h"
+#include "Window/Window.h"
 
 Shader::Shader(const std::string& filePath)
 {
@@ -75,17 +76,14 @@ unsigned int Shader::CompileShader(const std::string& src, unsigned int type)
 
 	if (result == GL_FALSE)
 	{
-		std::ofstream file("log_output", std::ios_base::app);
+		std::stringstream ss;
 		int length;
 		GLCall(glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length));
 		char* message = (char*)_malloca(length * sizeof(char));
 		//file.write("\n", 1);
 		GLCall(glGetShaderInfoLog(id, length, &length, message));
-		file << message;
-		file.flush();
-		file.close();
-		std::cout << "FAILED TO COMPILE SHADER\n";
-		std::cout << message << "\n";
+		ss << message;
+		Console::Error(ss.str().c_str());
 		return 0;
 	}
 	return id;

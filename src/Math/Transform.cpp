@@ -9,10 +9,7 @@ void Transform::UpdateTransform()
 	m_worldMatrix = hasParent ? *m_parentWorldMatrix * m_localMatrix : m_localMatrix;
 
 	m_worldPosition = m_worldMatrix[3];
-//	std::stringstream ss;
 	m_worldRotation = Quaternion::FromMatrix4x4(m_worldMatrix);
-	//ss << "Setting World Rotation: Quaternion (" << m_worldRotation.w << "," << m_worldRotation.x << "," << m_worldRotation.y << "," << m_worldRotation.z << ")\n";
-//	Console::Log(ss.str().c_str());
 	m_worldScale = m_worldMatrix.GetScale();
 	transformDirty = false;
 }

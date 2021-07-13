@@ -12,30 +12,22 @@ struct Light
 	
 	enum LightSource
 	{
-		DIRECTIONAL_LIGHT,
+		DIRECTIONAL_LIGHT = 1,
 		POINT_LIGHT,
 		SPOT_LIGHT
 	};
 
-	LightSource LightSource = LightSource::DIRECTIONAL_LIGHT;
+	LightSource LightSource;
 	
-	Vector4 LightColor;
-	float SpecularStrength;
-	float Energy;
-	Vector4 Position;
+	Vector3 LightColor;
+	Vector3 Position;
 	Vector3 Direction;
+	Vector2 LightAttenuation;
 
+	float Energy;
 	bool Use;
 
-	Matrix4x4 transform;
-};
-
-
-struct PointLight : Light
-{
-	float Radius;
-	float LinearAttenuation;
-	float QuadraticAttenuation;
+	//Transform transform;
 };
 
 struct DirectionalLight : Light
@@ -43,16 +35,22 @@ struct DirectionalLight : Light
 
 };
 
-struct SpotLight : PointLight
+struct PointLight : Light
 {
+	float Radius;
+};
+
+struct SpotLight : Light
+{
+	float Radius;
 	float outerCutoff;
 	float innerCutoff; // innercutoff;
 };
 
 struct LightUniformBuffer
 {
-	Vector3 Direction;
 	Vector4 LightColor;
+	Vector3 Direction;
 	float Energy;
 	bool Use;
 };
@@ -67,25 +65,13 @@ class Scene
 
 	struct EnviromentLight
 	{
-		Vector4 Ambient;
+		Vector3 Ambient;
 		float Energy;
 	};
 
-
-	static Light m_Light;
+	static uint32_t lightCount;
+	static std::array<std::unique_ptr<Light>, 10> m_lights;
 	static EnviromentLight m_EnviromentLight;
-
-
-	uint32_t indices[4];
-	int offset[4];
-	int size[4];
-	int type[4];
-
-
-	LightUniformBuffer* lightsBufferData;
-	LightUniformBuffer* lightsBufferOffsetData;
-	int32_t lightsBufferSize;
-	int32_t lightsBufferBinding;
 
 	std::vector<std::unique_ptr<Primitive>> m_Primitives;
 	std::unique_ptr<UniformBuffer> m_LightsBuffer;
@@ -95,7 +81,8 @@ class Scene
 
 	friend class Renderer;
 	static const EnviromentLight& GetEnviromentLight();
-	static const Light& GetLight();
+	static const std::array<std::unique_ptr<Light>, 10>& GetLight();
+	static int GetLightCount();
 
 public:
 
