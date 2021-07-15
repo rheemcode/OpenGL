@@ -1,26 +1,31 @@
 #include "Components/Component.h"
 #include "Actor.h"
 
-const Component& Actor::GetComponent(const std::string& componentName) const
+void Actor::OnUpdate()
 {
-	auto val = components.find(componentName);
-	if (val != components.end())
-		return *val->second;
+	for (auto& component : m_components)
+	{
+		component.second->OnUpdate();
+	}
 }
 
-void Actor::AddComponent(Component* p_component)
+
+std::weak_ptr<Component> Actor::GetComponent(const std::string& componentName)
 {
-	components.insert({ p_component->GetComponentName(), std::make_shared<Component>(p_component)});
+	auto val = m_components.find(componentName);
+	if (val != m_components.end())
+		return val->second;
+	return std::weak_ptr<Component>();
 }
 
-void Actor::AddComponent(const Component& p_component)
+void Actor::AddComponent(std::shared_ptr<Component> p_component)
 {
-	components.insert({ p_component.GetComponentName(), std::make_shared<Component>(p_component)});
+	m_components.insert({ p_component->GetComponentName(), p_component });
 }
 
 void Actor::RemoveComponent(const std::string& p_componentName)
 {
-	auto val = components.find(p_componentName);
-	if (val != components.end())
-		components.erase(p_componentName);
+	auto val = m_components.find(p_componentName);
+	if (val != m_components.end())
+		m_components.erase(p_componentName);
 }

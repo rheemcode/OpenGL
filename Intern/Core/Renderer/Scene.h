@@ -2,9 +2,10 @@
 #include <vector>
 #include "Tests/Object.h"
 #include <Tests/Primitive.h>
-#include <Renderer/Renderer.h>
+#include "Renderer/Renderer.h"
 #include "Math/Transform.h"
-#include <Events/Event.h>
+#include "Events/Event.h"
+
 
 struct Light
 {
@@ -74,6 +75,7 @@ class Scene
 	static EnviromentLight m_EnviromentLight;
 
 	std::vector<std::unique_ptr<Primitive>> m_Primitives;
+	std::vector<std::shared_ptr<class Actor>> m_actors;
 	std::unique_ptr<UniformBuffer> m_LightsBuffer;
 	std::unique_ptr<SceneCamera> sceneCamera;
 	static std::unique_ptr<Shader> sceneShader;
@@ -88,9 +90,10 @@ public:
 
 	void OnUpdate();
 	void AddObject(std::unique_ptr<Primitive>& primitive);
+	void AddActor(std::shared_ptr<class Actor>& p_actor);
 	void OnEvent(const Event& event);
 
-	void InitLightUniforms();
+//	void InitLightUniforms();
 	
 	Scene();
 	~Scene() {}

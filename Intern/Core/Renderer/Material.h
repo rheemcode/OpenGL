@@ -11,7 +11,6 @@ struct Material
 		std::unique_ptr<Texture> Diffuse;
 	};
 
-	Vector3 Diffuse;
 	Vector3 Ambient;
 	Vector3 Specular; 
 	float Shininess;

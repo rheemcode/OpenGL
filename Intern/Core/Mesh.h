@@ -28,11 +28,12 @@ class Mesh
 	std::shared_ptr<Matrix4x4> m_modelMatrix;
 public:
 	 const std::shared_ptr<Matrix4x4>& GetModelMatrix() const { return m_modelMatrix; };
-	 const void SetModelMatrix(Matrix4x4* p_modelMat) { m_modelMatrix = std::make_shared<Matrix4x4>(p_modelMat); }
+	 const void SetModelMatrix(std::shared_ptr<Matrix4x4> p_modelMat) { m_modelMatrix = p_modelMat; }
 	 const VertexArray& GetVertexAttribs() const { return *m_Va; };
 	 const Shader& GetShader() const { return *m_Shader; };
 	 const Material& GetMaterial() const { return *m_material; }
 
+	Mesh(Mesh&& p_mesh);
 	Mesh(const std::vector<VertexAttrib>& p_vAttribs, const std::vector<uint32_t>& p_indices, Ref<Material> p_material);
 	Mesh(const std::vector<VertexAttrib>& p_vAttribs, const std::vector<uint32_t>& p_indices, const Material& p_material);
 	~Mesh() = default;

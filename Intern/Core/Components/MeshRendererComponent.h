@@ -11,12 +11,8 @@ protected:
 	virtual std::string GetComponentNameImpl() const override { return "Renderer Component"; }
 
 public:
-	void AddModel(const std::string& p_modelFilePath)
-	{
-		m_model = std::make_unique<Model>(p_modelFilePath, OBJ);
-	}
-
+	void AddModel(const std::string& p_modelFilePath);
 	const std::vector<Mesh>& GetMeshes() const { return m_model->GetMeshes();}
-	MeshRendererComponent(Actor* p_actor)
-		: Component(p_actor){}
+	MeshRendererComponent(std::shared_ptr<Actor> p_actor);
+	MeshRendererComponent(std::shared_ptr<Actor> p_actor, const std::string& p_modelFilePath);
 };

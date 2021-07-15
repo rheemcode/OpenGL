@@ -132,7 +132,7 @@ public:
 	void SetHeight(int height) { windowData.height = height; }
 	int GetHeight() const { return windowData.height; }
 	
-	float GetAspectRatio() const { return windowData.width / windowData.height; }
+	float GetAspectRatio() const { return float(windowData.width / windowData.height); }
 	void WindowFocused();
 	
 	bool IsFocused() { return windowData.hasFocus; }

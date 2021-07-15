@@ -96,6 +96,15 @@ Transform::Transform(Transform&& p_transform) noexcept
 	m_worldMatrix   = std::move(p_transform.m_worldMatrix);
 }
 
+Transform::Transform(const Transform& p_transform) noexcept
+{
+	m_localPosition = (p_transform.m_localPosition);
+	m_localRotation = (p_transform.m_localRotation);
+	m_localScale    = (p_transform.m_localScale);
+	m_localMatrix   = (p_transform.m_localMatrix);
+	m_worldMatrix   = (p_transform.m_worldMatrix);
+}
+
 Transform::Transform(const Matrix4x4& p_matrix)
 {
 	m_localMatrix = p_matrix;

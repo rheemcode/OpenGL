@@ -21,8 +21,8 @@ struct Quaternion
 	Quaternion(const float& p_s, const struct Vector3& p_eulerAngles);
 	Quaternion(const float& w, const float& x, const float& y, const float& z)
 		: x(x), y(y), z(z), w(w) {}
-	explicit Quaternion(const struct Matrix4x4& p_mat);
-	explicit Quaternion(const struct Matrix3x3& p_mat);
+	explicit Quaternion(const class Matrix4x4& p_mat);
+	explicit Quaternion(const class Matrix3x3& p_mat);
 
 	Quat& operator=(const Quat& p_quat);
 	Quat& operator+=(const Quat& p_quat);
@@ -71,7 +71,7 @@ struct Quaternion
 
 	static Matrix3x3 ToMatrix3x3(const Quat& p_quat);
 	static Matrix4x4 ToMatrix4x4(const Quat& p_quat);
-	static Quat FromMatrix4x4(const struct Matrix4x4& p_quat);
-	static Quat FromMatrix3x3(const struct Matrix3x3& p_quat);
+	static Quat FromMatrix4x4(const class Matrix4x4& p_quat);
+	static Quat FromMatrix3x3(const class Matrix3x3& p_quat);
 };
 

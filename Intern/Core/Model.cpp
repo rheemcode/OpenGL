@@ -1,5 +1,6 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
+#include "Mesh.h"
 #include "Model.h"
 
 bool ModelLoader::LoadModel(MODEL_FORMAT modelFormat, std::string_view p_filePath, Model* p_model)
@@ -32,7 +33,7 @@ bool ModelLoader::LoadModel(MODEL_FORMAT modelFormat, std::string_view p_filePat
 			auto& shapes = reader.GetShapes();
 			auto& materials = reader.GetMaterials();
 
-			for (size_t s = 0; shapes.size(); s++)
+			for (size_t s = 0; s < shapes.size(); s++)
 			{
 				size_t indexOffset = 0;
 				std::vector<VertexAttrib> vertexAttrib;
@@ -66,8 +67,7 @@ bool ModelLoader::LoadModel(MODEL_FORMAT modelFormat, std::string_view p_filePat
 				}
 
 				Material material;
-				Mesh mesh(vertexAttrib,indices, material);
-				p_model->AddMesh(std::move(mesh));
+				p_model->AddMesh(Mesh(vertexAttrib, indices, material));
 			}
 
 			return true;
@@ -82,7 +82,7 @@ bool ModelLoader::LoadModel(MODEL_FORMAT modelFormat, std::string_view p_filePat
 }
 void Model::AddMesh(Mesh&& p_mesh)
 {
-
+	m_meshes.push_back(std::move(p_mesh));
 }
 
 Model::Model()

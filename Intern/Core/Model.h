@@ -15,7 +15,7 @@ class ModelLoader
 {
 public:
 
-	bool LoadModel(MODEL_FORMAT modelFormat, std::string_view p_filePath, Model* p_model );
+	bool LoadModel(MODEL_FORMAT modelFormat, std::string_view p_filePath, class Model* p_model );
 };
 
 class Model

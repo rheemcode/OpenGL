@@ -73,6 +73,7 @@ public:
 
 	Transform();
 	Transform(Transform&& p_transform) noexcept;
+	Transform(const Transform& p_transform) noexcept;
 	Transform(const Matrix4x4& p_matrix);
 	Transform(const Vector3& p_position, const Vector3& p_scale, const Quaternion& p_rotation);
 

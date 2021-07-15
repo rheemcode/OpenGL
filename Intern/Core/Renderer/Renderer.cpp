@@ -140,17 +140,17 @@ void Renderer::Render(const MeshRendererComponent& p_rendererComponent)
 		attribs.Bind();
 
 		glBindTexture(GL_TEXTURE_2D, 0);
-		if (mesh.GetMaterial().Diffuse.get() != nullptr)
-			mesh.GetMaterial().Diffuse->Bind();
+		//if (mesh.GetMaterial().Diffuse.get() != nullptr)
+		//	mesh.GetMaterial().Diffuse->Bind();
 
 
 
 
-		shader.UploadUniformVec4("Material.Color", material.Color);
-		shader.UploadUniformFloat("Material.Shininess", material.Shininess);
-		shader.UploadUniformFloat("Material.SpecularHighlights", material.SpecularHighlights);
+		shader.UploadUniformVec4("Material.Color", Vector4(1.f, 0, 0, 1.f));
+		shader.UploadUniformFloat("Material.Shininess", 32.f);
+		shader.UploadUniformFloat("Material.SpecularHighlights", 1.f);
 
-		shader.UploadUniformMat4("model", *mesh.GetModelMatrix());
+		shader.UploadUniformMat4("model", Matrix4x4());
 		shader.UploadUniformFloat("AmbientEnergy", envLight.Energy);
 		shader.UploadUniformVec4("ViewPosition", { renderData.view[3].x, renderData.view[3].y, renderData.view[3].z, 1.0f });
 		RenderCommand::DrawIndexed(attribs);
@@ -320,7 +320,8 @@ void RenderCommand::Clear()
 void RenderCommand::DrawIndexed(const VertexArray& vertexArray)
 {
 	vertexArray.Bind();
-	glDrawElements(GL_TRIANGLES, vertexArray.GetIndicies(), GL_UNSIGNED_INT, 0);
+	//GLCall(glDrawElements(GL_TRIANGLES, vertexArray.GetIndicies(), GL_UNSIGNED_INT, 0));
+	glDrawArrays(GL_TRIANGLES, 0, vertexArray.GetIndicies());
 }
 
 void Renderer2D::Init()
@@ -417,7 +418,7 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Texture& texture)
 		
 		if (*m_Data.textures[i].get() == texture)
 		{
-			textureIndex = i + 1;
+			textureIndex = float(i + 1);
 			break;
 		}
 	}

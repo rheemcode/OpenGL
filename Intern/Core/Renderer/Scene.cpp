@@ -2,7 +2,9 @@
 #include <functional>
 #include <Window/Window.h>
 #include "Events/MouseEvent.h"
-
+#include "Actor.h"
+#include "Components/TransformComponent.h"
+#include "Components/MeshRendererComponent.h"
 
 Scene::EnviromentLight Scene::m_EnviromentLight;
 std::unique_ptr<Shader> Scene::sceneShader;
@@ -18,29 +20,32 @@ const std::array<std::unique_ptr<Light>, 10>& Scene::GetLight()
 {
 	return m_lights;
 }
-static float t = 0;
+
 int Scene::GetLightCount()
 {
 	return 1;
 }
+
 void Scene::OnUpdate()
-{
-
-	t += 0.0001;
-	if (t > 100)
-	{
-		t = 0;
-	}
-
-	
+{	
 	sceneCamera->OnUpdate();
 
 	Renderer::BeginScene(*sceneCamera);
-	for (auto &object : m_Primitives)
+
+	for (auto& actor : m_actors)
 	{
-		object->OnUpdate();
-		Renderer::Render(object);
+		if (auto cmp = actor->GetComponent("Renderer Component").lock())
+		{
+			const MeshRendererComponent& meshRenderer = *(MeshRendererComponent*)cmp.get();
+			Renderer::Render(meshRenderer);
+		}
 	}
+
+	//for (auto &object : m_Primitives)
+	//{
+		//object->OnUpdate();
+	//	Renderer::Render(object);
+	//}
 
 	Renderer::EndScene();
 }
@@ -49,6 +54,11 @@ void Scene::OnUpdate()
 void Scene::AddObject(std::unique_ptr<Primitive>& primitive)
 {
 	m_Primitives.push_back(std::move(primitive));
+}
+
+void Scene::AddActor(std::shared_ptr<Actor>& p_actor)
+{
+	m_actors.push_back(p_actor);
 }
 
 
@@ -127,8 +137,14 @@ Scene::Scene()
 	pLight->Use = true;
 	m_lights[0] = std::move(pLight);
 
+	std::shared_ptr<Actor> actor = std::make_shared<Actor>();
+	std::shared_ptr<TransformComponent> tComponent = std::make_shared<TransformComponent>(actor);
+	std::shared_ptr<MeshRendererComponent> renderComponent = std::make_shared<MeshRendererComponent>(actor, "./Madara_Uchiha.obj");
+	actor->AddComponent(tComponent);
+	actor->AddComponent(renderComponent);
+
+	AddActor(actor);
 	AddObject(testCube);
-	AddObject(testSphere);
 	AddObject(testPlane);
 
 }

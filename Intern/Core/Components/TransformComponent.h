@@ -12,8 +12,8 @@ protected:
 	virtual std::string GetComponentNameImpl() const override { return "Transform Component"; }
 public:
 	const std::shared_ptr<Transform>& GetTransform() const { return m_transform; }
-	TransformComponent();
-	TransformComponent(Transform&& p_transform);
-	TransformComponent(const Matrix4x4& p_matrix);
-	TransformComponent(const Vector3& p_position, const Vector3& p_scale, const Quaternion& p_rotation);
+	TransformComponent(std::shared_ptr<Actor> p_actor);
+	TransformComponent(std::shared_ptr<Actor> p_actor, Transform&& p_transform);
+	TransformComponent(std::shared_ptr<Actor> p_actor, const Matrix4x4& p_matrix);
+	TransformComponent(std::shared_ptr<Actor> p_actor, const Vector3& p_position, const Vector3& p_scale, const Quaternion& p_rotation);
 };

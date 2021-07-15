@@ -41,8 +41,8 @@ void Sphere::GenSphereVertices()
 {
     std::vector<VertexAttrib> attrib;
 
-    float sectorStep = 2 * PI / m_SectorSegments;
-    float stackStep = PI / m_StackSegments;
+    float sectorStep = 2.f * PI / m_SectorSegments;
+    float stackStep = float(PI / m_StackSegments);
     
     float lengthInv = 1.0f / m_radius;
     float sectorAngle, stackAngle;
@@ -50,7 +50,7 @@ void Sphere::GenSphereVertices()
     
     for (int i = 0; i <= m_StackSegments; ++i)
     {
-        stackAngle = PI / 2 - i * stackStep;
+        stackAngle = PI / 2.f - i * stackStep;
         xy = m_radius * Math::Cos(stackAngle);
         z = m_radius * Math::Sin(stackAngle);
    
@@ -125,7 +125,7 @@ void Sphere::GenIndicies()
         }
     }
 
-    m_Va->SetIndices(indices.data(), indices.size());
+    m_Va->SetIndices(indices.data(), uint32_t(indices.size()));
 }
 
 

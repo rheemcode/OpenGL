@@ -3,7 +3,6 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "Camera.h"
 #include "Math/Quaternion.h"
-#include "Core/Model.h"
 
 Cube::Cube()
 {
@@ -19,8 +18,6 @@ Cube::Cube()
 	transform = Matrix4x4::Scale(transform, { 2.f, 2.f, 2.f });
 	transform = Matrix4x4::Translate(transform, Vector3(0, -2.f, 0.f));
 
-	ModelLoader loader;
-	loader.LoadModel(ModelLoader::OBJ, "./Madara_Uchiha.obj");
 }
 
 
@@ -84,21 +81,8 @@ const Shader& Plane::GetShader() const
 	return *m_Shader;
 }
 
-static float t = 0;
-static Quaternion rot;
 void Cube::OnUpdate()
 {
-	t += 0.1;
-	if (t >= 100)
-	{
-		t = 0;
-	}
-	rot = Quaternion::RotateY(Math::Deg2Rad(t + 0.012f));
-	//rot = rot * Quaternion::RotateZ(Math::Deg2Rad(t));
-	// = rot * Quaternion::RotateX(-Math::Deg2Rad(t));
-	//transform = Matrix4x4::Rotate(transform, rot);
-
-	//transform = Matrix4x4::Rotate(transform, Quaternion::Roll(Math::Deg2Rad(t)));
 }
 
 
@@ -140,7 +124,7 @@ void Cube::GenVertices()
 
 		
 			normal_points[j] = Vector3();
-			normal_points[j][i % 3] = (i >= 3 ? -1 : 1);
+			normal_points[j][i % 3] = float(i >= 3 ? -1 : 1);
 		}
 
 		VertexAttrib a;
@@ -182,7 +166,7 @@ void Cube::GenVertices()
 		{GL_FLOAT, 2, 2, 0},
 		});
 	
-	m_Va->SetIndices(indices.data(), indices.size());
+	m_Va->SetIndices(indices.data(), uint32_t(indices.size()));
 	m_Va->AddBuffer(*m_Vb);
 	
 }

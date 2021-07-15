@@ -3,18 +3,17 @@
 #include <memory>
 #include <Actor.h>
 
+
 enum ComponentCategory
 {
-	None = 0,
-	Renderable,
+	Renderable = 1,
 	Transformable,
 	Script
 };
-
 class Component
 {
 	bool enabled;
-	Actor* m_actor;
+	std::shared_ptr<Actor> m_actor;
 protected:
 	virtual std::string GetComponentNameImpl() const = 0;
 	virtual ComponentCategory GetComponentCategoryImpl() const = 0;
@@ -29,5 +28,5 @@ public:
 	virtual void OnUpdate() {}
 	virtual void OnEvent() {}
 
-	Component(Actor* p_actor);
+	Component(std::shared_ptr<Actor> p_actor);
 };
