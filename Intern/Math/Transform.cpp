@@ -87,6 +87,15 @@ Transform::Transform()
 	hasParent = false;
 }
 
+Transform::Transform(Transform&& p_transform) noexcept
+{
+	m_localPosition = std::move(p_transform.m_localPosition);
+	m_localRotation = std::move(p_transform.m_localRotation);
+	m_localScale    = std::move(p_transform.m_localScale);
+	m_localMatrix   = std::move(p_transform.m_localMatrix);
+	m_worldMatrix   = std::move(p_transform.m_worldMatrix);
+}
+
 Transform::Transform(const Matrix4x4& p_matrix)
 {
 	m_localMatrix = p_matrix;

@@ -10,8 +10,8 @@ uint32_t Texture::texturesIDs[32];
 void Texture::Bind()
 {
 
-	glActiveTexture(GL_TEXTURE0 + (m_ID - 1));
-	glBindTexture(GL_TEXTURE_2D, m_ID);
+	GLCall(glActiveTexture(GL_TEXTURE0 + (m_ID - 1)));
+	GLCall(glBindTexture(GL_TEXTURE_2D, m_ID));
 }
 
 void Texture::Bind(uint32_t p_val)

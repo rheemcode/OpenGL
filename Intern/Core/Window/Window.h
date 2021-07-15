@@ -148,19 +148,6 @@ public:
 
 };
 
-class Console
-{
-	static Console* s_Instance;
-	void Init();
-public:
-
-	
-	static void Log(const char* msg);
-	static void Error(const char* msg);
-	static void Create();
-
-};
-
 class Display
 {
 	static Display* s_Instance;

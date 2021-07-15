@@ -3,6 +3,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "Camera.h"
 #include "Math/Quaternion.h"
+#include "Core/Model.h"
 
 Cube::Cube()
 {
@@ -13,8 +14,13 @@ Cube::Cube()
 	m_material->Shininess = 12.f;
 	m_material->SpecularHighlights = 1.f;
 
+
+	m_material->Diffuse = std::make_unique<Texture>("C:/Users/rheen/source/repos/OpenGL/src/container2.png");
 	transform = Matrix4x4::Scale(transform, { 2.f, 2.f, 2.f });
 	transform = Matrix4x4::Translate(transform, Vector3(0, -2.f, 0.f));
+
+	ModelLoader loader;
+	loader.LoadModel(ModelLoader::OBJ, "./Madara_Uchiha.obj");
 }
 
 

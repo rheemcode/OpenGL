@@ -1,7 +1,8 @@
 #include "Renderer.h"
 #include "Renderer/Debug.h"
 #include "Renderer.h"
-#include <Renderer/Scene.h>
+#include "Renderer/Scene.h"
+#include "Components/MeshRendererComponent.h"
 
 RendererData Renderer::renderData;
 
@@ -27,24 +28,135 @@ void Renderer::BeginScene(const Camera& camera )
 
 
 void Renderer::Render(const Primitive& primitive)
+{	
+}
+
+void Renderer::Render(const MeshRendererComponent& p_rendererComponent)
 {
-	//auto envLight = Scene::GetEnviromentLight();
-	//const auto& attribs = primitive.GetVertexAttribs();
-	//attribs.Bind();
-	//const auto& shader = primitive.GetShader();
-	//shader.UploadUniformMat4("view", view);
-	//shader.UploadUniformMat4("proj", proj);
-	//shader.UploadUniformMat4("model", primitive.GetTransform());
+	const auto& envLight = Scene::GetEnviromentLight();
+	const auto& lights = Scene::GetLight();
+	const auto& shader = *Scene::sceneShader;
 
-	//shader.UploadUniformVec3("LightPosition", envLight.lightPos);
-	//shader.UploadUniformVec4("AmbientColor", envLight.ambientColor);
-	//shader.UploadUniformVec4("LightColor", envLight.lightColor);
-	//shader.UploadUniformFloat("AmbientStrength", envLight.ambientStrength);
-	//shader.UploadUniformFloat("Shininess", .45f);
-	//shader.UploadUniformVec3("ViewPosition", envLight.lightPos);
-	//RenderCommand::DrawIndexed(attribs);
+	for (int i = 0; i < Scene::GetLightCount(); ++i)
+	{
+		auto& light = lights[i];
+		std::stringstream ss;
 
-	
+		if (light->LightSource == light->DIRECTIONAL_LIGHT)
+		{
+			ss << "Lights[" << i << "]." << "LightType";
+			shader.UploadUniformInt(ss.str(), light->LightSource);
+			ss.str(std::string());
+			ss << "Lights[" << i << "]." << "Ambient";
+			shader.UploadUniformVec3(ss.str(), envLight.Ambient);
+			ss.str(std::string());
+			ss << "Lights[" << i << "]." << "Color";
+			shader.UploadUniformVec3(ss.str(), light->LightColor);
+			ss.str(std::string());
+			ss << "Lights[" << i << "]." << "Direction";
+			shader.UploadUniformVec3(ss.str(), light->Direction);
+			ss.str(std::string());
+			ss << "Lights[" << i << "]." << "Use";
+			shader.UploadUniformInt(ss.str(), light->Use);
+			ss.str(std::string());
+			ss << "Lights[" << i << "]." << "Energy";
+			shader.UploadUniformFloat(ss.str(), light->Energy);
+			ss.str(std::string());
+		}
+		else if (light->LightSource == light->POINT_LIGHT)
+		{
+			const auto pLight = &(PointLight&)*light;
+			ss << "Lights[" << i << "]." << "LightType";
+			shader.UploadUniformInt(ss.str(), pLight->LightSource);
+			ss.str(std::string());
+			ss << "Lights[" << i << "]." << "Ambient";
+			shader.UploadUniformVec3(ss.str(), envLight.Ambient);
+			ss.str(std::string());
+			ss << "Lights[" << i << "]." << "Color";
+			shader.UploadUniformVec3(ss.str(), pLight->LightColor);
+			ss.str(std::string());
+			ss << "Lights[" << i << "]." << "Direction";
+			shader.UploadUniformVec3(ss.str(), pLight->Direction);
+			ss.str(std::string());
+			ss << "Lights[" << i << "]." << "Position";
+			shader.UploadUniformVec3(ss.str(), pLight->Position);
+			ss.str(std::string());
+			ss << "Lights[" << i << "]." << "Energy";
+			shader.UploadUniformFloat(ss.str(), pLight->Energy);
+			ss.str(std::string());
+			ss << "Lights[" << i << "]." << "Radius";
+			shader.UploadUniformFloat(ss.str(), pLight->Radius);
+			ss.str(std::string());
+			ss << "Lights[" << i << "]." << "LightAttenuation";
+			shader.UploadUniformVec2(ss.str(), pLight->LightAttenuation);
+			ss.str(std::string());
+			ss << "Lights[" << i << "]." << "Use";
+			shader.UploadUniformInt(ss.str(), pLight->Use);
+			ss.str(std::string());
+		}
+		else
+		{
+			const auto spLight = &(SpotLight&)*light;
+			ss << "Lights[" << i << "]." << "LightType";
+			shader.UploadUniformInt(ss.str(), spLight->LightSource);
+			ss.str(std::string());
+			ss << "Lights[" << i << "]." << "Ambient";
+			shader.UploadUniformVec3(ss.str(), envLight.Ambient);
+			ss.str(std::string());
+			ss << "Lights[" << i << "]." << "Color";
+			shader.UploadUniformVec3(ss.str(), spLight->LightColor);
+			ss.str(std::string());
+			ss << "Lights[" << i << "]." << "Direction";
+			shader.UploadUniformVec3(ss.str(), spLight->Direction);
+			ss.str(std::string());
+			ss << "Lights[" << i << "]." << "Position";
+			shader.UploadUniformVec3(ss.str(), spLight->Position);
+			ss.str(std::string());
+			ss << "Lights[" << i << "]." << "Energy";
+			shader.UploadUniformFloat(ss.str(), spLight->Energy);
+			ss.str(std::string());
+			ss << "Lights[" << i << "]." << "Radius";
+			shader.UploadUniformFloat(ss.str(), spLight->Radius);
+			ss.str(std::string());
+			ss << "Lights[" << i << "]." << "LightAttenuation";
+			shader.UploadUniformVec2(ss.str(), spLight->LightAttenuation);
+			ss.str(std::string());
+			ss << "Lights[" << i << "]." << "Cutoff";
+			shader.UploadUniformFloat(ss.str(), spLight->innerCutoff);
+			ss.str(std::string());
+			ss << "Lights[" << i << "]." << "OuterCutoff";
+			shader.UploadUniformFloat(ss.str(), spLight->outerCutoff);
+			ss.str(std::string());
+			ss << "Lights[" << i << "]." << "Use";
+			shader.UploadUniformInt(ss.str(), spLight->Use);
+		}
+	}
+
+
+	for (auto& mesh : p_rendererComponent.GetMeshes())
+	{
+		const auto& material = mesh.GetMaterial();
+		const auto& attribs  = mesh.GetVertexAttribs();
+		attribs.Bind();
+
+		glBindTexture(GL_TEXTURE_2D, 0);
+		if (mesh.GetMaterial().Diffuse.get() != nullptr)
+			mesh.GetMaterial().Diffuse->Bind();
+
+
+
+
+		shader.UploadUniformVec4("Material.Color", material.Color);
+		shader.UploadUniformFloat("Material.Shininess", material.Shininess);
+		shader.UploadUniformFloat("Material.SpecularHighlights", material.SpecularHighlights);
+
+		shader.UploadUniformMat4("model", *mesh.GetModelMatrix());
+		shader.UploadUniformFloat("AmbientEnergy", envLight.Energy);
+		shader.UploadUniformVec4("ViewPosition", { renderData.view[3].x, renderData.view[3].y, renderData.view[3].z, 1.0f });
+		RenderCommand::DrawIndexed(attribs);
+	}
+
+
 }
 
 void Renderer::Render(const std::unique_ptr<Primitive>& primitive)
@@ -155,6 +267,9 @@ void Renderer::Render(const std::unique_ptr<Primitive>& primitive)
 			shader.UploadUniformInt(ss.str(), spLight->Use);
 		}
 	}
+	glBindTexture(GL_TEXTURE_2D, 0);
+	if (primitive->GetMaterial().Diffuse.get() != nullptr)
+		primitive->GetMaterial().Diffuse->Bind();
 
 	shader.UploadUniformVec4("Material.Color", material.Color);
 	shader.UploadUniformFloat("Material.Shininess", material.Shininess);

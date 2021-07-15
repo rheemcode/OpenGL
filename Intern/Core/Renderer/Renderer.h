@@ -34,7 +34,7 @@ struct Renderer2DData {
 
     std::unique_ptr<VertexArray> m_vao;
     std::unique_ptr<VertexBuffer> m_vb;
-    std::unique_ptr < Shader> shader;
+    std::unique_ptr<Shader> shader;
 
     std::array<std::unique_ptr<Texture>, 32> textures;
 
@@ -82,6 +82,7 @@ public:
    static void BeginScene(const Camera& camera);
    //void Render(const Primitive& primitive, const Light& light);
    static void Render(const Primitive& primitive);
+   static void Render(const class MeshRendererComponent& p_rendererComponent);
    static void Render(const std::unique_ptr<Primitive>& primitive);
    void SetViewport(float x, float y, float width, float height);
    static void EndScene();

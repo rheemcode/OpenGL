@@ -8,9 +8,12 @@ struct Material
 	struct
 	{
 		Vector4 Color;
-		std::unique_ptr<Texture> texture;
+		std::unique_ptr<Texture> Diffuse;
 	};
-	
+
+	Vector3 Diffuse;
+	Vector3 Ambient;
+	Vector3 Specular; 
 	float Shininess;
 	float SpecularHighlights;
 	bool SSAO;

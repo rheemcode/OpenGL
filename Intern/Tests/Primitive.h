@@ -5,20 +5,9 @@
 #include "Renderer/Shader.h"
 #include "Renderer/Buffers/IndexBuffer.h"
 #include "Renderer/VertexArray.h"
-#include <glm/glm.hpp>
-#include "glm/gtc/matrix_transform.hpp"
 #include "Math/Matrix4x4.h"
 #include "Renderer/Material.h"
-
-struct vec3 { float x, y, z; };
-struct vec4 { float x, y, z, w; };
-
-struct VertexAttrib
-{
-    Vector3 vertices;
-    Vector3 normals;
-    Vector2 uv;
-};
+#include "Core/Mesh.h"
 
 class Primitive : public Object
 {

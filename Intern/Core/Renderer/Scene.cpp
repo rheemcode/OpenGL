@@ -102,7 +102,7 @@ Scene::Scene()
 
 
 	sceneCamera = std::make_unique<SceneCamera>(cameraSettings);
-	sceneShader = std::make_unique<Shader>("src/Shaders/lighting.shader");
+	sceneShader = std::make_unique<Shader>("Intern/Shaders/lighting.shader");
 	sceneShader->Bind();
 	
 //	InitLightUniforms();
@@ -114,16 +114,16 @@ Scene::Scene()
 	m_EnviromentLight.Ambient = { 1.f, 1.f, 1.f};
 	m_EnviromentLight.Energy = .19f;
 	
-	auto pLight = std::make_unique<SpotLight>();
+	auto pLight = std::make_unique<PointLight>();
 	pLight->LightColor = { .7f, .7f, .7f};
 	pLight->Energy = 1.5f;
-	pLight->Direction = { 0, -1.f, -.36f };
-	pLight->LightSource = Light::SPOT_LIGHT;
-	pLight->Position = { 0, 3.f, 0.f };
-	pLight->Radius = 5.2f;
-	pLight->LightAttenuation = { 1.004f, 1.002f };
-	pLight->innerCutoff = Math::Cos(Math::Deg2Rad(45.f));
-	pLight->outerCutoff = Math::Cos(Math::Deg2Rad(45.f));;
+	pLight->Direction = { 0, -1.f, -.76f };
+	pLight->LightSource = Light::POINT_LIGHT;
+	pLight->Position = { 0, .7f, -1.f };
+	pLight->Radius = 4.f;
+	pLight->LightAttenuation = { 1.f, 1.f };
+//	pLight->innerCutoff = Math::Cos(Math::Deg2Rad(30.f));
+//	pLight->outerCutoff = Math::Cos(Math::Deg2Rad(35.f));;
 	pLight->Use = true;
 	m_lights[0] = std::move(pLight);
 

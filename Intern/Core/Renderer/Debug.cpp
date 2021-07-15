@@ -1,7 +1,7 @@
 #include "Debug.h"
 #include <iostream>
 #include <sstream>
-#include "Window/Window.h"
+#include "Core/Console.h"
 
 void GLClearError()
 {

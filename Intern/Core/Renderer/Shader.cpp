@@ -1,10 +1,10 @@
 #include "Shader.h"	
-#include <GLEW/include/GL/glew.h>
+#include <GL/glew.h>
 #include <iostream>
 #include <sstream>
 #include "Debug.h"
 #include "Math/Vector2.h"
-#include "Window/Window.h"
+#include "Core/Console.h"
 
 Shader::Shader(const std::string& filePath)
 {
