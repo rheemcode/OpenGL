@@ -237,7 +237,7 @@ LRESULT Display::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam)
 					Input::SetAxis(Input::AXIS_X, dx);
 					Input::SetAxis(Input::AXIS_Y, dy);
 
-					mm.SetRelative(dx, dy);
+					mm.SetRelative(float(dx), float(dy));
 					oldMouseX = coords.x;
 					oldMouseY = coords.y;
 
@@ -287,7 +287,7 @@ LRESULT Display::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam)
 
 			if (m_mouseMode == MOUSE_MODE_CAPTURED)
 			{
-				Point2 c(m_Windows[windowID]->GetWidth() / 2, m_Windows[windowID]->GetHeight() / 2);
+				Point2 c(m_Windows[windowID]->GetWidth() / 2.f, m_Windows[windowID]->GetHeight() / 2.f);
 				oldMouseX = c.x;
 				oldMouseY = c.y;
 
@@ -1412,10 +1412,10 @@ Display::Display(HINSTANCE p_hInstance, WindowFlags p_flags, WindowMode p_mainWi
 
 	Point2 mainWinPos((GetScreenSize(0).width - p_windowSize.width) / 2, (GetScreenSize(0).height - p_windowSize.height) /2);
 	RECT winrect;
-	winrect.left = mainWinPos.x;
-	winrect.top = mainWinPos.y;
-	winrect.right = p_windowSize.x;
-	winrect.bottom = p_windowSize.y;
+	winrect.left = LONG(mainWinPos.x);
+	winrect.top = LONG(mainWinPos.y);
+	winrect.right = LONG(p_windowSize.x);
+	winrect.bottom = LONG(p_windowSize.y);
 	Window* window = m_Windows[CreateWindowDisplay(p_mainWindowMode, L"ENGINE", p_flags, winrect)];
 
 	window->GetWindowData().isBorderless = p_flags & WINDOW_FLAG_BORDERLESS_BIT;

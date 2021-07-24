@@ -6,6 +6,7 @@
 #include "Renderer/Buffers/UniformBuffer.h"
 #include <Tests/Sprite.h>
 #include <Tests/Cube.h>
+#include <memory>
 #include <array>
 #include <Tests/Sphere.h>
 
@@ -82,7 +83,8 @@ public:
    static void BeginScene(const Camera& camera);
    //void Render(const Primitive& primitive, const Light& light);
    static void Render(const Primitive& primitive);
-   static void Render(const class MeshRendererComponent& p_rendererComponent);
+   static void Render(std::shared_ptr<class MeshRendererComponent> p_rendererComponent, const Frustum& p_frustum);
+   //static void Render(std::shared_ptr<class MeshRendererComponent> p_rendererComponent);
    static void Render(const std::unique_ptr<Primitive>& primitive);
    void SetViewport(float x, float y, float width, float height);
    static void EndScene();

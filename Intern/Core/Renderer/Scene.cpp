@@ -1,15 +1,19 @@
 #include "Scene.h"
+#include "Actor.h"
 #include <functional>
 #include <Window/Window.h>
 #include "Events/MouseEvent.h"
-#include "Actor.h"
 #include "Components/TransformComponent.h"
 #include "Components/MeshRendererComponent.h"
+
+#include <thread>
+
 
 Scene::EnviromentLight Scene::m_EnviromentLight;
 std::unique_ptr<Shader> Scene::sceneShader;
 std::array<std::unique_ptr<Light>, 10> Scene::m_lights;
 uint32_t Scene::lightCount;
+
 
 const Scene::EnviromentLight& Scene::GetEnviromentLight()
 {
@@ -26,18 +30,33 @@ int Scene::GetLightCount()
 	return 1;
 }
 
+using namespace std::literals::chrono_literals;
+void Scene::Process()
+{
+	while (s_active)
+	{
+		sceneCamera->OnUpdate();
+		std::this_thread::sleep_for(2ms);
+	}
+}
+
 void Scene::OnUpdate()
 {	
-	sceneCamera->OnUpdate();
+	Timer timer;
+
 
 	Renderer::BeginScene(*sceneCamera);
 
 	for (auto& actor : m_actors)
 	{
-		if (auto cmp = actor->GetComponent("Renderer Component").lock())
+		if (const std::shared_ptr<Component> cmp = actor->GetComponent("Renderer Component").lock())
 		{
-			const MeshRendererComponent& meshRenderer = *(MeshRendererComponent*)cmp.get();
-			Renderer::Render(meshRenderer);
+			auto c = std::dynamic_pointer_cast<MeshRendererComponent, Component>(cmp);
+			auto meshRenderer = std::dynamic_pointer_cast<MeshRendererComponent, Component>(cmp);
+
+			Renderer::Render(meshRenderer, sceneCamera->GetFrustum());
+			int* p = new int(1);
+			
 		}
 	}
 
@@ -76,29 +95,14 @@ void Scene::OnEvent(const Event& event)
 
 }
 
-//void Scene::InitLightUniforms()
-//{
-//	auto program = sceneShader->GetProgram();
-//
-//	lightsBufferBinding = glGetUniformBlockIndex(program, "U_DirectionalLight");
-//
-//	glGetActiveUniformBlockiv(program, lightsBufferBinding, GL_UNIFORM_BLOCK_DATA_SIZE, &lightsBufferSize);
-//	lightsBufferData = new LightUniformBuffer();
-//	auto si = sizeof(LightUniformBuffer);
-//	const char* names[4] = {  "U_DirectionalLight.LightColor", "U_DirectionalLight.Direction", "U_DirectionalLight.Energy", "U_DirectionalLight.use" };
-//	glGetUniformIndices(program, 4, names, indices);
-//
-//	glGetActiveUniformsiv(program, 4, indices, GL_UNIFORM_OFFSET, offset);
-//	glGetActiveUniformsiv(program, 4, indices, GL_UNIFORM_SIZE, size);
-//	glGetActiveUniformsiv(program, 4, indices, GL_UNIFORM_TYPE, type);
-//	
-//	m_LightsBuffer = std::make_unique<UniformBuffer>(lightsBufferSize, lightsBufferBinding);
-//	delete names;
-//}
+void Scene::Shutdown()
+{
+	s_active = false;
+}
 
 Scene::Scene()
 {
-
+	s_active = true;
 	Display* display = Display::GetSingleton();
 	display->m_Windows[0]->BindEventCallback(std::bind(&Scene::OnEvent, this, std::placeholders::_1));
 
@@ -119,18 +123,18 @@ Scene::Scene()
 
 	std::unique_ptr<Primitive> testCube = std::make_unique<Cube>();
 	std::unique_ptr<Primitive> testSphere = std::make_unique<Sphere>(18, 36, 1.2f);
-	std::unique_ptr<Primitive> testPlane = std::make_unique<Plane>();
+	//std::unique_ptr<Primitive> testPlane = std::make_unique<Plane>();
 
 	m_EnviromentLight.Ambient = { 1.f, 1.f, 1.f};
 	m_EnviromentLight.Energy = .19f;
 	
-	auto pLight = std::make_unique<PointLight>();
-	pLight->LightColor = { .7f, .7f, .7f};
+	auto pLight = std::make_unique<DirectionalLight>();
+	pLight->LightColor = { 1.0f, 1.f, 1.0f};
 	pLight->Energy = 1.5f;
-	pLight->Direction = { 0, -1.f, -.76f };
-	pLight->LightSource = Light::POINT_LIGHT;
+	pLight->Direction = { 0, -.1f, -0.3f };
+	pLight->LightSource = Light::DIRECTIONAL_LIGHT;
 	pLight->Position = { 0, .7f, -1.f };
-	pLight->Radius = 4.f;
+//	pLight->Radius = 4.f;
 	pLight->LightAttenuation = { 1.f, 1.f };
 //	pLight->innerCutoff = Math::Cos(Math::Deg2Rad(30.f));
 //	pLight->outerCutoff = Math::Cos(Math::Deg2Rad(35.f));;
@@ -145,6 +149,5 @@ Scene::Scene()
 
 	AddActor(actor);
 	AddObject(testCube);
-	AddObject(testPlane);
-
+	//AddObject(testPlane);
 }

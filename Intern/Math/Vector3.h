@@ -4,12 +4,14 @@
 #include "Math/Math.h"
 #include "Vector2.h"
 #include "SimpleVec.h"
+#include <functional>
+
 
 struct Vector3
 {
 	Vector3() : x(0), y(0), z(0) {}
 	Vector3(float p_x, float p_y, float p_z) 
-			:x (p_x), y(p_y), z(p_z) {}
+			:x (p_x), y(p_y), z(p_z) {}	
 	Vector3(const struct Vector2& p_vec);
 	Vector3(const Vector3& p_vec) 
 		: x(p_vec.x), y(p_vec.y), z(p_vec.z) {}
@@ -349,12 +351,22 @@ inline bool Vector3::operator>=(const Vector3& p_v) const {
 	return x > p_v.x;
 }
 
-
-
 inline Vector3& Vector3::operator=(const SimpleVec4& p_v)
 {
 	this->x = p_v.x;
 	this->y = p_v.y;
 	this->z = p_v.z;
 	return *this;
+}
+
+namespace std
+{
+	template<>
+	struct hash<Vector3>
+	{
+		size_t operator()(const Vector3& p_vec) const
+		{
+			return hash<float>()(p_vec.x) ^ (hash<float>()(p_vec.y) * 997u) ^ (hash<float>()(p_vec.z) * 999983u);
+		}
+	};
 }

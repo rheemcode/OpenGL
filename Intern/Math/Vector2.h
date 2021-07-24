@@ -2,6 +2,7 @@
 
 #define NO_FDECL
 #include "Math/Math.h"
+#include <functional>
 
 struct Vector2
 {
@@ -167,4 +168,16 @@ inline bool Vector2::operator==(const Vector2& p_vec2) const {
 
 inline bool Vector2::operator!=(const Vector2& p_vec2) const {
 	return x != p_vec2.x || y != p_vec2.y;
+}
+
+namespace std
+{
+	template<>
+	struct hash<Vector2>
+	{
+		size_t operator()(const Vector2& p_vec) const
+		{
+			return hash<float>()(p_vec.x) ^ (hash<float>()(p_vec.y) * 997u);
+		}
+	};
 }

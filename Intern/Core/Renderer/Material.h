@@ -16,4 +16,8 @@ struct Material
 	float Shininess;
 	float SpecularHighlights;
 	bool SSAO;
+
+	Material()
+		:Shininess(0), SpecularHighlights(0), SSAO(false){};
+	Material(const Material& p_mat) = default;
 };

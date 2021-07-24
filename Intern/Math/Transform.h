@@ -1,5 +1,6 @@
 #pragma once
 #include "Vector3.h"
+#include "Math/Matrix3x3.h"
 #include "Matrix4x4.h"
 #include "Quaternion.h"
 
@@ -15,8 +16,7 @@ class Transform
 	Matrix4x4 m_localMatrix;
 	Matrix4x4 m_worldMatrix;
 
-	Transform* m_parent;
-	Matrix4x4* m_parentWorldMatrix;
+	const Transform* m_parent;
 	bool hasParent;
 	bool transformDirty;
 
@@ -24,10 +24,9 @@ public:
 	void UpdateTransform();
 	void ApplyTransform();
 	void GenerateMatrix(const Vector3& p_position, const Vector3& p_scale, const Quaternion& p_rotation);
-	void SetParent(Transform& p_parent);
+	void SetParent(const Transform& p_parent);
 	bool RemoveParent(const Transform& p_parent);
 
-	void SetWorldMatrix(const Matrix4x4& p_matrix);
 	const Matrix4x4& GetWorldMatrix() const { return m_worldMatrix;  }
 
 	void SetLocalMatrix(const Matrix4x4& p_matrix);
@@ -73,7 +72,7 @@ public:
 
 	Transform();
 	Transform(Transform&& p_transform) noexcept;
-	Transform(const Transform& p_transform) noexcept;
+	Transform(const Transform& p_transform);
 	Transform(const Matrix4x4& p_matrix);
 	Transform(const Vector3& p_position, const Vector3& p_scale, const Quaternion& p_rotation);
 

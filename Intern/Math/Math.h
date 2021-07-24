@@ -16,6 +16,19 @@ namespace Math
 	#define PI 3.1415926535897932384626433833
 	#define Math_INF INFINITY
 	#define Math_NAN NAN
+	
+	#ifdef _SWAP
+	#define SWAP(m_x, m_y) Math::__swap_tmpl((m_x), (m_y))
+	template <class T>
+	inline void __swap_tmpl(T& x, T& y) {
+		T aux = x;
+		x = y;
+		y = aux;
+	}
+	#endif
+
+	#define MIN(m_a, m_b) (((m_a) < (m_b)) ? (m_a) : (m_b))
+	#define MAX(m_a, m_b) (((m_a) > (m_b)) ? (m_a) : (m_b))
 
 	template<typename T>
 	static T Cos(T p_x) {}
@@ -138,10 +151,10 @@ namespace Math
 		 return p_current + Sign(p_target - p_current) * p_maxdelta;
 	 }
 
-	static  double Round(double p_val) { return (p_val >= 0) ? Floor(p_val + 0.5) : -Floor(-p_val + 0.5); }
-	static  float Round(float p_val) { return (p_val >= 0.f) ? Floor(p_val + 0.5f) : -Floor(-p_val + 0.5f); }
+	static double Round(double p_val) { return (p_val >= 0) ? Floor(p_val + 0.5) : -Floor(-p_val + 0.5); }
+	static float Round(float p_val) { return (p_val >= 0.f) ? Floor(p_val + 0.5f) : -Floor(-p_val + 0.5f); }
 
-	static  float Clamp(float p_val, float p_min, float p_max)
+	static float Clamp(float p_val, float p_min, float p_max)
 	 {
 		 if (p_val < p_min)
 			 p_val = p_min;
@@ -150,7 +163,7 @@ namespace Math
 			 return p_val;
 	 }
 
-	static  float ClampInt(int p_val, int p_min, int p_max)
+	static float ClampInt(int p_val, int p_min, int p_max)
 	 {
 		 if (p_val < p_min)
 			 p_val = p_min;

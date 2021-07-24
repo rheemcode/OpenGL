@@ -5,7 +5,8 @@
 #include "Renderer/Renderer.h"
 #include "Math/Transform.h"
 #include "Events/Event.h"
-
+#include "Console.h"
+#include <chrono>
 
 struct Light
 {
@@ -56,6 +57,27 @@ struct LightUniformBuffer
 	bool Use;
 };
 
+struct Timer
+{
+	std::chrono::steady_clock::time_point start;
+	std::chrono::duration<float> duration;
+	Timer()
+	{
+		start = std::chrono::high_resolution_clock().now();
+	}
+
+	~Timer()
+	{
+		auto end = std::chrono::high_resolution_clock().now();
+		duration = end - start;
+		Console::Log("function took:");
+		Console::Log(std::to_string(duration.count() * 1000.f));
+		Console::Log("ms\n");
+		Console::Log(std::to_string(duration.count()));
+		Console::Log("s\n");
+	}
+};
+
 class Scene
 {
 	enum DrawMode
@@ -70,6 +92,7 @@ class Scene
 		float Energy;
 	};
 
+	bool s_active;
 	static uint32_t lightCount;
 	static std::array<std::unique_ptr<Light>, 10> m_lights;
 	static EnviromentLight m_EnviromentLight;
@@ -80,7 +103,6 @@ class Scene
 	std::unique_ptr<SceneCamera> sceneCamera;
 	static std::unique_ptr<Shader> sceneShader;
 	
-
 	friend class Renderer;
 	static const EnviromentLight& GetEnviromentLight();
 	static const std::array<std::unique_ptr<Light>, 10>& GetLight();
@@ -88,11 +110,13 @@ class Scene
 
 public:
 
+	void Process();
+
 	void OnUpdate();
 	void AddObject(std::unique_ptr<Primitive>& primitive);
 	void AddActor(std::shared_ptr<class Actor>& p_actor);
 	void OnEvent(const Event& event);
-
+	void Shutdown();
 //	void InitLightUniforms();
 	
 	Scene();

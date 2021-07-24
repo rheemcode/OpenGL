@@ -14,7 +14,8 @@
 #include <Tests/Quad.h>
 #include <Renderer/Scene.h>
 #include <string_view>
-
+#include <utility>
+#include <thread>
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PWSTR pCmdLine, int nCmdShow)
 {
@@ -42,7 +43,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PWSTR pCmdLine,
 
 	renderer2D.Init();
 
-
+	std::thread t(&Scene::Process, scene);
 
 	while (!Display::isCloseRequest)
 	{
@@ -52,4 +53,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PWSTR pCmdLine,
 		display->SwapBuffer();
 		display->ProcessEvents();
 	}
+	scene->Shutdown();
+	t.join();
 }

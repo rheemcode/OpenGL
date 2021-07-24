@@ -20,36 +20,36 @@ Cube::Cube()
 
 }
 
-
-Plane::Plane()
-{
-	m_Va = std::make_unique<VertexArray>();
-
-	float vertexAttribs[] =
-	{
-		-0.5f, 0.f,  0.5f,  0.f, 1.f, 0.f, 0.f, 0.f,
-		  0.5f, 0.f,  0.5f,  0.f, 1.f, 0.f, 1.f, 0.f,
-		 -0.5f, 0.f, -0.5f, 0.f, 1.f, 0.f, 1.f, 1.f,
-		 0.5f, 0.f, -0.5f,  0.f, 1.f, 0.f, 0.f, 1.f
-	};
-
-	uint32_t indices[] = { 0, 1, 2, 2, 1, 3 };
-
-	m_Va->SetIndices(indices, 6);
-	m_Vb = std::make_unique<VertexBuffer>(vertexAttribs, sizeof(vertexAttribs));
-	m_Vb->SetLayout(
-		{
-			{GL_FLOAT, 0, 3, GL_FALSE},
-			{GL_FLOAT, 1, 3, GL_FALSE},
-			{GL_FLOAT, 2, 2, GL_FALSE}
-		});
-	m_Va->AddBuffer(*m_Vb);
-	
-	m_material = std::make_unique<Material>();
-	m_material->Color = { .7f, .0f, .7f, 1.f };
-	m_material->Shininess = 12.f;
-	m_material->SpecularHighlights = 1.f;
-}
+//
+//Plane::Plane()
+//{
+//	m_Va = std::make_unique<VertexArray>();
+//
+//	float vertexAttribs[] =
+//	{
+//		-0.5f, 0.f,  0.5f,  0.f, 1.f, 0.f, 0.f, 0.f,
+//		  0.5f, 0.f,  0.5f,  0.f, 1.f, 0.f, 1.f, 0.f,
+//		 -0.5f, 0.f, -0.5f, 0.f, 1.f, 0.f, 1.f, 1.f,
+//		 0.5f, 0.f, -0.5f,  0.f, 1.f, 0.f, 0.f, 1.f
+//	};
+//
+//	uint32_t indices[] = { 0, 1, 2, 2, 1, 3 };
+//
+//	m_Va->SetIndices(indices, 6);
+//	m_Vb = std::make_unique<VertexBuffer>(vertexAttribs, sizeof(vertexAttribs));
+//	m_Vb->SetLayout(
+//		{
+//			{GL_FLOAT, 0, 3, GL_FALSE},
+//			{GL_FLOAT, 1, 3, GL_FALSE},
+//			{GL_FLOAT, 2, 2, GL_FALSE}
+//		});
+//	m_Va->AddBuffer(*m_Vb);
+//	
+//	m_material = std::make_unique<Material>();
+//	m_material->Color = { .7f, .0f, .7f, 1.f };
+//	m_material->Shininess = 12.f;
+//	m_material->SpecularHighlights = 1.f;
+//}
 
 const Matrix4x4& Cube::GetTransform() const 
 {
@@ -66,30 +66,30 @@ const Shader& Cube::GetShader() const
 	return *m_Shader;
 }
 
-const Matrix4x4& Plane::GetTransform() const 
-{
-	return transform;
-}
-
-const VertexArray& Plane::GetVertexAttribs() const
-{
-	return *m_Va;
-}
-
-const Shader& Plane::GetShader() const
-{
-	return *m_Shader;
-}
-
+//const Matrix4x4& Plane::GetTransform() const 
+//{
+//	return transform;
+//}
+//
+//const VertexArray& Plane::GetVertexAttribs() const
+//{
+//	return *m_Va;
+//}
+//
+//const Shader& Plane::GetShader() const
+//{
+//	return *m_Shader;
+//}
+//
 void Cube::OnUpdate()
 {
 }
 
-
-void Plane::OnUpdate()
-{
-
-}
+//
+//void Plane::OnUpdate()
+//{
+//
+//}
 
 void Cube::GenVertices()
 {

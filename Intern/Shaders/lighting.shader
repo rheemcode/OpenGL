@@ -14,15 +14,16 @@ layout(location = 4) out vec3 NormalInterp;
 
 uniform mat4 view;
 uniform mat4 proj;
+uniform mat4 projView;
 uniform mat4 model;
 
 void main()
 {
-    gl_Position = proj * view * model * vec4(vPos, 1.0);
+    gl_Position = projView * model * vec4(vPos, 1.0);
     TexCoord = texCoord;
-    Normal = mat3(transpose(inverse(model))) * normal;
+ //   Normal = mat3(transpose(inverse(model))) * normal;
     NormalInterp = normalize((model * vec4(normal, 0.0)).xyz);
-    VertexInterp = (model * vec4(vPos, 1.0)).xyz;
+ //   VertexInterp = (model * vec4(vPos, 1.0)).xyz;
     FragPos = vec3(model * vec4(vPos, 1.0));
 };
 
@@ -85,7 +86,7 @@ void main()
             continue;
 
         float attenuation;
-        vec3 normal = Normal;
+        vec3 normal = NormalInterp;
 
         if (Lights[light].LightType == 1) // Directional Light
         {
@@ -126,7 +127,7 @@ void main()
 
         float Specular;
         if (NdotL > 0.0)
-            Specular = Material.SpecularHighlights * pow(eyeLight, Material.Shininess);
+            Specular =  pow(eyeLight, 1);
         else
             Specular = 0;
 
@@ -134,7 +135,9 @@ void main()
         vec3 Diffuse = Lights[light].Color * Lights[light].Energy * NdotL * attenuation;
 
         ScatteredLight += Ambient + Diffuse;
-        ReflectedLight += Lights[light].Color * Specular * attenuation;
+        ReflectedLight += Specular * attenuation;
+
+        vec3 Light = (Ambient + Diffuse + Specular) * attenuation;
 
     }
     vec3 color;

@@ -4,6 +4,38 @@
 #include "Renderer/Scene.h"
 #include "Components/MeshRendererComponent.h"
 
+
+
+void RenderCommand::Init()
+{
+	GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
+	GLCall(glEnable(GL_DEPTH_TEST));
+	GLCall(glDepthFunc(GL_LEQUAL));
+	GLCall(glEnable(GL_CULL_FACE));
+}
+
+void RenderCommand::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
+{
+	glViewport(x, y, width, height);
+}
+
+void RenderCommand::SetClearColor(float r, float g, float b, float a)
+{
+	glClearColor(r, g, b, a);
+}
+
+void RenderCommand::Clear()
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void RenderCommand::DrawIndexed(const VertexArray& vertexArray)
+{
+	vertexArray.Bind();
+	GLCall(glDrawElements(GL_TRIANGLES, vertexArray.GetIndicies(), GL_UNSIGNED_INT, 0));
+//	glDrawArrays(GL_TRIANGLES, 0, vertexArray.GetIndicies());
+}
+
 RendererData Renderer::renderData;
 
 void Renderer::Init()
@@ -22,16 +54,15 @@ void Renderer::BeginScene(const Camera& camera )
 	renderData.view = camera.GetViewMatrix();
 	renderData.proj = camera.GetProjectionMatrix();
 	
-	Scene::sceneShader->UploadUniformMat4("view", renderData.view);
-	Scene::sceneShader->UploadUniformMat4("proj", renderData.proj);
+	Scene::sceneShader->UploadUniformMat4("projView", renderData.proj * renderData.view);
+	//Scene::sceneShader->UploadUniformMat4("proj", renderData.proj);
 }
-
 
 void Renderer::Render(const Primitive& primitive)
 {	
 }
 
-void Renderer::Render(const MeshRendererComponent& p_rendererComponent)
+void Renderer::Render(std::shared_ptr<MeshRendererComponent> p_rendererComponent, const Frustum& p_frustum)
 {
 	const auto& envLight = Scene::GetEnviromentLight();
 	const auto& lights = Scene::GetLight();
@@ -133,30 +164,31 @@ void Renderer::Render(const MeshRendererComponent& p_rendererComponent)
 	}
 
 
-	for (auto& mesh : p_rendererComponent.GetMeshes())
+	for (auto& mesh : p_rendererComponent->GetMeshes())
 	{
+		
+		bool inside = p_frustum.CubeInFrustum(mesh.GetAABB());
+		if (!inside)
+		{
+			continue;
+		}
 		const auto& material = mesh.GetMaterial();
-		const auto& attribs  = mesh.GetVertexAttribs();
+		const auto& attribs = mesh.GetVertexAttribs();
 		attribs.Bind();
 
-		glBindTexture(GL_TEXTURE_2D, 0);
-		//if (mesh.GetMaterial().Diffuse.get() != nullptr)
-		//	mesh.GetMaterial().Diffuse->Bind();
+		GLCall(glBindTexture(GL_TEXTURE_2D, 0));
+		if (mesh.GetMaterial().Diffuse.get() != nullptr)
+			mesh.GetMaterial().Diffuse->Bind();
 
+		shader.UploadUniformVec4("Material.Color", material.Color);
+		shader.UploadUniformFloat("Material.Shininess", material.Shininess);
+		shader.UploadUniformFloat("Material.SpecularHighlights", material.SpecularHighlights);
 
-
-
-		shader.UploadUniformVec4("Material.Color", Vector4(1.f, 0, 0, 1.f));
-		shader.UploadUniformFloat("Material.Shininess", 32.f);
-		shader.UploadUniformFloat("Material.SpecularHighlights", 1.f);
-
-		shader.UploadUniformMat4("model", Matrix4x4());
+		shader.UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
 		shader.UploadUniformFloat("AmbientEnergy", envLight.Energy);
 		shader.UploadUniformVec4("ViewPosition", { renderData.view[3].x, renderData.view[3].y, renderData.view[3].z, 1.0f });
 		RenderCommand::DrawIndexed(attribs);
 	}
-
-
 }
 
 void Renderer::Render(const std::unique_ptr<Primitive>& primitive)
@@ -294,35 +326,6 @@ void Renderer::EndScene()
 {
 }
 
-void RenderCommand::Init()
-{
-	GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
-	GLCall(glEnable(GL_DEPTH_TEST));
-	GLCall(glDepthFunc(GL_LEQUAL));
-	//GLCall(glEnable(GL_CULL_FACE));
-}
-
-void RenderCommand::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
-{
-	glViewport(x, y, width, height);
-}
-
-void RenderCommand::SetClearColor(float r, float g, float b, float a)
-{
-	glClearColor(r, g, b, a);
-}
-
-void RenderCommand::Clear()
-{
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-}
-
-void RenderCommand::DrawIndexed(const VertexArray& vertexArray)
-{
-	vertexArray.Bind();
-	//GLCall(glDrawElements(GL_TRIANGLES, vertexArray.GetIndicies(), GL_UNSIGNED_INT, 0));
-	glDrawArrays(GL_TRIANGLES, 0, vertexArray.GetIndicies());
-}
 
 void Renderer2D::Init()
 {

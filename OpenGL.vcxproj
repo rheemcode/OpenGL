@@ -125,12 +125,14 @@
       <AdditionalIncludeDirectories>$(SolutionDir)Extern;$(SolutionDir)Extern\GLFW\include;$(SolutionDir)Extern\GLEW\include;$(SolutionDir)\Intern\Core;$(SolutionDir)\Intern</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>glfw3.lib;glew32s.lib;opengl32.lib;user32.lib;gdi32.lib;shell32.lib;dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Extern\GLFW\lib-vc2019;$(SolutionDir)Extern\GLEW\lib\Release\x64</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -144,6 +146,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)Extern;$(SolutionDir)Extern\GLFW\include;$(SolutionDir)Extern\GLEW\include;$(SolutionDir)\Intern\Core;$(SolutionDir)\Intern</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -152,6 +155,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>glfw3.lib;glew32s.lib;opengl32.lib;user32.lib;gdi32.lib;shell32.lib;dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Extern\GLFW\lib-vc2019;$(SolutionDir)Extern\GLEW\lib\Release\x64</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -165,8 +169,11 @@
     <ClCompile Include="Intern\Core\Renderer\Scene.cpp" />
     <ClCompile Include="Intern\Core\SceneCameraController.cpp" />
     <ClCompile Include="Intern\Core\Actor.cpp" />
-    <ClCompile Include="Intern\Core\Actor.h" />
-    <ClCompile Include="Intern\Math\Transform.h" />
+    <ClInclude Include="Intern\Core\Actor.h" />
+    <ClCompile Include="Intern\Math\AABB.cpp" />
+    <ClCompile Include="Intern\Math\Frustum.cpp" />
+    <ClCompile Include="Intern\Math\Plane.cpp" />
+    <ClInclude Include="Intern\Math\Transform.h" />
     <ClCompile Include="Intern\Math\Transform.cpp" />
     <ClCompile Include="Intern\Tests\Quad.cpp" />
     <ClCompile Include="Intern\Tests\Sphere.cpp" />
@@ -206,6 +213,9 @@
     <ClInclude Include="Intern\Core\Renderer\Material.h" />
     <ClInclude Include="Intern\Core\Renderer\Scene.h" />
     <ClInclude Include="Intern\Core\SceneCameraController.h" />
+    <ClInclude Include="Intern\Math\AABB.h" />
+    <ClInclude Include="Intern\Math\Frustum.h" />
+    <ClInclude Include="Intern\Math\Plane.h" />
     <ClInclude Include="Intern\Tests\Sphere.h" />
     <ClInclude Include="Intern\Tests\Sprite.h" />
     <ClInclude Include="Intern\Core\Camera.h" />
@@ -491,6 +501,7 @@
     <None Include="Extern\glm\gtx\vector_query.inl" />
     <None Include="Extern\glm\gtx\wrap.inl" />
     <None Include="Intern\Shaders\default.shader" />
+    <None Include="Intern\Shaders\lighting.shader" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Extern\glm\CMakeLists.txt" />

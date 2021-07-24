@@ -7,6 +7,7 @@
 #include "Math/Matrix4x4.h"
 #include "Math/Transform.h"
 #include "Renderer/Material.h"
+#include "Math/AABB.h"
 
 template<typename T>
 using Ref = std::unique_ptr<T>;
@@ -16,6 +17,14 @@ struct VertexAttrib
 	Vector3 vertices;
 	Vector3 normals;
 	Vector2 uv;
+
+	bool operator==(const VertexAttrib& p_other) const
+	{
+		return ((vertices == p_other.vertices) && (normals == p_other.normals) && (uv == p_other.uv));
+	}	
+
+	VertexAttrib()
+		: vertices(Vector3()), normals(Vector3()), uv(Vector2()) {}
 };
 
 class Mesh
@@ -24,18 +33,30 @@ class Mesh
 	Ref<VertexArray> m_Va;
 	Ref<VertexBuffer> m_Vb;
 	Ref<Material> m_material;
-
-	std::shared_ptr<Matrix4x4> m_modelMatrix;
+	Ref<AABB> m_aabb;
+	Transform m_transform;
 public:
-	 const std::shared_ptr<Matrix4x4>& GetModelMatrix() const { return m_modelMatrix; };
-	 const void SetModelMatrix(std::shared_ptr<Matrix4x4> p_modelMat) { m_modelMatrix = p_modelMat; }
-	 const VertexArray& GetVertexAttribs() const { return *m_Va; };
-	 const Shader& GetShader() const { return *m_Shader; };
-	 const Material& GetMaterial() const { return *m_material; }
-
-	Mesh(Mesh&& p_mesh);
-	Mesh(const std::vector<VertexAttrib>& p_vAttribs, const std::vector<uint32_t>& p_indices, Ref<Material> p_material);
-	Mesh(const std::vector<VertexAttrib>& p_vAttribs, const std::vector<uint32_t>& p_indices, const Material& p_material);
-	~Mesh() = default;
+	const Matrix4x4 GetModelMatrix() const { return m_transform.GetWorldMatrix(); };
+	void SetParent(const Transform& p_transform) { m_transform.SetParent(p_transform); }
+	const VertexArray& GetVertexAttribs() const { return *m_Va; };
+	const Transform& GetTransform() const { return m_transform; }
+	const Shader& GetShader() const { return *m_Shader; };
+	const Material& GetMaterial() const { return *m_material; }
+	const AABB& GetAABB() const { return *m_aabb;  }
+	 Mesh(Mesh&& p_mesh) noexcept;
+	 Mesh(const std::vector<VertexAttrib>& p_vAttribs, const std::vector<uint32_t>& p_indices, Ref<Material>& p_material, Ref<AABB>& p_aabb);
+	 Mesh(VertexAttrib* p_vAttribs, uint32_t* p_indices, uint32_t count, Ref<Material>& p_material, Ref<AABB>& p_aabb);
+	 ~Mesh() = default;
 };
 
+namespace std
+{
+	template<>
+	struct hash<VertexAttrib>
+	{
+		size_t operator()(const VertexAttrib& p_val) const
+		{
+			return ((hash<Vector3>()(p_val.vertices) ^ (hash<Vector3>()(p_val.normals) << 1) ^ (hash<Vector2>()(p_val.uv) << 1)));
+		}
+	};
+}

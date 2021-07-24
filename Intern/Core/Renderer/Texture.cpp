@@ -10,7 +10,7 @@ uint32_t Texture::texturesIDs[32];
 void Texture::Bind()
 {
 
-	GLCall(glActiveTexture(GL_TEXTURE0 + (m_ID - 1)));
+	GLCall(glActiveTexture(GL_TEXTURE0));
 	GLCall(glBindTexture(GL_TEXTURE_2D, m_ID));
 }
 
@@ -121,6 +121,7 @@ void Texture::AddImage(const std::string& filepath, uint32_t slot)
 
 Texture::Texture(const std::string& filename, uint32_t count)
 {
+	stbi_set_flip_vertically_on_load(1);
 	const unsigned char* imgData = stbi_load(filename.c_str(), &m_Width, &m_Height, &m_Components, 0);
 	if (!imgData)
 	{

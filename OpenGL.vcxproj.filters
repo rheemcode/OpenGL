@@ -99,9 +99,6 @@
     <ClCompile Include="Intern\Math\Transform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Intern\Math\Transform.h">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Intern\Core\SceneCameraController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -117,9 +114,6 @@
     <ClCompile Include="Intern\Core\Actor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Intern\Core\Actor.h">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Intern\Core\Components\MeshRendererComponent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -127,6 +121,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Intern\Core\Components\Component.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Math\Plane.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Math\AABB.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Math\Frustum.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -683,6 +686,21 @@
     <ClInclude Include="Intern\Core\Components\MeshRendererComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Intern\Math\AABB.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Math\Plane.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Math\Frustum.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Core\Actor.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Math\Transform.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Intern\Shaders\default.shader" />
@@ -1013,6 +1031,7 @@
     <None Include="Extern\glm\gtx\wrap.inl">
       <Filter>Header Files</Filter>
     </None>
+    <None Include="Intern\Shaders\lighting.shader" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Extern\glm\CMakeLists.txt" />

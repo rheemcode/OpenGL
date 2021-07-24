@@ -21,8 +21,8 @@ protected:
 public:
 
     virtual const Matrix4x4& GetTransform() const { return transform; };
-    virtual const VertexArray& GetVertexAttribs() const { return *m_Va; };
-    virtual const Shader& GetShader() const { return *m_Shader; };
+    virtual const VertexArray& GetVertexAttribs() const { return *m_Va.get(); };
+    virtual const Shader& GetShader() const { return *m_Shader.get(); };
     virtual const Material& GetMaterial() const { return *m_material; }
     virtual void OnUpdate() = 0;
     

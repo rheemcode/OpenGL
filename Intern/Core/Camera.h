@@ -6,7 +6,7 @@
 #include "Math/Quaternion.h"
 #include "Math/Transform.h"
 #include "SceneCameraController.h"
-#include "glm/gtc/matrix_transform.hpp"
+#include "Math/Frustum.h"
 
 
 enum class CameraMode
@@ -33,14 +33,13 @@ struct CameraSettings
 
 class Camera
 {
-
 protected:
 	Matrix4x4 m_ProjectionMatrix;
 	Matrix4x4 m_ViewMatrix;
 	Matrix4x4 m_ViewProjectionMatrix;
 
+	Frustum m_Frustum;
 	float m_Width, m_Height;
-
 	Matrix4x4 MakeProjectionMatrix(const CameraMode& projectionMode);
 	Matrix4x4 MakeProjectionMatrix(const CameraSettings& setting);
 	Matrix4x4 MakeViewMatrix();
@@ -49,6 +48,8 @@ public:
 	const Matrix4x4& GetViewMatrix() const;
 	const Matrix4x4& GetProjectionMatrix() const;
 	const Matrix4x4& GetViewProjectionMatrix() const;
+
+	virtual Frustum& GetFrustum() { return m_Frustum; };
 
 	Camera();
 	Camera(const CameraMode& mode);
@@ -72,9 +73,17 @@ public:
 		UpdateView();
 	}
 
+	virtual Frustum& GetFrustum()
+	{
+		UpdateView();
+		m_Frustum.SetFrustum(m_ProjectionMatrix * m_ViewMatrix);
+		return m_Frustum;
+	}
+
 	void UpdateView()
 	{
-		auto mat = glm::inverse(glm::mat4(1));
 		m_ViewMatrix = Matrix4x4::Inverse(transform.GetWorldMatrix());
 	}
+
+
 };
