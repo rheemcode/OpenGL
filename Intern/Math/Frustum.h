@@ -54,7 +54,7 @@ public:
 	{
 
 		bool inside = true;
-		Vector3 center = p_aabb.position;
+		Vector3 center = (p_aabb.position + p_aabb.size) / 2.f;
 		Vector3 edge = p_aabb.GetEnd();
 
 		for (const auto& plane : planes)

@@ -17,6 +17,7 @@ struct RenderCommand
     static void SetClearColor(float r, float g, float b, float a);
     static void Clear();
     static void DrawIndexed(const VertexArray& vertexArray);
+    void RenderLines(const VertexArray& vertexArray);
 };
 
 struct VertexAttribs
@@ -83,6 +84,7 @@ public:
    static void BeginScene(const Camera& camera);
    //void Render(const Primitive& primitive, const Light& light);
    static void Render(const Primitive& primitive);
+   void Render(const AABB& p_aabb);
    static void Render(std::shared_ptr<class MeshRendererComponent> p_rendererComponent, const Frustum& p_frustum);
    //static void Render(std::shared_ptr<class MeshRendererComponent> p_rendererComponent);
    static void Render(const std::unique_ptr<Primitive>& primitive);

@@ -36,6 +36,12 @@ void RenderCommand::DrawIndexed(const VertexArray& vertexArray)
 //	glDrawArrays(GL_TRIANGLES, 0, vertexArray.GetIndicies());
 }
 
+void RenderCommand::RenderLines(const VertexArray& vertexArray)
+{
+	vertexArray.Bind();
+	GLCall(glDrawElements(GL_LINE, vertexArray.GetIndicies(), GL_UNSIGNED_INT, 0));
+}
+
 RendererData Renderer::renderData;
 
 void Renderer::Init()
@@ -60,6 +66,13 @@ void Renderer::BeginScene(const Camera& camera )
 
 void Renderer::Render(const Primitive& primitive)
 {	
+}
+
+static int drawCalls = 0;
+
+void Renderer::Render(const AABB& p_aabb)
+{
+
 }
 
 void Renderer::Render(std::shared_ptr<MeshRendererComponent> p_rendererComponent, const Frustum& p_frustum)
@@ -172,6 +185,7 @@ void Renderer::Render(std::shared_ptr<MeshRendererComponent> p_rendererComponent
 		{
 			continue;
 		}
+		drawCalls++;
 		const auto& material = mesh.GetMaterial();
 		const auto& attribs = mesh.GetVertexAttribs();
 		attribs.Bind();
@@ -189,6 +203,8 @@ void Renderer::Render(std::shared_ptr<MeshRendererComponent> p_rendererComponent
 		shader.UploadUniformVec4("ViewPosition", { renderData.view[3].x, renderData.view[3].y, renderData.view[3].z, 1.0f });
 		RenderCommand::DrawIndexed(attribs);
 	}
+	Console::Log(std::to_string(drawCalls) + "\n");
+	drawCalls = 0;
 }
 
 void Renderer::Render(const std::unique_ptr<Primitive>& primitive)

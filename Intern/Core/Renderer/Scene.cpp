@@ -42,7 +42,7 @@ void Scene::Process()
 
 void Scene::OnUpdate()
 {	
-	Timer timer;
+	//Timer timer;
 
 
 	Renderer::BeginScene(*sceneCamera);
@@ -112,7 +112,7 @@ Scene::Scene()
 	cameraSettings.fovY = 95.f;
 	cameraSettings.winWidth = 1200;
 	cameraSettings.winHeight = 700;
-	cameraSettings.ratio = 1.f;
+	cameraSettings.ratio = cameraSettings.winWidth / cameraSettings.winHeight;
 
 
 	sceneCamera = std::make_unique<SceneCamera>(cameraSettings);
@@ -143,7 +143,7 @@ Scene::Scene()
 
 	std::shared_ptr<Actor> actor = std::make_shared<Actor>();
 	std::shared_ptr<TransformComponent> tComponent = std::make_shared<TransformComponent>(actor);
-	std::shared_ptr<MeshRendererComponent> renderComponent = std::make_shared<MeshRendererComponent>(actor, "./Madara_Uchiha.obj");
+	std::shared_ptr<MeshRendererComponent> renderComponent = std::make_shared<MeshRendererComponent>(actor, "./house.obj");
 	actor->AddComponent(tComponent);
 	actor->AddComponent(renderComponent);
 
