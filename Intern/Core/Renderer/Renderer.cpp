@@ -3,7 +3,7 @@
 #include "Renderer.h"
 #include "Renderer/Scene.h"
 #include "Components/MeshRendererComponent.h"
-
+#include "Input/Input.h"
 
 void RenderCommand::Init()
 {
@@ -101,6 +101,7 @@ void Renderer::Render(const AABB& p_aabb)
 
 }
 
+static bool shouldCull = false;
 
 void Renderer::Render(std::shared_ptr<MeshRendererComponent> p_rendererComponent, const Frustum& p_frustum)
 {
@@ -207,10 +208,11 @@ void Renderer::Render(std::shared_ptr<MeshRendererComponent> p_rendererComponent
 	{
 		
 		bool inside = mesh.GetInstanceBound().InFrustum(p_frustum);
-		if (!inside)
-		{
-			continue;
-		}
+
+			if (!inside)
+			{
+				continue;
+			}
 
 		const auto& material = mesh.GetMaterial();
 		const auto& attribs = mesh.GetVertexAttribs();

@@ -141,7 +141,7 @@ Scene::Scene()
 
 	std::shared_ptr<Actor> actor = std::make_shared<Actor>();
 	std::shared_ptr<TransformComponent> tComponent = std::make_shared<TransformComponent>(actor);
-	std::shared_ptr<MeshRendererComponent> renderComponent = std::make_shared<MeshRendererComponent>(actor, "./Madara_Uchiha.obj");
+	std::shared_ptr<MeshRendererComponent> renderComponent = std::make_shared<MeshRendererComponent>(actor, "./house.obj");
 	actor->AddComponent(tComponent);
 	actor->AddComponent(renderComponent);
 
