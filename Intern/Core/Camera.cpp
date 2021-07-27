@@ -40,7 +40,7 @@ Matrix4x4 Camera::MakeProjectionMatrix(const CameraSettings& setting)
 		}
 		case (CameraMode::PERSPECTIVE):
 		{
-			return Matrix4x4::CreatePerspective(Math::Deg2Rad(setting.fovY), setting.ratio, 0.1f, 500.f);
+			return Matrix4x4::CreatePerspective(Math::Deg2Rad(setting.fovY), setting.ratio, 0.1f, 2000.f);
 		}
 	}
 

@@ -1,9 +1,9 @@
 #include "Mesh.h"
+#include "Components/MeshRendererComponent.h"
 
 Mesh::Mesh(const std::vector<VertexAttrib>& p_vAttribs, const std::vector<uint32_t>& p_indices, Ref<Material>& p_material, Ref<AABB>& p_aabb)
 {
 	m_material = std::move(p_material);
-	m_aabb = std::move(p_aabb);
 	m_Va = std::make_unique<VertexArray>();
 	m_Vb = std::make_unique<VertexBuffer>(p_vAttribs.data(), p_vAttribs.size() * sizeof(VertexAttrib));
 	m_Vb->SetLayout
@@ -16,12 +16,15 @@ Mesh::Mesh(const std::vector<VertexAttrib>& p_vAttribs, const std::vector<uint32
 
 	m_Va->SetIndices(p_indices.data(), uint32_t(p_indices.size()));
 	m_Va->AddBuffer(*m_Vb);
+
+
+	m_aabb = std::move(p_aabb);
+	m_instanceBounds = std::make_unique<InstanceBounds>(*m_aabb);
 }
 
 Mesh::Mesh(VertexAttrib* p_vAttribs, uint32_t* p_indices, uint32_t count, Ref<Material>& p_material, Ref<AABB>& p_aabb)
 {
 	m_material = std::move(p_material);
-	m_aabb = std::move(p_aabb);
 	m_Va = std::make_unique<VertexArray>();
 	m_Vb = std::make_unique<VertexBuffer>(p_vAttribs, count * sizeof(VertexAttrib));
 	m_Vb->SetLayout
@@ -34,6 +37,9 @@ Mesh::Mesh(VertexAttrib* p_vAttribs, uint32_t* p_indices, uint32_t count, Ref<Ma
 
 	m_Va->SetIndices(p_indices, count);
 	m_Va->AddBuffer(*m_Vb);
+
+	m_aabb = std::move(p_aabb);
+	m_instanceBounds = std::make_unique<InstanceBounds>(*m_aabb);
 }
 
 Mesh::Mesh(Mesh&& p_mesh) noexcept
@@ -43,6 +49,8 @@ Mesh::Mesh(Mesh&& p_mesh) noexcept
 	m_Shader = std::move(p_mesh.m_Shader);
 	m_material = std::move(p_mesh.m_material);
 	m_aabb = std::move(p_mesh.m_aabb);
+	
+	m_instanceBounds = std::make_unique<InstanceBounds>(*m_aabb);
 }
 
 //

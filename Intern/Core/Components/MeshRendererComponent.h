@@ -12,7 +12,10 @@ protected:
 
 public:
 	void AddModel(const std::string& p_modelFilePath);
+
+	Model& GetModel() { return *m_model; }
 	const std::vector<Mesh>& GetMeshes() const { return m_model->GetMeshes();}
+	void Update();
 	MeshRendererComponent(std::shared_ptr<Actor> p_actor);
 	MeshRendererComponent(std::shared_ptr<Actor> p_actor, const std::string& p_modelFilePath);
 };

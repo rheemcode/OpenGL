@@ -51,12 +51,10 @@ void Scene::OnUpdate()
 	{
 		if (const std::shared_ptr<Component> cmp = actor->GetComponent("Renderer Component").lock())
 		{
-			auto c = std::dynamic_pointer_cast<MeshRendererComponent, Component>(cmp);
 			auto meshRenderer = std::dynamic_pointer_cast<MeshRendererComponent, Component>(cmp);
-
+		//	actor->SetLocalPosition({ 0, -10.f, 0.f });
+			meshRenderer->Update();
 			Renderer::Render(meshRenderer, sceneCamera->GetFrustum());
-			int* p = new int(1);
-			
 		}
 	}
 
@@ -109,7 +107,7 @@ Scene::Scene()
 	CameraSettings cameraSettings;
 
 	cameraSettings.mode = CameraMode::PERSPECTIVE;
-	cameraSettings.fovY = 95.f;
+	cameraSettings.fovY = 65.f;
 	cameraSettings.winWidth = 1200;
 	cameraSettings.winHeight = 700;
 	cameraSettings.ratio = cameraSettings.winWidth / cameraSettings.winHeight;
@@ -143,7 +141,7 @@ Scene::Scene()
 
 	std::shared_ptr<Actor> actor = std::make_shared<Actor>();
 	std::shared_ptr<TransformComponent> tComponent = std::make_shared<TransformComponent>(actor);
-	std::shared_ptr<MeshRendererComponent> renderComponent = std::make_shared<MeshRendererComponent>(actor, "./house.obj");
+	std::shared_ptr<MeshRendererComponent> renderComponent = std::make_shared<MeshRendererComponent>(actor, "./Madara_Uchiha.obj");
 	actor->AddComponent(tComponent);
 	actor->AddComponent(renderComponent);
 

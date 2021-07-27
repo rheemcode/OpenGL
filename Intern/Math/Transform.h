@@ -12,7 +12,7 @@ class Transform
 	Vector3 m_worldPosition;
 	Vector3 m_worldScale;
 	Quaternion m_worldRotation;
-
+	
 	Matrix4x4 m_localMatrix;
 	Matrix4x4 m_worldMatrix;
 
@@ -27,7 +27,7 @@ public:
 	void SetParent(const Transform& p_parent);
 	bool RemoveParent(const Transform& p_parent);
 
-	const Matrix4x4& GetWorldMatrix() const { return m_worldMatrix;  }
+	const Matrix4x4& GetWorldMatrix() const { return m_worldMatrix; }
 
 	void SetLocalMatrix(const Matrix4x4& p_matrix);
 	const Matrix4x4& GetLocalMatrix() const { return m_localMatrix;  }

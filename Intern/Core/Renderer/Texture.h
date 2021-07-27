@@ -2,6 +2,8 @@
 #include <GL/glew.h>
 #include <string>
 
+#define MAX_TEXTURES 32
+
 class Texture
 {
 	enum InternalFormat
@@ -15,13 +17,19 @@ class Texture
 		RGBA = GL_RGBA,
 	};
 
-	unsigned int m_ID;
+	unsigned int m_ID[MAX_TEXTURES] = { MAX_TEXTURES + 1 };
+	
 	uint32_t* m_Textures;
 	static uint32_t texCount;
 	static uint32_t texturesIDs[32];
+	
 	int m_Width, m_Height, m_Components;
 	InternalFormat m_InternalFormat;
 	DataFormat m_DataFormat;
+
+	int xOffset, yOffset;
+	uint32_t textureCount;
+	uint32_t levels = 1;
 
 public:
 	void Bind();
@@ -38,8 +46,8 @@ public:
 	{
 		return m_ID == p_other.m_ID;
 	}
-	void AddImage(const std::string& filepath);
-	void AddImage(const std::string& filepath, uint32_t slot);
+	uint32_t AddImage(const std::string& filepath);
+	uint32_t AddImage(const std::string& filepath, uint32_t slot);
 
 	Texture(uint32_t count = 1);
 	Texture(uint32_t widtth, uint32_t height);

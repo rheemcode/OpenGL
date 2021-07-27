@@ -1032,6 +1032,7 @@
       <Filter>Header Files</Filter>
     </None>
     <None Include="Intern\Shaders\lighting.shader" />
+    <None Include="Intern\Shaders\aabb.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Extern\glm\CMakeLists.txt" />

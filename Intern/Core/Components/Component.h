@@ -13,8 +13,8 @@ enum ComponentCategory
 class Component
 {
 	bool enabled;
-	std::shared_ptr<Actor> m_actor;
 protected:
+	std::shared_ptr<Actor> m_actor;
 	virtual std::string GetComponentNameImpl() const = 0;
 	virtual ComponentCategory GetComponentCategoryImpl() const = 0;
 

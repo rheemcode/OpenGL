@@ -1,6 +1,9 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 #include "Model.h"
+#include "Components/MeshRendererComponent.h"
+
+#include <algorithm>
 #include <unordered_map>
 
 bool ModelLoader::LoadModel(MODEL_FORMAT modelFormat, std::string_view p_filePath, Model* p_model)
@@ -30,6 +33,40 @@ bool ModelLoader::LoadModel(MODEL_FORMAT modelFormat, std::string_view p_filePat
 			auto& shapes = reader.GetShapes();
 			auto& materials = reader.GetMaterials();
 
+			uint32_t textureCount = 0;
+
+			// TODO: not just diffuse textures;
+			for (int i = 0; i < materials.size(); i++)
+			{
+				if (materials[i].diffuse_texname != "")
+				{
+					auto result = std::find(std::begin(p_model->m_textureNames), std::end(p_model->m_textureNames), materials[i].diffuse_texname);
+					
+					if (result != p_model->m_textureNames.end())
+						continue;
+
+					textureCount++;
+					p_model->m_textureNames.push_back({-1, false, materials[i].diffuse_texname });
+				}
+			}
+			p_model->SetTextures(textureCount);
+
+			for (int i = 0; i < materials.size(); i++)
+			{
+				if (materials[i].diffuse_texname != "")
+				{
+					auto result = std::find(std::begin(p_model->m_textureNames), std::end(p_model->m_textureNames), materials[i].diffuse_texname);
+
+					if (result != p_model->m_textureNames.end() && !result->loaded)
+					{
+						auto texptr = p_model->GetTexture().lock();
+						result->id = texptr->AddImage("C:\\Users\\rheen\\source\\repos\\OpenGL\\" + result->name);
+						result->loaded = true;
+					}
+
+				}
+			}
+
 			for (size_t s = 0; s < shapes.size(); s++)
 			{
 				size_t indexOffset = 0;
@@ -50,7 +87,10 @@ bool ModelLoader::LoadModel(MODEL_FORMAT modelFormat, std::string_view p_filePat
 						VertexAttrib vAttrib;
 						
 						vAttrib.vertices = { attribs.vertices[3 * size_t(idx.vertex_index) + 0], attribs.vertices[3 * size_t(idx.vertex_index) + 1], attribs.vertices[3 * size_t(idx.vertex_index) + 2] };
+						if (f == 0)
+							boundindBox->position = vAttrib.vertices;
 						boundindBox->ExpandTo(vAttrib.vertices);
+
 
 						if (idx.normal_index >= 0)
 						{
@@ -80,23 +120,29 @@ bool ModelLoader::LoadModel(MODEL_FORMAT modelFormat, std::string_view p_filePat
 				
 				if (shapes[s].mesh.material_ids[0] >= 0)
 				{
-
-					if (materials[shapes[s].mesh.material_ids[0]].diffuse_texname != "")
+					const auto& diffuseTex = materials[shapes[s].mesh.material_ids[0]].diffuse_texname;
+					if (diffuseTex != "")
 					{
-						material->Diffuse = std::make_unique<Texture>(std::string("C:\\Users\\rheen\\source\\repos\\OpenGL\\" + materials[shapes[s].mesh.material_ids[0]].diffuse_texname));
-						material->Color = { materials[shapes[s].mesh.material_ids[0]].diffuse[0], materials[shapes[s].mesh.material_ids[0]].diffuse[1], materials[shapes[s].mesh.material_ids[0]].diffuse[2], 1.f };
+						auto result = std::find(std::begin(p_model->m_textureNames), std::end(p_model->m_textureNames), diffuseTex);
+						if (result != std::end(p_model->m_textureNames) && result->loaded)
+						{
+							material->Diffuse = result->id;
+							material->Color = { materials[shapes[s].mesh.material_ids[0]].diffuse[0], materials[shapes[s].mesh.material_ids[0]].diffuse[1], materials[shapes[s].mesh.material_ids[0]].diffuse[2], 1.f };
+						}
 					}
 
 					else
 					{
+						material->Diffuse = -1;
 						material->Color = { materials[shapes[s].mesh.material_ids[0]].diffuse[0], materials[shapes[s].mesh.material_ids[0]].diffuse[1], materials[shapes[s].mesh.material_ids[0]].diffuse[2], 1.f };
 					}
 					material->Shininess = materials[shapes[s].mesh.material_ids[0]].shininess;
 					material->SpecularHighlights = materials[shapes[s].mesh.material_ids[0]].specular[0];
 				}
+		
+
 
 				Mesh mesh(vertexAttribs, indices, size, material, boundindBox);
-				mesh.SetParent(p_model->GetTransform());
 				p_model->AddMesh(std::forward<Mesh>(mesh));
 				delete[] vertexAttribs;
 				delete[] indices;
@@ -114,7 +160,15 @@ bool ModelLoader::LoadModel(MODEL_FORMAT modelFormat, std::string_view p_filePat
 }
 void Model::AddMesh(Mesh&& p_mesh)
 {
-	m_meshes.push_back(std::move(p_mesh));
+	
+	m_meshes.insert(m_meshes.begin(), std::move(p_mesh));
+///	m_meshes.push_back(std::move(p_mesh));
+}
+
+
+void Model::SetTextures(uint32_t count)
+{
+	m_texture = std::make_shared<Texture>(count);
 }
 
 Model::Model()

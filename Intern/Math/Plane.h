@@ -54,7 +54,7 @@ public:
 
 float Plane::DistanceTo(const Vector3& p_point) const
 {
-	return (Vector3::Dot(normal, p_point) + d);
+	return (Vector3::Dot(normal, p_point) - d);
 }
 
 bool Plane::HasPoint(const Vector3& p_point, float p_epsilon) const

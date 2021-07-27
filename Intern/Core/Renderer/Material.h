@@ -8,7 +8,7 @@ struct Material
 	struct
 	{
 		Vector4 Color;
-		std::unique_ptr<Texture> Diffuse;
+		int Diffuse;
 	};
 
 	Vector3 Ambient;
@@ -19,5 +19,14 @@ struct Material
 
 	Material()
 		:Shininess(0), SpecularHighlights(0), SSAO(false){};
-	Material(const Material& p_mat) = default;
+	Material(const Material& p_mat)
+	{
+		Color = p_mat.Color;
+		Diffuse = p_mat.Diffuse;
+		Ambient = p_mat.Ambient;
+		Shininess = p_mat.Shininess;
+		SpecularHighlights = p_mat.Shininess;
+		SSAO = p_mat.SSAO;
+
+	}
 };

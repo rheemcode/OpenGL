@@ -500,6 +500,7 @@
     <None Include="Extern\glm\gtx\vector_angle.inl" />
     <None Include="Extern\glm\gtx\vector_query.inl" />
     <None Include="Extern\glm\gtx\wrap.inl" />
+    <None Include="Intern\Shaders\aabb.glsl" />
     <None Include="Intern\Shaders\default.shader" />
     <None Include="Intern\Shaders\lighting.shader" />
   </ItemGroup>

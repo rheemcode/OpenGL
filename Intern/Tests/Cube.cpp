@@ -14,7 +14,7 @@ Cube::Cube()
 	m_material->SpecularHighlights = 1.f;
 
 
-	m_material->Diffuse = std::make_unique<Texture>("C:/Users/rheen/source/repos/OpenGL/src/container2.png");
+	//m_material->Diffuse = std::make_unique<Texture>("C:/Users/rheen/source/repos/OpenGL/src/container2.png");
 	transform = Matrix4x4::Scale(transform, { 2.f, 2.f, 2.f });
 	transform = Matrix4x4::Translate(transform, Vector3(0, -2.f, 0.f));
 

@@ -60,11 +60,13 @@ struct LightProperties
 
 struct MaterialProperties
 {   
-    sampler2D diffuseMap;
+    int diffuseMap;
     vec4 Color;
     float Shininess;
     float SpecularHighlights;
 };
+
+uniform sampler2D diffuseTextures[32];
 
 uniform LightProperties Lights[100];
 uniform MaterialProperties Material;
@@ -142,7 +144,7 @@ void main()
     }
     vec3 color;
 
-    color = min((ScatteredLight + ReflectedLight) * vec3(texture(Material.diffuseMap, TexCoord)), vec3(1.0));
+    color = min((ScatteredLight + ReflectedLight) * vec3(texture(diffuseTextures[Material.diffuseMap], TexCoord)), vec3(1.0));
     FragColor = vec4(color, Material.Color.a);
 
 };

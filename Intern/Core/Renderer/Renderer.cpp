@@ -5,7 +5,6 @@
 #include "Components/MeshRendererComponent.h"
 
 
-
 void RenderCommand::Init()
 {
 	GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
@@ -31,21 +30,48 @@ void RenderCommand::Clear()
 
 void RenderCommand::DrawIndexed(const VertexArray& vertexArray)
 {
-	vertexArray.Bind();
+	//vertexArray.Bind();
 	GLCall(glDrawElements(GL_TRIANGLES, vertexArray.GetIndicies(), GL_UNSIGNED_INT, 0));
 //	glDrawArrays(GL_TRIANGLES, 0, vertexArray.GetIndicies());
 }
 
 void RenderCommand::RenderLines(const VertexArray& vertexArray)
 {
+	//glEnable(GL_POLYGON_OFFSET_FILL);
+	//glPolygonOffset(.1f, .1f); // move polygon backward
+
 	vertexArray.Bind();
-	GLCall(glDrawElements(GL_LINE, vertexArray.GetIndicies(), GL_UNSIGNED_INT, 0));
+//	GLCall(glDrawElements(GL_LINES, vertexArray.GetIndicies(), GL_UNSIGNED_INT, 0));
+	glDrawArrays(GL_LINES, 0, 24);
+	//glDisable(GL_POLYGON_OFFSET_FILL);
 }
 
 RendererData Renderer::renderData;
+static Vector3 temp_aabbVertices[] =
+{
+	{-1.f, -1.f, -1.f}, // 0
+	{ 1.f, -1.f, -1.f}, // 1
+	{ 1.f, 1.f, -1.f},  // 2
+	{ -1.f, 1.f, -1.f}, // 3	
+	
+	{-1.f, -1.f, 1.f}, // 4
+	{ 1.f, -1.f, 1.f}, // 5
+	{ 1.f, 1.f,  1.f},  // 6
+	{ -1.f, 1.f, 1.f}, // 7
+};
+
+static Vector3 aabVertices[24];
+
+static uint32_t indices[] = { 0, 1, 1, 2, 2, 3, 3, 0, 0, 4, 4, 5, 5, 1, 5, 6, 2, 6, 6, 7, 7, 3, 7, 4};
 
 void Renderer::Init()
 {
+	renderData.m_aabbVertexArray = std::make_unique<VertexArray>();
+	renderData.m_aabbVertexBuffer = std::make_unique<VertexBuffer>(sizeof(aabVertices));
+	renderData.shader = std::make_unique<Shader>("Intern/Shaders/aabb.glsl");
+	renderData.m_aabbVertexBuffer->SetLayout({ { GL_FLOAT, 0, 3, 0 } });
+	renderData.m_aabbVertexArray->SetIndices(indices, 24);
+	renderData.m_aabbVertexArray->AddBuffer(*renderData.m_aabbVertexBuffer.get());
 	RenderCommand::Init();
 }
 
@@ -75,12 +101,13 @@ void Renderer::Render(const AABB& p_aabb)
 
 }
 
+
 void Renderer::Render(std::shared_ptr<MeshRendererComponent> p_rendererComponent, const Frustum& p_frustum)
 {
 	const auto& envLight = Scene::GetEnviromentLight();
 	const auto& lights = Scene::GetLight();
 	const auto& shader = *Scene::sceneShader;
-
+	shader.Bind();
 	for (int i = 0; i < Scene::GetLightCount(); ++i)
 	{
 		auto& light = lights[i];
@@ -176,33 +203,60 @@ void Renderer::Render(std::shared_ptr<MeshRendererComponent> p_rendererComponent
 		}
 	}
 
-
 	for (auto& mesh : p_rendererComponent->GetMeshes())
 	{
 		
-		bool inside = p_frustum.CubeInFrustum(mesh.GetAABB());
+		bool inside = mesh.GetInstanceBound().InFrustum(p_frustum);
 		if (!inside)
 		{
 			continue;
 		}
-		drawCalls++;
+
 		const auto& material = mesh.GetMaterial();
 		const auto& attribs = mesh.GetVertexAttribs();
 		attribs.Bind();
 
 		GLCall(glBindTexture(GL_TEXTURE_2D, 0));
-		if (mesh.GetMaterial().Diffuse.get() != nullptr)
-			mesh.GetMaterial().Diffuse->Bind();
+		if (mesh.GetMaterial().Diffuse != -1)
+		{
+			p_rendererComponent->GetModel().BindTexture(mesh.GetMaterial().Diffuse);
+			shader.UploadUniformInt("Material.diffuseMap", mesh.GetMaterial().Diffuse);
+			shader.UploadUniformInt("diffuseTextures[" + std::to_string(mesh.GetMaterial().Diffuse) + "]", mesh.GetMaterial().Diffuse);
+		}
 
 		shader.UploadUniformVec4("Material.Color", material.Color);
 		shader.UploadUniformFloat("Material.Shininess", material.Shininess);
 		shader.UploadUniformFloat("Material.SpecularHighlights", material.SpecularHighlights);
-
 		shader.UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
 		shader.UploadUniformFloat("AmbientEnergy", envLight.Energy);
 		shader.UploadUniformVec4("ViewPosition", { renderData.view[3].x, renderData.view[3].y, renderData.view[3].z, 1.0f });
 		RenderCommand::DrawIndexed(attribs);
+		drawCalls++;
+
+		Vector3 a;
+		Vector3 b;
+
+		int c = 0;
+		int d = 1;
+		for (int i = 0; i < 12; i++)
+		{
+			mesh.GetAABB().GetEdge(i, a, b);
+			aabVertices[c] = a;
+			aabVertices[d] = b ;
+			c += 2;
+			d += 2;
+		}
+
+
+		renderData.shader->Bind();
+		renderData.m_aabbVertexArray->Bind();
+		renderData.m_aabbVertexBuffer->BufferSubData(aabVertices, 0, sizeof(aabVertices));
+		renderData.shader->UploadUniformMat4("projView", renderData.proj* renderData.view);
+		renderData.shader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
+		RenderCommand::RenderLines(*renderData.m_aabbVertexArray);
+		shader.Bind();
 	}
+	
 	Console::Log(std::to_string(drawCalls) + "\n");
 	drawCalls = 0;
 }
@@ -315,9 +369,9 @@ void Renderer::Render(const std::unique_ptr<Primitive>& primitive)
 			shader.UploadUniformInt(ss.str(), spLight->Use);
 		}
 	}
-	glBindTexture(GL_TEXTURE_2D, 0);
-	if (primitive->GetMaterial().Diffuse.get() != nullptr)
-		primitive->GetMaterial().Diffuse->Bind();
+	//glBindTexture(GL_TEXTURE_2D, 0);
+	//if (primitive->GetMaterial().Diffuse != -1)
+		
 
 	shader.UploadUniformVec4("Material.Color", material.Color);
 	shader.UploadUniformFloat("Material.Shininess", material.Shininess);
@@ -330,6 +384,8 @@ void Renderer::Render(const std::unique_ptr<Primitive>& primitive)
 	shader.UploadUniformVec4("ViewPosition", { renderData.view[3].x, renderData.view[3].y, renderData.view[3].z, 1.0f });
 
 	RenderCommand::DrawIndexed(attribs);
+
+
 	
 }
 

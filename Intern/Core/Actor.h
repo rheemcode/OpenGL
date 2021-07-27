@@ -18,6 +18,10 @@ public:
 	const Transform& GetTransform() const { return m_transform; }
 	const Vector3& GetWorldPosition() const { return m_transform.GetWorldPosition(); }
 	const Vector3& GetLocalPosition() const { return m_transform.GetLocalPosition(); }
+	void SetLocalPosition(const Vector3&  p_position)  
+	{ 
+		m_transform.SetLocalPosition(p_position); 
+	}
 	const Quaternion& GetWorldRotation() const { return m_transform.GetWorldRotation(); }
 	const Quaternion& GetLocationRotation() const { return m_transform.GetLocalRotation(); }
 	

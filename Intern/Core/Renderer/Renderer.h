@@ -17,7 +17,7 @@ struct RenderCommand
     static void SetClearColor(float r, float g, float b, float a);
     static void Clear();
     static void DrawIndexed(const VertexArray& vertexArray);
-    void RenderLines(const VertexArray& vertexArray);
+    static void RenderLines(const VertexArray& vertexArray);
 };
 
 struct VertexAttribs
@@ -59,6 +59,10 @@ struct Renderer2DData {
 struct RendererData
 {
     std::unique_ptr<UniformBuffer> ubo;
+    std::unique_ptr<VertexArray> m_aabbVertexArray;
+    std::unique_ptr<VertexBuffer> m_aabbVertexBuffer;
+    std::unique_ptr<Shader> shader;
+
     Matrix4x4 view;
     Matrix4x4 proj;
 };
@@ -66,7 +70,7 @@ struct RendererData
 class Renderer
 {
     static RendererData renderData;
-
+ 
 public:
 
     enum PRIMITIVE_MODE
