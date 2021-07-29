@@ -19,21 +19,18 @@ class Texture
 
 	unsigned int m_ID[MAX_TEXTURES] = { MAX_TEXTURES + 1 };
 	
-	uint32_t* m_Textures;
-	static uint32_t texCount;
-	static uint32_t texturesIDs[32];
-	
 	int m_Width, m_Height, m_Components;
 	InternalFormat m_InternalFormat;
 	DataFormat m_DataFormat;
 
 	int xOffset, yOffset;
-	uint32_t textureCount;
+	uint32_t textureCount =0;
 	uint32_t levels = 1;
 
 public:
 	void Bind();
 	void Bind(uint32_t p_val);
+	void BindCubeMap();
 	void UnBind();
 	void Delete();
 	int GetWidth() { return m_Width; }
@@ -49,8 +46,11 @@ public:
 	uint32_t AddImage(const std::string& filepath);
 	uint32_t AddImage(const std::string& filepath, uint32_t slot);
 
+	void AddCubeMapImage(const std::array<std::string, 6>& p_files);
+
 	Texture(uint32_t count = 1);
 	Texture(uint32_t widtth, uint32_t height);
 	Texture(const std::string& filename, uint32_t count = 1);
 	~Texture();
 };
+

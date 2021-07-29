@@ -10,7 +10,8 @@ void RenderCommand::Init()
 	GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
 	GLCall(glEnable(GL_DEPTH_TEST));
 	GLCall(glDepthFunc(GL_LEQUAL));
-	GLCall(glEnable(GL_CULL_FACE));
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+//	GLCall(glEnable(GL_CULL_FACE));
 }
 
 void RenderCommand::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
@@ -32,6 +33,13 @@ void RenderCommand::DrawIndexed(const VertexArray& vertexArray)
 {
 	//vertexArray.Bind();
 	GLCall(glDrawElements(GL_TRIANGLES, vertexArray.GetIndicies(), GL_UNSIGNED_INT, 0));
+//	glDrawArrays(GL_TRIANGLES, 0, vertexArray.GetIndicies());
+}
+
+void RenderCommand::DrawIndexed(const uint32_t& p_indices)
+{
+	//vertexArray.Bind();
+	GLCall(glDrawElements(GL_TRIANGLES, p_indices, GL_UNSIGNED_INT, 0));
 //	glDrawArrays(GL_TRIANGLES, 0, vertexArray.GetIndicies());
 }
 
@@ -68,7 +76,7 @@ void Renderer::Init()
 {
 	renderData.m_aabbVertexArray = std::make_unique<VertexArray>();
 	renderData.m_aabbVertexBuffer = std::make_unique<VertexBuffer>(sizeof(aabVertices));
-	renderData.shader = std::make_unique<Shader>("Intern/Shaders/aabb.glsl");
+	renderData.shader = std::make_unique<Shader>("Assets/Shaders/aabb.glsl");
 	renderData.m_aabbVertexBuffer->SetLayout({ { GL_FLOAT, 0, 3, 0 } });
 	renderData.m_aabbVertexArray->SetIndices(indices, 24);
 	renderData.m_aabbVertexArray->AddBuffer(*renderData.m_aabbVertexBuffer.get());
@@ -87,7 +95,10 @@ void Renderer::BeginScene(const Camera& camera )
 	renderData.proj = camera.GetProjectionMatrix();
 	
 	Scene::sceneShader->UploadUniformMat4("projView", renderData.proj * renderData.view);
-	//Scene::sceneShader->UploadUniformMat4("proj", renderData.proj);
+	SkyBox* skybox = SkyBox::GetSingleton();
+	skybox->BeginRender(renderData.proj * renderData.view);
+	RenderCommand::DrawIndexed(skybox->GetIndices());
+	Scene::sceneShader->UploadUniformMat4("proj", renderData.proj);
 }
 
 void Renderer::Render(const Primitive& primitive)

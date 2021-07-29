@@ -3,6 +3,7 @@
 #include "Tests/Object.h"
 #include <Tests/Primitive.h>
 #include "Renderer/Renderer.h"
+#include "Renderer/SkyBox.h"
 #include "Math/Transform.h"
 #include "Events/Event.h"
 #include "Console.h"
@@ -108,6 +109,8 @@ class Scene
 	static const std::array<std::unique_ptr<Light>, 10>& GetLight();
 	static int GetLightCount();
 
+	SkyBox* skybox;
+	
 public:
 
 	void Process();

@@ -17,6 +17,7 @@ struct RenderCommand
     static void SetClearColor(float r, float g, float b, float a);
     static void Clear();
     static void DrawIndexed(const VertexArray& vertexArray);
+    static void DrawIndexed(const uint32_t& p_indices);
     static void RenderLines(const VertexArray& vertexArray);
 };
 

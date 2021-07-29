@@ -43,8 +43,6 @@ void Scene::Process()
 void Scene::OnUpdate()
 {	
 	//Timer timer;
-
-
 	Renderer::BeginScene(*sceneCamera);
 
 	for (auto& actor : m_actors)
@@ -114,14 +112,12 @@ Scene::Scene()
 
 
 	sceneCamera = std::make_unique<SceneCamera>(cameraSettings);
-	sceneShader = std::make_unique<Shader>("Intern/Shaders/lighting.shader");
+	sceneShader = std::make_unique<Shader>("Assets/Shaders/lighting.shader");
 	sceneShader->Bind();
 	
+	SkyBox::Create();
+	//skybox = SkyBox::GetSingleton();
 //	InitLightUniforms();
-
-	std::unique_ptr<Primitive> testCube = std::make_unique<Cube>();
-	std::unique_ptr<Primitive> testSphere = std::make_unique<Sphere>(18, 36, 1.2f);
-	//std::unique_ptr<Primitive> testPlane = std::make_unique<Plane>();
 
 	m_EnviromentLight.Ambient = { 1.f, 1.f, 1.f};
 	m_EnviromentLight.Energy = .19f;
@@ -141,11 +137,11 @@ Scene::Scene()
 
 	std::shared_ptr<Actor> actor = std::make_shared<Actor>();
 	std::shared_ptr<TransformComponent> tComponent = std::make_shared<TransformComponent>(actor);
-	std::shared_ptr<MeshRendererComponent> renderComponent = std::make_shared<MeshRendererComponent>(actor, "./house.obj");
+	std::shared_ptr<MeshRendererComponent> renderComponent = std::make_shared<MeshRendererComponent>(actor, "./Assets/house.obj");
 	actor->AddComponent(tComponent);
 	actor->AddComponent(renderComponent);
 
 	AddActor(actor);
-	AddObject(testCube);
+	//AddObject(testCube);
 	//AddObject(testPlane);
 }

@@ -13,7 +13,7 @@ bool ModelLoader::LoadModel(MODEL_FORMAT modelFormat, std::string_view p_filePat
 		case OBJ:
 		{
 			tinyobj::ObjReaderConfig readerConfig;
-			readerConfig.mtl_search_path = "./";
+			readerConfig.mtl_search_path = "./Assets/";
 			readerConfig.triangulate = true;
 			readerConfig.vertex_color = false;
 
@@ -60,7 +60,7 @@ bool ModelLoader::LoadModel(MODEL_FORMAT modelFormat, std::string_view p_filePat
 					if (result != p_model->m_textureNames.end() && !result->loaded)
 					{
 						auto texptr = p_model->GetTexture().lock();
-						result->id = texptr->AddImage("C:\\Users\\rheen\\source\\repos\\OpenGL\\" + result->name);
+						result->id = texptr->AddImage("./Assets/Textures/" + result->name);
 						result->loaded = true;
 					}
 
@@ -69,6 +69,8 @@ bool ModelLoader::LoadModel(MODEL_FORMAT modelFormat, std::string_view p_filePat
 
 			for (size_t s = 0; s < shapes.size(); s++)
 			{
+				if (s != 25)
+					continue;
 				size_t indexOffset = 0;
 				const int size = shapes[s].mesh.indices.size();
 				VertexAttrib* vertexAttribs = new VertexAttrib[size];
@@ -139,7 +141,11 @@ bool ModelLoader::LoadModel(MODEL_FORMAT modelFormat, std::string_view p_filePat
 					material->Shininess = materials[shapes[s].mesh.material_ids[0]].shininess;
 					material->SpecularHighlights = materials[shapes[s].mesh.material_ids[0]].specular[0];
 				}
-		
+				
+				else
+				{
+					material->Diffuse = -1;
+				}
 
 
 				Mesh mesh(vertexAttribs, indices, size, material, boundindBox);

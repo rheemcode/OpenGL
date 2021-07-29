@@ -169,6 +169,7 @@
     <ClCompile Include="Intern\Core\Renderer\Scene.cpp" />
     <ClCompile Include="Intern\Core\SceneCameraController.cpp" />
     <ClCompile Include="Intern\Core\Actor.cpp" />
+    <ClCompile Include="Intern\Core\Renderer\SkyBox.cpp" />
     <ClInclude Include="Intern\Core\Actor.h" />
     <ClCompile Include="Intern\Math\AABB.cpp" />
     <ClCompile Include="Intern\Math\Frustum.cpp" />
@@ -200,6 +201,7 @@
     <ClCompile Include="Intern\Core\Renderer\VertexArray.cpp" />
     <ClCompile Include="Intern\Core\Renderer\Buffers\BufferLayout.cpp" />
     <ClCompile Include="Intern\Core\Window\Window.cpp" />
+    <ClInclude Include="Intern\Core\Renderer\SkyBox.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Extern\tiny_obj_loader.h" />
@@ -500,9 +502,9 @@
     <None Include="Extern\glm\gtx\vector_angle.inl" />
     <None Include="Extern\glm\gtx\vector_query.inl" />
     <None Include="Extern\glm\gtx\wrap.inl" />
-    <None Include="Intern\Shaders\aabb.glsl" />
-    <None Include="Intern\Shaders\default.shader" />
-    <None Include="Intern\Shaders\lighting.shader" />
+    <None Include="Assets\Shaders\aabb.glsl" />
+    <None Include="Assets\Shaders\default.shader" />
+    <None Include="Assets\Shaders\lighting.shader" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Extern\glm\CMakeLists.txt" />
