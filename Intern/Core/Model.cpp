@@ -69,8 +69,6 @@ bool ModelLoader::LoadModel(MODEL_FORMAT modelFormat, std::string_view p_filePat
 
 			for (size_t s = 0; s < shapes.size(); s++)
 			{
-				if (s != 25)
-					continue;
 				size_t indexOffset = 0;
 				const int size = shapes[s].mesh.indices.size();
 				VertexAttrib* vertexAttribs = new VertexAttrib[size];

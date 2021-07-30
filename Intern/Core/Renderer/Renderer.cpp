@@ -96,8 +96,13 @@ void Renderer::BeginScene(const Camera& camera )
 	
 	Scene::sceneShader->UploadUniformMat4("projView", renderData.proj * renderData.view);
 	SkyBox* skybox = SkyBox::GetSingleton();
-	skybox->BeginRender(renderData.proj * renderData.view);
+
+	Matrix4x4 viewMat = renderData.view;
+	viewMat[3] = { 0, 0, 0, 1.f };
+	skybox->BeginRender(renderData.proj * viewMat);
 	RenderCommand::DrawIndexed(skybox->GetIndices());
+
+
 	Scene::sceneShader->UploadUniformMat4("proj", renderData.proj);
 }
 
