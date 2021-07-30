@@ -10,8 +10,10 @@ void RenderCommand::Init()
 	GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
 	GLCall(glEnable(GL_DEPTH_TEST));
 	GLCall(glDepthFunc(GL_LEQUAL));
-	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-//	GLCall(glEnable(GL_CULL_FACE));
+	GLCall(glEnable(GL_CULL_FACE));
+	
+	GLCall(glEnable(GL_BLEND));
+	GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 }
 
 void RenderCommand::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
@@ -275,7 +277,7 @@ void Renderer::Render(std::shared_ptr<MeshRendererComponent> p_rendererComponent
 		shader.Bind();
 	}
 	
-	Console::Log(std::to_string(drawCalls) + "\n");
+	//Console::Log(std::to_string(drawCalls) + "\n");
 	drawCalls = 0;
 }
 

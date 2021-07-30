@@ -98,6 +98,10 @@ class Scene
 	static std::array<std::unique_ptr<Light>, 10> m_lights;
 	static EnviromentLight m_EnviromentLight;
 
+	static uint64_t lastTicks;
+	static uint32_t frames;
+	static uint32_t frame;
+
 	std::vector<std::unique_ptr<Primitive>> m_Primitives;
 	std::vector<std::shared_ptr<class Actor>> m_actors;
 	std::unique_ptr<UniformBuffer> m_LightsBuffer;

@@ -122,7 +122,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GLEW_STATIC;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Extern;$(SolutionDir)Extern\GLFW\include;$(SolutionDir)Extern\GLEW\include;$(SolutionDir)\Intern\Core;$(SolutionDir)\Intern</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Extern;$(SolutionDir)Extern\GLEW\include\;$(SolutionDir)\Intern\Core;$(SolutionDir)\Intern</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -130,7 +130,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;glew32s.lib;opengl32.lib;user32.lib;gdi32.lib;shell32.lib;dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32s.lib;opengl32.lib;user32.lib;gdi32.lib;shell32.lib;dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Extern\GLFW\lib-vc2019;$(SolutionDir)Extern\GLEW\lib\Release\x64</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
@@ -143,7 +143,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GLEW_STATIC;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Extern;$(SolutionDir)Extern\GLFW\include;$(SolutionDir)Extern\GLEW\include;$(SolutionDir)\Intern\Core;$(SolutionDir)\Intern</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Extern;$(SolutionDir)Extern\GLEW\include\;$(SolutionDir)\Intern\Core;$(SolutionDir)\Intern</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -153,7 +153,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;glew32s.lib;opengl32.lib;user32.lib;gdi32.lib;shell32.lib;dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32s.lib;opengl32.lib;user32.lib;gdi32.lib;shell32.lib;dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Extern\GLFW\lib-vc2019;$(SolutionDir)Extern\GLEW\lib\Release\x64</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
@@ -171,9 +171,11 @@
     <ClCompile Include="Intern\Core\Actor.cpp" />
     <ClCompile Include="Intern\Core\Renderer\SkyBox.cpp" />
     <ClInclude Include="Intern\Core\Actor.h" />
+    <ClCompile Include="Intern\Core\Timestep.cpp" />
     <ClCompile Include="Intern\Math\AABB.cpp" />
     <ClCompile Include="Intern\Math\Frustum.cpp" />
     <ClCompile Include="Intern\Math\Plane.cpp" />
+    <ClInclude Include="Intern\Core\Timestep.h" />
     <ClInclude Include="Intern\Math\Transform.h" />
     <ClCompile Include="Intern\Math\Transform.cpp" />
     <ClCompile Include="Intern\Tests\Quad.cpp" />

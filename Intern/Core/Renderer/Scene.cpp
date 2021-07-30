@@ -5,6 +5,7 @@
 #include "Events/MouseEvent.h"
 #include "Components/TransformComponent.h"
 #include "Components/MeshRendererComponent.h"
+#include "Timestep.h"
 
 #include <thread>
 
@@ -14,6 +15,9 @@ std::unique_ptr<Shader> Scene::sceneShader;
 std::array<std::unique_ptr<Light>, 10> Scene::m_lights;
 uint32_t Scene::lightCount;
 
+uint64_t Scene::lastTicks = 0;
+uint32_t Scene::frames = 0;
+uint32_t Scene::frame = 0;
 
 const Scene::EnviromentLight& Scene::GetEnviromentLight()
 {
@@ -40,6 +44,8 @@ void Scene::Process()
 	}
 }
 
+static float last = 0;
+
 void Scene::OnUpdate()
 {	
 	//Timer timer;
@@ -56,11 +62,11 @@ void Scene::OnUpdate()
 		}
 	}
 
-	//for (auto &object : m_Primitives)
-	//{
-		//object->OnUpdate();
-	//	Renderer::Render(object);
-	//}
+	for (auto &object : m_Primitives)
+	{
+		object->OnUpdate();
+		Renderer::Render(object);
+	}
 
 	Renderer::EndScene();
 }

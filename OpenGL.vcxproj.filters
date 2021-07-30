@@ -135,6 +135,9 @@
     <ClCompile Include="Intern\Core\Renderer\SkyBox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Intern\Core\Timestep.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Intern\Core\Renderer\Shader.h">
@@ -705,6 +708,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Intern\Core\Renderer\SkyBox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Core\Timestep.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
