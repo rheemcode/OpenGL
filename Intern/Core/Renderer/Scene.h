@@ -1,5 +1,7 @@
 #pragma once
 #include <vector>
+#include "Thread.h"
+#include "CommandBuffer.h"
 #include "Tests/Object.h"
 #include <Tests/Primitive.h>
 #include "Renderer/Renderer.h"
@@ -8,6 +10,7 @@
 #include "Events/Event.h"
 #include "Console.h"
 #include <chrono>
+
 
 struct Light
 {
@@ -92,8 +95,9 @@ class Scene
 		Vector3 Ambient;
 		float Energy;
 	};
+	
+	static Scene* s_instance;
 
-	bool s_active;
 	static uint32_t lightCount;
 	static std::array<std::unique_ptr<Light>, 10> m_lights;
 	static EnviromentLight m_EnviromentLight;
@@ -104,6 +108,9 @@ class Scene
 
 	std::vector<std::unique_ptr<Primitive>> m_Primitives;
 	std::vector<std::shared_ptr<class Actor>> m_actors;
+	std::vector<class Mesh> culledMeshes;
+	std::vector<class Mesh> meshes;
+
 	std::unique_ptr<UniformBuffer> m_LightsBuffer;
 	std::unique_ptr<SceneCamera> sceneCamera;
 	static std::unique_ptr<Shader> sceneShader;
@@ -113,18 +120,42 @@ class Scene
 	static const std::array<std::unique_ptr<Light>, 10>& GetLight();
 	static int GetLightCount();
 
+	Thread::ID threadID;
+	Thread thread;
+	std::recursive_mutex mutex;
+	mutable CommandBuffer commandQueue;
+
 	SkyBox* skybox;
-	
+
+	uint32_t drawPending = 0;
+	bool running = true;
+
+
+	void _Render();
+	void _Update(float p_delta);
+	void ThreadLoop();
+	void ThreadExit();
+	void ThreadFlush();
+	void ThreadRender();
+	static void ThreadCallback(void* p_instance);
+	void ThreadUpdate(float p_delta);
+
 public:
+	void Sync();
 
-	void Process();
-
-	void OnUpdate();
+	const std::vector<Mesh>& GetCulledMeshes();
+	const SceneCamera& GetSceneCamera() const { return *sceneCamera; }
+	void Render();
+	void OnUpdate(float p_delta);
 	void AddObject(std::unique_ptr<Primitive>& primitive);
 	void AddActor(std::shared_ptr<class Actor>& p_actor);
 	void OnEvent(const Event& event);
 	void Shutdown();
+
+	static Scene* GetSingleton();
 //	void InitLightUniforms();
+
+	static void Init();
 	
 	Scene();
 	~Scene() {}

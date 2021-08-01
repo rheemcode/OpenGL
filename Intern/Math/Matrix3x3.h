@@ -1,7 +1,7 @@
 #pragma once
 #include "SimpleVec.h"
 
-struct Matrix4x4;
+class Matrix4x4;
 class Matrix3x3
 {
 	typedef SimpleVec3 colType;

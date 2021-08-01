@@ -161,9 +161,9 @@ namespace tinyobj {
         real_t sharpness;         // -boost (default 1.0?)
         real_t brightness;        // base_value in -mm option (default 0)
         real_t contrast;          // gain_value in -mm option (default 1)
-        real_t origin_offset[3];  // -o u [v [w]] (default 0 0 0)
-        real_t scale[3];          // -s u [v [w]] (default 1 1 1)
-        real_t turbulence[3];     // -t u [v [w]] (default 0 0 0)
+        real_t origin_offset[3]{ 0 };  // -o u [v [w]] (default 0 0 0)
+        real_t scale[3] {0};          // -s u [v [w]] (default 1 1 1)
+        real_t turbulence[3]{ 0 };     // -t u [v [w]] (default 0 0 0)
         int texture_resolution;   // -texres resolution (No default value in the spec.
                                   // We'll use -1)
         bool clamp;               // -clamp (default false)
@@ -180,11 +180,11 @@ namespace tinyobj {
     struct material_t {
         std::string name;
 
-        real_t ambient[3];
-        real_t diffuse[3];
-        real_t specular[3];
-        real_t transmittance[3];
-        real_t emission[3];
+        real_t ambient[3]{ 0 };
+        real_t diffuse[3]{0};
+        real_t specular[3]{0};
+        real_t transmittance[3]{0};
+        real_t emission[3]{0};
         real_t shininess;
         real_t ior;       // index of refraction
         real_t dissolve;  // 1 == opaque; 0 == fully transparent

@@ -142,6 +142,8 @@ inline float Vector3::Dot(const Vector3& p_a, const Vector3& p_b)
 inline Vector3 Vector3::Normalize(const Vector3& p_vec)
 {
 	float length = Vector3::Length(p_vec);
+	if (length == 0)
+		return Vector3();
 	return Vector3(p_vec.x / length, p_vec.y / length, p_vec.z / length);
 }
 

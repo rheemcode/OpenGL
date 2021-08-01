@@ -6,21 +6,15 @@
 #include "Math/Matrix4x4.h"
 #include "Math/SimpleVec.h"
 #include <iostream>
-
-Sphere::Sphere(const Sphere& t)
-{
-
-}
-
 Sphere::Sphere(int stackSegments, int sectorSegments, float radius)
     : m_StackSegments(stackSegments), m_SectorSegments(sectorSegments), m_radius(radius)
 {
-    m_Va = std::make_unique<VertexArray>();
+    m_Va = std::make_shared<VertexArray>();
     GenIndicies();
     GenSphereVertices();
     transform = Matrix4x4::Translate(transform, Vector3(-2.f, 0, -10.f));
     
-    m_material = std::make_unique<Material>();
+    m_material = std::make_shared<Material>();
     m_material->Color = { .0f, .7f, .7f, 1.f };
     m_material->Shininess = 12.f;
     m_material->SpecularHighlights = 1.f;
@@ -41,7 +35,7 @@ void Sphere::GenSphereVertices()
 {
     std::vector<VertexAttrib> attrib;
 
-    float sectorStep = 2.f * PI / m_SectorSegments;
+    float sectorStep = (float) 2.f * PI / m_SectorSegments;
     float stackStep = float(PI / m_StackSegments);
     
     float lengthInv = 1.0f / m_radius;
@@ -71,7 +65,7 @@ void Sphere::GenSphereVertices()
 
     }
 
-    m_Vb = std::make_unique<VertexBuffer>(attrib.data(), attrib.size() * sizeof(VertexAttrib));
+    m_Vb = std::make_shared<VertexBuffer>(attrib.data(), attrib.size() * sizeof(VertexAttrib));
     m_Vb->SetLayout
     ({ {GL_FLOAT, 0,  3, GL_FALSE},
         {GL_FLOAT, 1, 3, GL_FALSE},
@@ -81,20 +75,7 @@ void Sphere::GenSphereVertices()
 
 }
 
-const Matrix4x4& Sphere::GetTransform() const
-{
-    return transform;
-}
 
-const VertexArray& Sphere::GetVertexAttribs() const
-{
-    return *m_Va;
-}
-
-const Shader& Sphere::GetShader() const
-{
-    return *m_Shader;
-}
 
 void Sphere::GenIndicies()
 {

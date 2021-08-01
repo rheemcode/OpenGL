@@ -13,10 +13,10 @@ class Primitive : public Object
 {
 
 protected:
-    std::unique_ptr<Shader> m_Shader;
-    std::unique_ptr<VertexArray> m_Va;
-    std::unique_ptr<VertexBuffer> m_Vb;
-    std::unique_ptr<Material> m_material;
+    std::shared_ptr<Shader> m_Shader;
+    std::shared_ptr<VertexArray> m_Va;
+    std::shared_ptr<VertexBuffer> m_Vb;
+    std::shared_ptr<Material> m_material;
 
 public:
 
@@ -27,7 +27,7 @@ public:
     virtual void OnUpdate() = 0;
     
     Primitive() {};
-    Primitive(Primitive&& primitive)
+    Primitive(Primitive&& primitive) noexcept
     {
         m_Va = std::move(primitive.m_Va);
         m_Vb = std::move(primitive.m_Vb);

@@ -39,7 +39,7 @@
 		EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
 
 	private:
-		float m_MouseX, m_MouseY, speedX, speedY,
+		float m_MouseX, m_MouseY, speedX = 0, speedY = 0,
 			relativeX, relativeY;
 	};
 

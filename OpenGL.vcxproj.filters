@@ -39,9 +39,6 @@
     <ClCompile Include="Intern\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Intern\Tests\Cube.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Intern\Core\Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -90,9 +87,6 @@
     <ClCompile Include="Intern\Tests\Quad.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Intern\Tests\Sphere.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Intern\Core\Renderer\Buffers\UniformBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -136,6 +130,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Intern\Core\Timestep.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Core\Thread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Core\CommandBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Tests\Cube.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Tests\Sphere.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -587,9 +593,6 @@
     <ClInclude Include="Intern\Tests\Primitive.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Intern\Tests\Cube.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Intern\Core\Window\Window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -659,9 +662,6 @@
     <ClInclude Include="Intern\Core\Renderer\Scene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Intern\Tests\Sphere.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Intern\Core\Renderer\Buffers\UniformBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -711,6 +711,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Intern\Core\Timestep.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Core\Thread.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Core\CommandBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Tests\Cube.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Tests\Sphere.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

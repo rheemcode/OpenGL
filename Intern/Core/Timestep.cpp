@@ -55,7 +55,7 @@ void Time::Create()
 
 	if (!s_Instance)
 	{
-		s_Instance = new Time();
+		s_Instance = (Time*)_malloca(sizeof(uint64_t) * 2);
 		s_Instance->Init();
 	}
 }

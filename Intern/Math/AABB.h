@@ -293,7 +293,7 @@ inline void AABB::ExpandTo(const Vector3& p_vector) {
 }
 
 void AABB::ProjectRangeInPlane(const Plane& p_plane, float& r_min, float& r_max) const {
-	Vector3 half_extents(size.x * 0.5, size.y * 0.5, size.z * 0.5);
+	Vector3 half_extents(size.x * 0.5f, size.y * 0.5f, size.z * 0.5f);
 	Vector3 center(position.x + half_extents.x, position.y + half_extents.y, position.z + half_extents.z);
 
 	float length = Vector3::Dot(Vector3::Abs(p_plane.normal), half_extents);
@@ -335,9 +335,9 @@ inline float AABB::GetShortestAxisSize() const
 
 bool AABB::SmitsIntersectRay(const Vector3& p_from, const Vector3& p_dir, float t0, float t1) const 
 {
-	float divx = 1.0 / p_dir.x;
-	float divy = 1.0 / p_dir.y;
-	float divz = 1.0 / p_dir.z;
+	float divx = (float) 1.0 / p_dir.x;
+	float divy = (float) 1.0 / p_dir.y;
+	float divz = (float) 1.0 / p_dir.z;
 
 	Vector3 upbound = position + size;
 	float tmin, tmax, tymin, tymax, tzmin, tzmax;

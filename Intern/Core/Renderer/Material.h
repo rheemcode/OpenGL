@@ -8,7 +8,7 @@ struct Material
 	struct
 	{
 		Vector4 Color;
-		int Diffuse;
+		int Diffuse =-1;
 	};
 
 	Vector3 Ambient;

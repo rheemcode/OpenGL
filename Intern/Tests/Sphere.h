@@ -5,16 +5,13 @@
 class Sphere : public Primitive
 {
 
-    int m_SectorSegments,
-        m_StackSegments,
-        m_NumIndicies,
-        m_RestartIndex,
-        m_NumVertices;
+    int m_SectorSegments = 0,
+        m_StackSegments = 0,
+        m_NumIndicies = 0,
+        m_RestartIndex = 0,
+        m_NumVertices = 0;
 
-    float m_radius;
-
-    int m_MvpLocation;
-    int m_UniformLocation;
+    float m_radius = 0;
 
 public:
     //void Draw(const class Camera& camera) override;
@@ -22,12 +19,9 @@ public:
     void Scale();
 
     void GenSphereVertices();
-    virtual const Matrix4x4& GetTransform() const override;
-    virtual const VertexArray& GetVertexAttribs() const override;
-    virtual const Shader& GetShader() const override;
     void GenIndicies();
     virtual void OnUpdate() override {};
-    Sphere(const Sphere& t);
+
     Sphere(int stackSegments, int sectorSegments, float radius);
     ~Sphere();
 

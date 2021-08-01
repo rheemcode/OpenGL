@@ -70,13 +70,13 @@ bool ModelLoader::LoadModel(MODEL_FORMAT modelFormat, std::string_view p_filePat
 			for (size_t s = 0; s < shapes.size(); s++)
 			{
 				size_t indexOffset = 0;
-				const int size = shapes[s].mesh.indices.size();
-				VertexAttrib* vertexAttribs = new VertexAttrib[size];
-				uint32_t* indices = new uint32_t[size];
+				const int vertexAttribCount = (int)shapes[s].mesh.indices.size();
+				VertexAttrib* vertexAttribs = new VertexAttrib[vertexAttribCount];
+				uint32_t* indices = new uint32_t[vertexAttribCount];
 				
 				std::unordered_map<VertexAttrib, uint32_t> uniqueVertices;
 				
-				std::unique_ptr<AABB> boundindBox = std::make_unique<AABB>();
+				std::shared_ptr<AABB> boundindBox = std::make_shared<AABB>();
 				for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++)
 				{
 					size_t fv = size_t(shapes[s].mesh.num_face_vertices[f]);
@@ -104,7 +104,7 @@ bool ModelLoader::LoadModel(MODEL_FORMAT modelFormat, std::string_view p_filePat
 
 						if (uniqueVertices.count(vAttrib) == 0)
 						{
-							uniqueVertices[vAttrib] = indexOffset + v;
+							uniqueVertices[vAttrib] = (uint32_t) indexOffset + v;
 							vertexAttribs[indexOffset + v] = vAttrib;
 						}
 
@@ -116,7 +116,7 @@ bool ModelLoader::LoadModel(MODEL_FORMAT modelFormat, std::string_view p_filePat
 				}
 
 
-				std::unique_ptr<Material> material = std::make_unique<Material>();
+				std::shared_ptr<Material> material = std::make_shared<Material>();
 				
 				if (shapes[s].mesh.material_ids[0] >= 0)
 				{
@@ -146,7 +146,8 @@ bool ModelLoader::LoadModel(MODEL_FORMAT modelFormat, std::string_view p_filePat
 				}
 
 
-				Mesh mesh(vertexAttribs, indices, size, material, boundindBox);
+				Mesh mesh(vertexAttribs, indices, vertexAttribCount, material, boundindBox);
+				
 				p_model->AddMesh(std::forward<Mesh>(mesh));
 				delete[] vertexAttribs;
 				delete[] indices;

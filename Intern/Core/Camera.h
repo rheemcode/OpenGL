@@ -67,9 +67,9 @@ public:
 		: Camera(p_cameraSetting){}
 	
 	void OnEvent(const Event& event);
-	void OnUpdate()
+	void OnUpdate(float p_delta)
 	{
-		cameraController.HandleKeyboardInput(transform);
+		cameraController.HandleKeyboardInput(transform, p_delta);
 		UpdateView();
 	}
 

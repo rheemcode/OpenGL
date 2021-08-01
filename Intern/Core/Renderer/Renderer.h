@@ -25,7 +25,7 @@ struct VertexAttribs
 {
     Vector3 Position;
     Vector2 texCoord;
-    float texIndex;
+    float texIndex = 0;
 };
 
 struct Renderer2DData {
@@ -71,7 +71,8 @@ struct RendererData
 class Renderer
 {
     static RendererData renderData;
- 
+    static std::vector<class Mesh> s_renderMeshes;
+
 public:
 
     enum PRIMITIVE_MODE
@@ -85,15 +86,17 @@ public:
 
    static void Init();
    static void Clear();
+   static void AddMeshes(const class Mesh& p_rendererComponent);
+   
    static void SetClearColor(float r, float g, float b, float a) { RenderCommand::SetClearColor(r, g, b, a); }
    static void BeginScene(const Camera& camera);
    //void Render(const Primitive& primitive, const Light& light);
    static void Render(const Primitive& primitive);
    void Render(const AABB& p_aabb);
-   static void Render(std::shared_ptr<class MeshRendererComponent> p_rendererComponent, const Frustum& p_frustum);
+   static void Render();
    //static void Render(std::shared_ptr<class MeshRendererComponent> p_rendererComponent);
    static void Render(const std::unique_ptr<Primitive>& primitive);
-   void SetViewport(float x, float y, float width, float height);
+   void SetViewport(int x, int y, int width, int height);
    static void EndScene();
 
 };

@@ -42,14 +42,13 @@ class Model
 	friend ModelLoader;
 	friend class MeshRendererComponent;
 
-	const Transform* m_transform;
+	const Transform* m_transform = nullptr;
 
 	std::vector<Mesh> m_meshes;
 	std::shared_ptr<Texture> m_texture;
 	std::vector<TextureNameMap> m_textureNames;
 
 	std::weak_ptr<Texture> GetTexture() { return m_texture; }
-
 	std::vector<Mesh>& GetMeshesRef() { return m_meshes; }
 	void AddMesh(Mesh&& mesh);
 

@@ -10,10 +10,10 @@ void RenderCommand::Init()
 	GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
 	GLCall(glEnable(GL_DEPTH_TEST));
 	GLCall(glDepthFunc(GL_LEQUAL));
-	GLCall(glEnable(GL_CULL_FACE));
+	//GLCall(glEnable(GL_CULL_FACE));
 	
-	GLCall(glEnable(GL_BLEND));
-	GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+//	GLCall(glEnable(GL_BLEND));
+//	GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 }
 
 void RenderCommand::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
@@ -73,6 +73,7 @@ static Vector3 temp_aabbVertices[] =
 static Vector3 aabVertices[24];
 
 static uint32_t indices[] = { 0, 1, 1, 2, 2, 3, 3, 0, 0, 4, 4, 5, 5, 1, 5, 6, 2, 6, 6, 7, 7, 3, 7, 4};
+std::vector<Mesh> Renderer::s_renderMeshes;
 
 void Renderer::Init()
 {
@@ -90,9 +91,14 @@ void Renderer::Clear()
 	RenderCommand::Clear();
 }
 
+void Renderer::AddMeshes(const class Mesh& p_mesh)
+{
+	s_renderMeshes.push_back(p_mesh);
+}
 
 void Renderer::BeginScene(const Camera& camera )
 {
+	//s_renderMeshes.clear();
 	renderData.view = camera.GetViewMatrix();
 	renderData.proj = camera.GetProjectionMatrix();
 	
@@ -121,8 +127,11 @@ void Renderer::Render(const AABB& p_aabb)
 
 static bool shouldCull = false;
 
-void Renderer::Render(std::shared_ptr<MeshRendererComponent> p_rendererComponent, const Frustum& p_frustum)
+static std::recursive_mutex mutex;
+
+void Renderer::Render()
 {
+	mutex.lock();
 	const auto& envLight = Scene::GetEnviromentLight();
 	const auto& lights = Scene::GetLight();
 	const auto& shader = *Scene::sceneShader;
@@ -222,15 +231,8 @@ void Renderer::Render(std::shared_ptr<MeshRendererComponent> p_rendererComponent
 		}
 	}
 
-	for (auto& mesh : p_rendererComponent->GetMeshes())
+	for (const auto& mesh : Scene::GetSingleton()->GetCulledMeshes())
 	{
-		
-		bool inside = mesh.GetInstanceBound().InFrustum(p_frustum);
-
-			if (!inside)
-			{
-				continue;
-			}
 
 		const auto& material = mesh.GetMaterial();
 		const auto& attribs = mesh.GetVertexAttribs();
@@ -239,7 +241,7 @@ void Renderer::Render(std::shared_ptr<MeshRendererComponent> p_rendererComponent
 		GLCall(glBindTexture(GL_TEXTURE_2D, 0));
 		if (mesh.GetMaterial().Diffuse != -1)
 		{
-			p_rendererComponent->GetModel().BindTexture(mesh.GetMaterial().Diffuse);
+			mesh.GetModelInstance()->BindTexture(mesh.GetMaterial().Diffuse);
 			shader.UploadUniformInt("Material.diffuseMap", mesh.GetMaterial().Diffuse);
 			shader.UploadUniformInt("diffuseTextures[" + std::to_string(mesh.GetMaterial().Diffuse) + "]", mesh.GetMaterial().Diffuse);
 		}
@@ -262,7 +264,7 @@ void Renderer::Render(std::shared_ptr<MeshRendererComponent> p_rendererComponent
 		{
 			mesh.GetAABB().GetEdge(i, a, b);
 			aabVertices[c] = a;
-			aabVertices[d] = b ;
+			aabVertices[d] = b;
 			c += 2;
 			d += 2;
 		}
@@ -271,14 +273,16 @@ void Renderer::Render(std::shared_ptr<MeshRendererComponent> p_rendererComponent
 		renderData.shader->Bind();
 		renderData.m_aabbVertexArray->Bind();
 		renderData.m_aabbVertexBuffer->BufferSubData(aabVertices, 0, sizeof(aabVertices));
-		renderData.shader->UploadUniformMat4("projView", renderData.proj* renderData.view);
+		renderData.shader->UploadUniformMat4("projView", renderData.proj * renderData.view);
 		renderData.shader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
 		RenderCommand::RenderLines(*renderData.m_aabbVertexArray);
 		shader.Bind();
 	}
+		
 	
-	//Console::Log(std::to_string(drawCalls) + "\n");
+	Console::Log("Draw Calls: " + std::to_string(drawCalls) + "\n");
 	drawCalls = 0;
+	mutex.unlock();
 }
 
 void Renderer::Render(const std::unique_ptr<Primitive>& primitive)
@@ -409,13 +413,14 @@ void Renderer::Render(const std::unique_ptr<Primitive>& primitive)
 	
 }
 
-void Renderer::SetViewport(float x, float y, float width, float height)
+void Renderer::SetViewport(int x, int y, int width, int height)
 {
 	glViewport(x, y, width, height);
 }
 
 void Renderer::EndScene()
 {
+	s_renderMeshes.clear();
 }
 
 

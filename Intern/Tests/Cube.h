@@ -8,9 +8,6 @@ class Cube : public Primitive
 
 public:
     Cube();
-    virtual const Matrix4x4& GetTransform() const override;
-    virtual const VertexArray& GetVertexAttribs() const override;
-    virtual const Shader& GetShader() const override;
     virtual void OnUpdate() override;
 };
 //

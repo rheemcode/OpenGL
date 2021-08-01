@@ -159,6 +159,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Intern\Core\CommandBuffer.cpp" />
     <ClCompile Include="Intern\Core\Components\Component.cpp" />
     <ClCompile Include="Intern\Core\Components\MeshRendererComponent.cpp" />
     <ClCompile Include="Intern\Core\Components\TransformComponent.cpp" />
@@ -170,6 +171,8 @@
     <ClCompile Include="Intern\Core\SceneCameraController.cpp" />
     <ClCompile Include="Intern\Core\Actor.cpp" />
     <ClCompile Include="Intern\Core\Renderer\SkyBox.cpp" />
+    <ClCompile Include="Intern\Core\Thread.cpp" />
+    <ClInclude Include="Intern\Core\CommandBuffer.h" />
     <ClInclude Include="Intern\Core\Actor.h" />
     <ClCompile Include="Intern\Core\Timestep.cpp" />
     <ClCompile Include="Intern\Math\AABB.cpp" />
@@ -178,6 +181,7 @@
     <ClInclude Include="Intern\Core\Timestep.h" />
     <ClInclude Include="Intern\Math\Transform.h" />
     <ClCompile Include="Intern\Math\Transform.cpp" />
+    <ClCompile Include="Intern\Tests\Cube.cpp" />
     <ClCompile Include="Intern\Tests\Quad.cpp" />
     <ClCompile Include="Intern\Tests\Sphere.cpp" />
     <ClCompile Include="Intern\Tests\Sprite.cpp" />
@@ -193,7 +197,6 @@
     <ClCompile Include="Intern\Math\SimpleVec.cpp" />
     <ClCompile Include="Intern\Math\Vector2.cpp" />
     <ClCompile Include="Intern\Math\Vector3.cpp" />
-    <ClCompile Include="Intern\Tests\Cube.cpp" />
     <ClCompile Include="Extern\glm\detail\glm.cpp" />
     <ClCompile Include="Intern\Core\Renderer\Renderer.cpp" />
     <ClCompile Include="Intern\Core\Renderer\Shader.cpp" />
@@ -204,6 +207,7 @@
     <ClCompile Include="Intern\Core\Renderer\Buffers\BufferLayout.cpp" />
     <ClCompile Include="Intern\Core\Window\Window.cpp" />
     <ClInclude Include="Intern\Core\Renderer\SkyBox.h" />
+    <ClInclude Include="Intern\Core\Thread.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Extern\tiny_obj_loader.h" />
@@ -220,6 +224,7 @@
     <ClInclude Include="Intern\Math\AABB.h" />
     <ClInclude Include="Intern\Math\Frustum.h" />
     <ClInclude Include="Intern\Math\Plane.h" />
+    <ClInclude Include="Intern\Tests\Cube.h" />
     <ClInclude Include="Intern\Tests\Sphere.h" />
     <ClInclude Include="Intern\Tests\Sprite.h" />
     <ClInclude Include="Intern\Core\Camera.h" />
@@ -241,7 +246,6 @@
     <ClInclude Include="Intern\Math\SimpleVec.h" />
     <ClInclude Include="Intern\Math\Vector2.h" />
     <ClInclude Include="Intern\Math\Vector3.h" />
-    <ClInclude Include="Intern\Tests\Cube.h" />
     <ClInclude Include="Extern\glm\common.hpp" />
     <ClInclude Include="Extern\glm\detail\func_common.hpp" />
     <ClInclude Include="Extern\glm\detail\func_exponential.hpp" />

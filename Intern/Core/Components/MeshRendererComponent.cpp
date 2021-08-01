@@ -2,15 +2,16 @@
 
 void MeshRendererComponent::AddModel(const std::string& p_modelFilePath)
 {
-	m_model = std::make_unique<Model>(p_modelFilePath, OBJ);
+	m_model = std::make_shared<Model>(p_modelFilePath, OBJ);
 	m_model->SetTransform(m_actor->GetTransform());
 	for (auto& mesh : m_model->GetMeshesRef())
 	{
+		mesh.m_modelInstance = m_model;
 		mesh.GetTransformRef().SetParent(m_model->GetTransform());
 	}
 }
 
-void MeshRendererComponent::Update()
+void MeshRendererComponent::UpdateTransform()
 {
 	for (auto& mesh : m_model->GetMeshesRef())
 	{

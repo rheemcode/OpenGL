@@ -6,9 +6,9 @@
 
 Cube::Cube()
 {
-	m_Va = std::make_unique<VertexArray>();
+	m_Va = std::make_shared<VertexArray>();
 	GenVertices();
-	m_material = std::make_unique<Material>();
+	m_material = std::make_shared<Material>();
 	m_material->Color = { 1.f, .4f, .7f, 1.f };
 	m_material->Shininess = 12.f;
 	m_material->SpecularHighlights = 1.f;
@@ -51,20 +51,6 @@ Cube::Cube()
 //	m_material->SpecularHighlights = 1.f;
 //}
 
-const Matrix4x4& Cube::GetTransform() const 
-{
-	return transform;
-}
-
-const VertexArray& Cube::GetVertexAttribs() const
-{
-	return *m_Va;
-}
-
-const Shader& Cube::GetShader() const
-{
-	return *m_Shader;
-}
 
 //const Matrix4x4& Plane::GetTransform() const 
 //{
@@ -106,9 +92,9 @@ void Cube::GenVertices()
 
 
 			float v[3];
-			v[0] = 1.0;
-			v[1] = 1 - 2 * ((j >> 1) & 1);
-			v[2] = v[1] * (1 - 2 * (j & 1));
+			v[0] = 1.0f;
+			v[1] = (float)1 - 2 * ((j >> 1) & 1);
+			v[2] = (float)v[1] * (1 - 2 * (j & 1));
 
 			for (int k = 0;k < 3;k++) {
 
@@ -159,7 +145,7 @@ void Cube::GenVertices()
 		indices.push_back(i);
 	
 
-	m_Vb = std::make_unique<VertexBuffer>(attrib.data(), attrib.size() * sizeof(VertexAttrib));
+	m_Vb = std::make_shared<VertexBuffer>(attrib.data(), attrib.size() * sizeof(VertexAttrib));
 	m_Vb->SetLayout
 	({ {GL_FLOAT, 0,  3, 0},
 		{GL_FLOAT, 1, 3, 0},

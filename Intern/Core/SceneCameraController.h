@@ -25,13 +25,13 @@ class SceneCameraController
 public:
 	void OnEvent(const Event& event);
 	void HandleMouseInput(Transform& p_transform, float xPos, float yPos);
-	void HandleKeyboardInput(Transform& p_transform);
+	void HandleKeyboardInput(Transform& p_transform, float p_delta);
 	void UpdateZoom();
 
 	SceneCameraController()
 	{
 		m_mouseSentivity = 0.1f;
-		m_speed = .5f;
+		m_speed = 5.f;
 		m_distance = 10.f;
 		m_zoom = 0;
 

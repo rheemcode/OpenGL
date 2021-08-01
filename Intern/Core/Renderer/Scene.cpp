@@ -1,14 +1,14 @@
+#include <functional> 
 #include "Scene.h"
 #include "Actor.h"
-#include <functional>
-#include <Window/Window.h>
+#include "Window/Window.h"
 #include "Events/MouseEvent.h"
 #include "Components/TransformComponent.h"
 #include "Components/MeshRendererComponent.h"
 #include "Timestep.h"
 
-#include <thread>
 
+Scene* Scene::s_instance = nullptr;
 
 Scene::EnviromentLight Scene::m_EnviromentLight;
 std::unique_ptr<Shader> Scene::sceneShader;
@@ -35,42 +35,105 @@ int Scene::GetLightCount()
 }
 
 using namespace std::literals::chrono_literals;
-void Scene::Process()
+
+void Scene::_Render()
 {
-	while (s_active)
-	{
-		sceneCamera->OnUpdate();
-		std::this_thread::sleep_for(2ms);
-	}
-}
-
-static float last = 0;
-
-void Scene::OnUpdate()
-{	
-	//Timer timer;
-	Renderer::BeginScene(*sceneCamera);
-
+	culledMeshes.clear();
 	for (auto& actor : m_actors)
 	{
 		if (const std::shared_ptr<Component> cmp = actor->GetComponent("Renderer Component").lock())
 		{
 			auto meshRenderer = std::dynamic_pointer_cast<MeshRendererComponent, Component>(cmp);
-		//	actor->SetLocalPosition({ 0, -10.f, 0.f });
-			meshRenderer->Update();
-			Renderer::Render(meshRenderer, sceneCamera->GetFrustum());
+			meshRenderer->UpdateTransform();
+			for (const auto& mesh : meshRenderer->GetMeshes())
+			{
+				meshes.push_back(mesh);
+				if (mesh.GetInstanceBound().InFrustum(sceneCamera->GetFrustum()))
+				{
+					culledMeshes.push_back(mesh);
+				}
+			}
 		}
 	}
 
-	for (auto &object : m_Primitives)
+	for (const auto& mesh : culledMeshes)
 	{
-		object->OnUpdate();
-		Renderer::Render(object);
+		Renderer::AddMeshes(mesh);
 	}
-
-	Renderer::EndScene();
 }
 
+const std::vector<Mesh>& Scene::GetCulledMeshes()
+{
+	return culledMeshes;
+}
+
+void Scene::_Update(float p_delta)
+{
+	sceneCamera->OnUpdate(p_delta);
+}
+
+void Scene::ThreadLoop()
+{
+	threadID = Thread::GetCallerID();
+
+	while (running)
+	{
+		commandQueue.WaitAndFlushOne();
+	}
+
+	commandQueue.FlushAll();
+}
+
+void Scene::ThreadExit()
+{
+	running = false;
+}
+
+void Scene::ThreadFlush()
+{
+	drawPending--;
+}
+
+void Scene::Sync()
+{
+	drawPending++;
+	commandQueue.PushAndSync(this, &Scene::ThreadFlush);
+}
+
+void Scene::Render()
+{
+	_Render();
+	//drawPending++;
+	//commandQueue.Push(this, &Scene::ThreadRender);
+}
+
+void Scene::ThreadRender()
+{
+	if (drawPending)
+		_Render();
+}
+
+void Scene::ThreadUpdate(float p_delta)
+{
+	if (drawPending)
+		_Update(p_delta);
+}
+
+void Scene::ThreadCallback(void* p_instance)
+{
+	Scene* scene = reinterpret_cast<Scene*>(p_instance);
+
+	scene->ThreadLoop();
+}
+
+static float last = 0;
+
+void Scene::OnUpdate(float p_delta)
+{	
+	drawPending++;
+	commandQueue.Push(this, &Scene::ThreadUpdate, p_delta);
+	
+}
 
 void Scene::AddObject(std::unique_ptr<Primitive>& primitive)
 {
@@ -81,7 +144,6 @@ void Scene::AddActor(std::shared_ptr<Actor>& p_actor)
 {
 	m_actors.push_back(p_actor);
 }
-
 
 
 void Scene::OnEvent(const Event& event)
@@ -99,12 +161,30 @@ void Scene::OnEvent(const Event& event)
 
 void Scene::Shutdown()
 {
-	s_active = false;
+	running = false;
+	commandQueue.Push(this, &Scene::ThreadFlush);
+	thread.WaitToFinish();
+}
+
+Scene* Scene::GetSingleton()
+{
+	return s_instance;
+}
+
+void Scene::Init()
+{
+	if (!s_instance)
+	{
+		s_instance = new Scene();
+	}
+
+
 }
 
 Scene::Scene()
+	: commandQueue(true)
 {
-	s_active = true;
+
 	Display* display = Display::GetSingleton();
 	display->m_Windows[0]->BindEventCallback(std::bind(&Scene::OnEvent, this, std::placeholders::_1));
 
@@ -148,6 +228,7 @@ Scene::Scene()
 	actor->AddComponent(renderComponent);
 
 	AddActor(actor);
+	thread.Start(ThreadCallback, this);
 	//AddObject(testCube);
 	//AddObject(testPlane);
 }
