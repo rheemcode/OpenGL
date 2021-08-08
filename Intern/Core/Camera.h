@@ -70,6 +70,7 @@ public:
 	void OnUpdate(float p_delta)
 	{
 		cameraController.HandleKeyboardInput(transform, p_delta);
+		cameraController.Update(transform, p_delta);
 		UpdateView();
 	}
 

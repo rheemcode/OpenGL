@@ -178,6 +178,24 @@ namespace Math
 		 return float(value);
 	 }
 
+	static bool IsEqualApprox(float a, float b, float tolerance)
+	{
+		if (a == b)
+			return true;
+		return Abs(a - b) < tolerance;
+	}
+	
+	static bool IsEqualApprox(float a, float b)
+	{
+		if (a == b)
+			return true;
+
+		float tolerance = EPSILON * Abs(a);
+		if (tolerance < EPSILON)
+			tolerance = EPSILON;
+		return Abs(a - b) < tolerance;
+	}
+
 	static  uint32_t HalfbitsToFloatbits(uint16_t h) {
 		uint16_t h_exp, h_sig;
 		uint32_t f_sgn, f_exp, f_sig;

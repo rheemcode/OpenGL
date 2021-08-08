@@ -2,11 +2,36 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <vector>
 #include "Math/Vector2.h"
 #include <Math/Matrix4x4.h>
+#include <unordered_map>
+
+struct ShaderCache
+{
+	std::unordered_map<std::string, int> uniformNamesLocation;
+
+	int GetUniformLocation(const std::string& name) const
+	{
+		auto result = uniformNamesLocation.find(name);
+		if (result != uniformNamesLocation.end())
+		{
+			return result->second;
+		}
+		return -1;
+	}
+
+	void AddUniformNameLocation(const std::string name, int location)
+	{
+		uniformNamesLocation[name] = location;
+	}
+};
 
 struct Shader
 {
+	ShaderCache cache;
+	std::vector<std::string> uniformNames;
+
 	enum class Type
 	{
 		NONE = -1,

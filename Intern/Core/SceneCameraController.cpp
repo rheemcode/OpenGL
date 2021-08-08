@@ -12,13 +12,11 @@ void SceneCameraController::OnEvent(const Event& event)
 
 void SceneCameraController::HandleMouseInput(Transform& p_transform, float xPos, float yPos)
 {
-	static bool mouseHeld;
-	m_rotationVelocity = Vector3();
+	inFreelook = true;
 	if (Input::GetMouseDown(Mouse::RIGHT))
 	{
-		mouseHeld = true;
-		m_rotationVelocity.x = Input::GetAxis(Input::AXIS_X) *m_mouseSentivity* m_rotationSpeed;
-		m_rotationVelocity.y = Input::GetAxis(Input::AXIS_Y) *m_mouseSentivity* m_rotationSpeed;
+		m_rotationVelocity.x = Input::GetAxis(Input::AXIS_X) * m_mouseSensitivity * m_rotationSpeed;
+		m_rotationVelocity.y = Input::GetAxis(Input::AXIS_Y) * m_mouseSensitivity * m_rotationSpeed;
 
 		Vector3 eulerAngles = Quaternion::EulerAngles(p_transform.GetLocalRotation());
 
@@ -35,11 +33,75 @@ void SceneCameraController::HandleMouseInput(Transform& p_transform, float xPos,
 		float pitch = eulerAngles.x - m_rotationVelocity.y;
 		pitch = Math::Clamp(pitch, -84.f, 84.f);
 		float yaw = eulerAngles.y - m_rotationVelocity.x;
-		p_transform.SetLocalRotation(Quaternion::FromEulerAngles({ pitch, yaw, 0.f }));
+
+		currentController.xRot = pitch;
+		currentController.yRot = yaw;
 	}
 
+}
+
+void SceneCameraController::Update(Transform& p_transform, float p_delta)
+{
+	Controller oldController = controller;
+	controller = currentController;
+	if (!Input::GetMouseDown(Mouse::RIGHT))
+		inFreelook = false;
+
+	if (inFreelook)
+	{
+		float factor = (1.0f / inertia) * p_delta;
+		controller.position = Vector3::Lerp(oldController.position, currentController.position, Math::Clamp(factor, 0, 1));
+
+		controller.xRot = Math::Lerp(oldController.xRot, currentController.xRot, MIN(1.f, p_delta * (1 / rotInertia)));
+		controller.yRot = Math::Lerp(oldController.yRot, currentController.yRot, MIN(1.f, p_delta * (1 / rotInertia)));
+
+		if (Math::Abs(controller.xRot - currentController.xRot) < 0.1f)
+			controller.xRot = currentController.xRot;
+
+		if (Math::Abs(controller.yRot - currentController.yRot) < 0.1f)
+			controller.yRot = currentController.yRot;
+
+		Vector3 forward = p_transform.GetWorldForward();
+		controller.position = controller.position + forward * controller.distance;
+
+	}
+	else
+	{
+		bool manipulated = false;
+
+		float _rotInertia = MAX(0.00001, manipulated ? manipRotInertia : freelookRotInertia);
+		float _inertia = MAX(0.00001, manipulated ? manipIntertia : freelookInertia);
+
+		controller.xRot = Math::Lerp(oldController.xRot, currentController.xRot, MIN(1.f, p_delta * (1 / _rotInertia)));
+		controller.yRot = Math::Lerp(oldController.yRot, currentController.yRot, MIN(1.f, p_delta * (1 / _rotInertia)));
 
 
+		if (Math::Abs(controller.xRot - currentController.xRot) < 0.1f)
+			controller.xRot = currentController.xRot;
+
+		if (Math::Abs(controller.yRot - currentController.yRot) < 0.1f)
+			controller.yRot = currentController.yRot;
+
+		controller.position = Vector3::Lerp(oldController.position, currentController.position, MIN(1.f, p_delta * (1 / _inertia)));
+		controller.distance = Math::Lerp(oldController.distance, currentController.distance, MIN(1.f, p_delta * (1 / zoomInertia)));
+
+	}
+
+	float tolerance = 0.001;
+	bool equal = true;
+
+	if (!Math::IsEqualApprox(oldController.xRot, currentController.xRot, tolerance) || !Math::IsEqualApprox(oldController.yRot, currentController.yRot, tolerance))
+		equal = false;
+	else if (!Vector3::IsEqualApprox(oldController.position, currentController.position))
+		equal = false;
+	else if (!Math::IsEqualApprox(controller.distance, currentController.distance, tolerance))
+		equal = false;
+
+	if (!equal || inFreelook)
+	{
+		p_transform.SetLocalRotation(Quaternion::FromEulerAngles({ controller.xRot, controller.yRot, 0.f }));
+		p_transform.SetLocalPosition(controller.position);
+	}
 }
 
 void SceneCameraController::HandleKeyboardInput(Transform& p_transform, float p_delta)
@@ -61,10 +123,9 @@ void SceneCameraController::HandleKeyboardInput(Transform& p_transform, float p_
 			m_velocity -= p_transform.GetWorldUp();
 
 		Vector3 position = p_transform.GetLocalPosition();
-		m_velocity = Vector3::Normalize(m_velocity) * m_speed;
-		Vector3 displacement = Vector3::Lerp(position, position + m_velocity, p_delta * 1 / 0.15f);
-		//Vector3 finalVel = Vector3::Normalize(m_velocity) * m_speed * Math::Sqrt(0.1f) * p_delta;
-		p_transform.SetLocalPosition(displacement);
+		m_velocity = Vector3::Normalize(m_velocity) * (m_speed * 5);
+		Vector3 displacement = position + m_velocity;
+		currentController.position = displacement;
 	}
 }
 

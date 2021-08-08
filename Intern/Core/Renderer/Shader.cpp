@@ -16,6 +16,8 @@ Shader::Shader()
 
 }
 
+
+
 void Shader::ParseShader(const std::string& filePath)
 {
 
@@ -27,21 +29,38 @@ void Shader::ParseShader(const std::string& filePath)
 	const char* shaderVar = "#shader";
 	if (!stream)
 		return;
+
 	while (getline(stream, line))
 	{
 		if (line.find(shaderVar) != std::string::npos)
 		{
+
 			if (line.find("vertex") != std::string::npos)
 				shaderType = Type::VERTEX;
+
 			else if (line.find("fragment") != std::string::npos)
 				shaderType = Type::FRAGMENT;
-				//
 		}
 
 		else
 		{
 			ss[(int)shaderType] << line << '\n';
 		}
+
+		if (line.find("uniform") != std::string::npos)
+		{
+			const char* str = line.c_str();
+			std::string result = "";
+			while ((str = std::strstr(str, " ")) != NULL)
+			{
+				++str;
+				result = str;
+				result = result.substr(0, result.size() - 1);
+			}
+
+			uniformNames.push_back(result);
+		}
+
 	}
 
 	vertexSource = ss[0].str();
@@ -62,6 +81,15 @@ void Shader::CreateShader()
 
 	glDeleteShader(vs);
 	glDeleteShader(fs);
+
+	glUseProgram(program);
+	
+	for (const auto& name : uniformNames)
+	{
+		cache.AddUniformNameLocation(name, glGetUniformLocation(program, name.c_str()));
+	}
+
+	uniformNames.clear();
 }
 
 unsigned int Shader::CompileShader(const std::string& src, unsigned int type)
@@ -128,43 +156,56 @@ void Shader::SetIntArray(const std::string& name, int* p_val, uint32_t count)
 
 void Shader::UploadUniformMat4(const std::string& name, const Matrix4x4& p_mat4) const
 {
-	Bind();
-	GLint location = glGetUniformLocation(program, name.c_str());
+	GLint location = cache.GetUniformLocation(name);
+	if (location == -1)
+		return;
 	GLCall(glUniformMatrix4fv(location, 1, GL_FALSE, &p_mat4[0].x));
 }
 
 void Shader::UploadUniformVec4(const std::string& name, const SimpleVec4& p_vec4) const
 {
-	GLint location = glGetUniformLocation(program, name.c_str());
+	GLint location = cache.GetUniformLocation(name);
+	if (location == -1)
+		return;
 	GLCall(glUniform4f(location, p_vec4.x, p_vec4.y, p_vec4.z, p_vec4.w));
 }
 
 void Shader::UploadUniformVec3(const std::string& name, const Vector3& p_vec3) const
 {
-	GLint location = glGetUniformLocation(program, name.c_str());
+	GLint location = cache.GetUniformLocation(name);
+	if (location == -1)
+		return;
 	GLCall(glUniform3f(location, p_vec3.x, p_vec3.y, p_vec3.z));
 }
 
 void Shader::UploadUniformVec2(const std::string& name, const Vector2& p_vec2) const
 {
-	GLint location = glGetUniformLocation(program, name.c_str());
+	GLint location = cache.GetUniformLocation(name);
+	if (location == -1)
+		return;
 	GLCall(glUniform2f(location, p_vec2.x, p_vec2.y));
 }
 
 void Shader::UploadUniformInt(const std::string& name, int p_val) const
 {
-	GLint location = glGetUniformLocation(program, name.c_str());
+	GLint location = cache.GetUniformLocation(name);
+	if (location == -1)
+		return;
 	GLCall(glUniform1i(location, p_val));
 }
 
 void Shader::UploadUniformFloat(const std::string& name, float p_val) const
 {
-	GLint location = glGetUniformLocation(program, name.c_str());
+	GLint location = cache.GetUniformLocation(name);
+	if (location == -1)
+		return;
 	GLCall(glUniform1f(location, p_val));
 }
 
 void Shader::UploadUniformIntArray(const std::string& name, int* p_val, uint32_t count) const
 {
-	GLint location = glGetUniformLocation(program, name.c_str());
+	GLint location = cache.GetUniformLocation(name);
+	if (location == -1)
+		return;
 	glUniform1iv(location, count, p_val);
 }

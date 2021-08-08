@@ -50,6 +50,11 @@ struct Vector3
 	static inline Vector3 Bounce(const Vector3& p_vec, const Vector3& p_normal);
 	static inline Vector3 Reflect(const Vector3& p_vec, const Vector3& p_normal);
 
+	static inline bool  IsEqualApprox(const Vector3& a, const Vector3& b)
+	{
+		return Math::IsEqualApprox(a.x, b.x) && Math::IsEqualApprox(a.y, b.y) && Math::IsEqualApprox(a.z, b.z);
+	}
+
 	static inline Vector3 Forward();
 	static inline Vector3 Right();
 	static inline Vector3 Up();

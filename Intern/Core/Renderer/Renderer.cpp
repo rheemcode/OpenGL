@@ -4,13 +4,14 @@
 #include "Renderer/Scene.h"
 #include "Components/MeshRendererComponent.h"
 #include "Input/Input.h"
+#include "Thread.h"
 
 void RenderCommand::Init()
 {
 	GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
 	GLCall(glEnable(GL_DEPTH_TEST));
 	GLCall(glDepthFunc(GL_LEQUAL));
-	//GLCall(glEnable(GL_CULL_FACE));
+	GLCall(glEnable(GL_CULL_FACE));
 	
 //	GLCall(glEnable(GL_BLEND));
 //	GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
@@ -108,8 +109,9 @@ void Renderer::BeginScene(const Camera& camera )
 	Matrix4x4 viewMat = renderData.view;
 	viewMat[3] = { 0, 0, 0, 1.f };
 	skybox->BeginRender(renderData.proj * viewMat);
+	GLCall(glDisable(GL_CULL_FACE));
 	RenderCommand::DrawIndexed(skybox->GetIndices());
-
+	GLCall(glEnable(GL_CULL_FACE));
 
 	Scene::sceneShader->UploadUniformMat4("proj", renderData.proj);
 }
@@ -127,11 +129,10 @@ void Renderer::Render(const AABB& p_aabb)
 
 static bool shouldCull = false;
 
-static std::recursive_mutex mutex;
-
 void Renderer::Render()
 {
-	mutex.lock();
+	//THREAD_LOCK
+//	mutex.lock();
 	const auto& envLight = Scene::GetEnviromentLight();
 	const auto& lights = Scene::GetLight();
 	const auto& shader = *Scene::sceneShader;
@@ -231,7 +232,9 @@ void Renderer::Render()
 		}
 	}
 
-	for (const auto& mesh : Scene::GetSingleton()->GetCulledMeshes())
+	Scene* scene = Scene::GetSingleton();
+	std::vector<Mesh> tempMeshes(scene->GetCulledMeshes());
+	for (const auto& mesh : tempMeshes)
 	{
 
 		const auto& material = mesh.GetMaterial();
@@ -255,7 +258,7 @@ void Renderer::Render()
 		RenderCommand::DrawIndexed(attribs);
 		drawCalls++;
 
-		Vector3 a;
+	/*	Vector3 a;
 		Vector3 b;
 
 		int c = 0;
@@ -276,13 +279,14 @@ void Renderer::Render()
 		renderData.shader->UploadUniformMat4("projView", renderData.proj * renderData.view);
 		renderData.shader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
 		RenderCommand::RenderLines(*renderData.m_aabbVertexArray);
-		shader.Bind();
+		shader.Bind();*/
 	}
 		
 	
-	Console::Log("Draw Calls: " + std::to_string(drawCalls) + "\n");
+//	Console::Log("Draw Calls: " + std::to_string(drawCalls) + "\n");
 	drawCalls = 0;
-	mutex.unlock();
+	//THREAD_UNLOCK
+	//mutex.unlock();
 }
 
 void Renderer::Render(const std::unique_ptr<Primitive>& primitive)

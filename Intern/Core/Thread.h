@@ -1,7 +1,7 @@
 #pragma once
 
 #include <thread>
-
+#include <mutex>
 #include <functional>
 
 class Thread
@@ -30,3 +30,9 @@ public:
 	~Thread();
 };
 
+
+static std::recursive_mutex mutex;
+
+#define THREAD_LOCK std::lock_guard lock(mutex);
+#define THREAD_UNLOCK 
+			

@@ -16,7 +16,7 @@ uniform mat4 view;
 uniform mat4 proj;
 uniform mat4 projView;
 uniform mat4 model;
-
+ 
 void main()
 {
     gl_Position = projView * model * vec4(vPos, 1.0);

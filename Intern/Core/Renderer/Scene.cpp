@@ -38,6 +38,7 @@ using namespace std::literals::chrono_literals;
 
 void Scene::_Render()
 {
+	THREAD_LOCK	
 	culledMeshes.clear();
 	for (auto& actor : m_actors)
 	{
@@ -47,7 +48,6 @@ void Scene::_Render()
 			meshRenderer->UpdateTransform();
 			for (const auto& mesh : meshRenderer->GetMeshes())
 			{
-				meshes.push_back(mesh);
 				if (mesh.GetInstanceBound().InFrustum(sceneCamera->GetFrustum()))
 				{
 					culledMeshes.push_back(mesh);
@@ -55,15 +55,13 @@ void Scene::_Render()
 			}
 		}
 	}
-
-	for (const auto& mesh : culledMeshes)
-	{
-		Renderer::AddMeshes(mesh);
-	}
+	THREAD_UNLOCK
 }
 
 const std::vector<Mesh>& Scene::GetCulledMeshes()
 {
+	THREAD_LOCK
+	THREAD_UNLOCK
 	return culledMeshes;
 }
 
@@ -102,9 +100,10 @@ void Scene::Sync()
 
 void Scene::Render()
 {
-	_Render();
-	//drawPending++;
-	//commandQueue.Push(this, &Scene::ThreadRender);
+	//_Render();
+	//
+	drawPending++;
+	commandQueue.Push(this, &Scene::ThreadRender);
 }
 
 void Scene::ThreadRender()
@@ -130,6 +129,7 @@ static float last = 0;
 
 void Scene::OnUpdate(float p_delta)
 {	
+	//_Update(p_delta);
 	drawPending++;
 	commandQueue.Push(this, &Scene::ThreadUpdate, p_delta);
 	
@@ -191,7 +191,7 @@ Scene::Scene()
 	CameraSettings cameraSettings;
 
 	cameraSettings.mode = CameraMode::PERSPECTIVE;
-	cameraSettings.fovY = 65.f;
+	cameraSettings.fovY = 105.f;
 	cameraSettings.winWidth = 1200;
 	cameraSettings.winHeight = 700;
 	cameraSettings.ratio = cameraSettings.winWidth / cameraSettings.winHeight;
