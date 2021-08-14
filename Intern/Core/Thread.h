@@ -33,6 +33,7 @@ public:
 
 static std::recursive_mutex mutex;
 
-#define THREAD_LOCK std::lock_guard lock(mutex);
-#define THREAD_UNLOCK 
+#define THREAD_LOCK mutex.lock();
+#define THREAD_UNLOCK mutex.unlock();
+#define THREAD_LOCK_GUARD std::lock_guard lock(mutex);
 			

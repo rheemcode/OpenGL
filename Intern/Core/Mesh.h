@@ -33,13 +33,14 @@ class Mesh
 	Ref<Shader> m_Shader;
 	Ref<VertexArray> m_Va;
 	Ref<VertexBuffer> m_Vb;
-	Ref<Material> m_material;
-	Ref<AABB> m_aabb;
-	Ref<InstanceBounds> m_instanceBounds;
+	Material m_material;
+	AABB m_aabb;
+	InstanceBounds m_instanceBounds;
 	Transform m_transform;
 
 	friend class Model;
 	friend class MeshRendererComponent;
+	friend class StaticMeshRendererComponent;
 	Ref<class Model> m_modelInstance;
 	Transform& GetTransformRef() { return m_transform; }
 public:
@@ -48,9 +49,9 @@ public:
 	const VertexArray& GetVertexAttribs() const { return *m_Va; };
 	const Transform& GetTransform() const { return m_transform; }
 	const Shader& GetShader() const { return *m_Shader; };
-	const Material& GetMaterial() const { return *m_material; }
-	const AABB& GetAABB() const { return *m_aabb;  }
-	const InstanceBounds& GetInstanceBound() const { return *m_instanceBounds; }
+	const Material& GetMaterial() const { return m_material; }
+	const AABB& GetAABB() const { return m_aabb;  }
+	const InstanceBounds& GetInstanceBound() const { return m_instanceBounds; }
 	Ref<Model> GetModelInstance() const;
 	 
 	Mesh& operator=(Mesh&& p_mesh) noexcept
@@ -65,7 +66,7 @@ public:
 		return *this;
 	}
 	
-	Mesh& operator==(const Mesh& p_mesh)
+	Mesh& operator=(const Mesh& p_mesh)
 	{
 		m_Va = p_mesh.m_Va;
 		m_Vb = p_mesh.m_Vb;
@@ -88,8 +89,8 @@ public:
 		m_instanceBounds = p_mesh.m_instanceBounds;
 	}
 	 Mesh(Mesh&& p_mesh) noexcept;
-	 Mesh(const std::vector<VertexAttrib>& p_vAttribs, const std::vector<uint32_t>& p_indices, Ref<Material> p_material, Ref<AABB> p_aabb);
-	 Mesh(VertexAttrib* p_vAttribs, uint32_t* p_indices, uint32_t count, Ref<Material> p_material, Ref<AABB> p_aabb);
+	 Mesh(const std::vector<VertexAttrib>& p_vAttribs, const std::vector<uint32_t>& p_indices, Material p_material, AABB p_aabb);
+	 Mesh(VertexAttrib* p_vAttribs, uint32_t* p_indices, uint32_t count, Material p_material, AABB p_aabb);
 	 ~Mesh() = default;
 };
 

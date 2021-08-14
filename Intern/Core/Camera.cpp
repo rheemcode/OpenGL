@@ -49,11 +49,7 @@ Matrix4x4 Camera::MakeProjectionMatrix(const CameraSettings& setting)
 
 void SceneCamera::OnEvent(const Event& event)
 {
-	if (event.GetEventType() == EventType::MouseMoved)
-	{
-		auto& mm = (MouseMovedEvent&)event;
-		cameraController.HandleMouseInput(transform, mm.GetX(), mm.GetY());
-	}
+	cameraController.OnEvent(event);
 }
 
 //

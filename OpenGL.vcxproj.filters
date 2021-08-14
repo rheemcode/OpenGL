@@ -144,6 +144,12 @@
     <ClCompile Include="Intern\Tests\Sphere.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Intern\Core\Components\StaticMeshRendererComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Core\Renderer\Buffers\FrameBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Intern\Core\Renderer\Shader.h">
@@ -725,6 +731,12 @@
     <ClInclude Include="Intern\Tests\Sphere.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Intern\Core\Components\StaticMeshRendererComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Core\Renderer\Buffers\FrameBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Shaders\default.shader" />
@@ -1056,7 +1068,8 @@
       <Filter>Header Files</Filter>
     </None>
     <None Include="Assets\Shaders\lighting.shader" />
-    <None Include="Assets\Shaders\aabb.glsl" />
+    <None Include="Assets\Shaders\default.glsl" />
+    <None Include="Assets\Shaders\depth.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Extern\glm\CMakeLists.txt" />

@@ -9,7 +9,8 @@
 
 class SceneCameraController
 {
-
+	friend class SceneCamera;
+	Transform* transform;
 	struct Controller
 	{
 		Vector3 position;
@@ -24,16 +25,16 @@ class SceneCameraController
 	bool inFreelook = false;
 	
 	float m_speed;
-	float inertia = 0.15f;
-	float rotInertia = 0.05f;
+	float inertia = 0.85f;
+	float rotInertia = 0.1f;
 	float zoomInertia = 0.08f;
 	float freelookRotInertia = 0.1f;
-	float freelookInertia = 0.1f;
+	float freelookInertia = 0.8f;
 	float manipIntertia= 0.08f;
 	float manipRotInertia = 0.08f;
 
 	float m_mouseSensitivity;
-	float m_rotationSpeed = 1.f;
+	float m_rotationSpeed = 12.f;
 
 	Vector3 m_focalPoint;
 	Vector3 m_position;
@@ -50,9 +51,9 @@ public:
 
 	SceneCameraController()
 	{
-		m_speed = 5.f;
-		m_mouseSensitivity = 0.1f;
-		controller.distance = 4.f;
+		m_speed = 2.f;
+		m_mouseSensitivity = 0.8f;
+		controller.distance = 1.f;
 		controller.rotationSpeed = 3.f;
 
 		m_position = Vector3::Zero();

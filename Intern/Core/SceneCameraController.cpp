@@ -5,9 +5,15 @@
 #include "Input/Input.h"
 #include "Math/Math.h"
 #include <Window/Window.h>
+#include "Console.h"
 
 void SceneCameraController::OnEvent(const Event& event)
 {
+	if (event.GetEventType() == EventType::MouseMoved)
+	{
+		auto& mm = (MouseMovedEvent&)event;
+		HandleMouseInput(*transform, mm.GetX(), mm.GetY());
+	}
 }
 
 void SceneCameraController::HandleMouseInput(Transform& p_transform, float xPos, float yPos)
@@ -15,8 +21,8 @@ void SceneCameraController::HandleMouseInput(Transform& p_transform, float xPos,
 	inFreelook = true;
 	if (Input::GetMouseDown(Mouse::RIGHT))
 	{
-		m_rotationVelocity.x = Input::GetAxis(Input::AXIS_X) * m_mouseSensitivity * m_rotationSpeed;
-		m_rotationVelocity.y = Input::GetAxis(Input::AXIS_Y) * m_mouseSensitivity * m_rotationSpeed;
+		m_rotationVelocity.x = Input::GetAxisRaw(Input::AXIS_X) * m_mouseSensitivity * m_rotationSpeed;
+		m_rotationVelocity.y = Input::GetAxisRaw(Input::AXIS_Y) * m_mouseSensitivity * m_rotationSpeed;
 
 		Vector3 eulerAngles = Quaternion::EulerAngles(p_transform.GetLocalRotation());
 
@@ -27,16 +33,23 @@ void SceneCameraController::HandleMouseInput(Transform& p_transform, float xPos,
 			eulerAngles.z = 0.0f;
 		}
 
-		if (eulerAngles.x > 180.0f) eulerAngles.x -= 360.0f;
-		if (eulerAngles.x < -180.0f) eulerAngles.x += 360.0f;
+		if (eulerAngles.x > 180.0f) 
+			eulerAngles.x -= 360.0f;
+		if (eulerAngles.x < -180.0f) 
+			eulerAngles.x += 360.0f;
 
+	//	std::stringstream ss;
+	//	ss << "Mouse Axis" << "X: " << Input::GetAxis(Input::AXIS_X) << " , " << "Y: " << Input::GetAxis(Input::AXIS_X) << "\n";
+	//	Console::Log(ss.str());
 		float pitch = eulerAngles.x - m_rotationVelocity.y;
 		pitch = Math::Clamp(pitch, -84.f, 84.f);
 		float yaw = eulerAngles.y - m_rotationVelocity.x;
 
 		currentController.xRot = pitch;
 		currentController.yRot = yaw;
+
 	}
+
 
 }
 
@@ -45,7 +58,14 @@ void SceneCameraController::Update(Transform& p_transform, float p_delta)
 	Controller oldController = controller;
 	controller = currentController;
 	if (!Input::GetMouseDown(Mouse::RIGHT))
+	{
 		inFreelook = false;
+		Input::SetMouseMode(MouseMode::MOUSE_MODE_VISIBLE);
+	}
+	else
+	{
+		Input::SetMouseMode(MouseMode::MOUSE_MODE_CAPTURED);
+	}
 
 	if (inFreelook)
 	{
@@ -97,8 +117,14 @@ void SceneCameraController::Update(Transform& p_transform, float p_delta)
 	else if (!Math::IsEqualApprox(controller.distance, currentController.distance, tolerance))
 		equal = false;
 
+
 	if (!equal || inFreelook)
 	{
+	//	std::stringstream ss;
+	//	ss << "Controller: X " << controller.xRot << " " << "Y: " << controller.yRot << "\n";
+	//	ss << "Current Controller: X " << currentController.xRot << " " << "Y: " << currentController.yRot << "\n";
+	//	ss << "Old Controller: X " << oldController.xRot << " " << "Y: " << oldController.yRot << "\n";
+	////	Console::Log(ss.str());
 		p_transform.SetLocalRotation(Quaternion::FromEulerAngles({ controller.xRot, controller.yRot, 0.f }));
 		p_transform.SetLocalPosition(controller.position);
 	}

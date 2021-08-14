@@ -159,6 +159,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Intern\Core\Renderer\Buffers\FrameBuffer.cpp" />
     <ClCompile Include="Intern\Core\CommandBuffer.cpp" />
     <ClCompile Include="Intern\Core\Components\Component.cpp" />
     <ClCompile Include="Intern\Core\Components\MeshRendererComponent.cpp" />
@@ -172,6 +173,8 @@
     <ClCompile Include="Intern\Core\Actor.cpp" />
     <ClCompile Include="Intern\Core\Renderer\SkyBox.cpp" />
     <ClCompile Include="Intern\Core\Thread.cpp" />
+    <ClCompile Include="Intern\Core\Components\StaticMeshRendererComponent.cpp" />
+    <ClInclude Include="Intern\Core\Renderer\Buffers\FrameBuffer.h" />
     <ClInclude Include="Intern\Core\CommandBuffer.h" />
     <ClInclude Include="Intern\Core\Actor.h" />
     <ClCompile Include="Intern\Core\Timestep.cpp" />
@@ -208,6 +211,7 @@
     <ClCompile Include="Intern\Core\Window\Window.cpp" />
     <ClInclude Include="Intern\Core\Renderer\SkyBox.h" />
     <ClInclude Include="Intern\Core\Thread.h" />
+    <ClInclude Include="Intern\Core\Components\StaticMeshRendererComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Extern\tiny_obj_loader.h" />
@@ -399,6 +403,7 @@
     <ClInclude Include="Intern\Core\Window\Window.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\Shaders\depth.glsl" />
     <None Include="Extern\glm\detail\func_common.inl" />
     <None Include="Extern\glm\detail\func_exponential.inl" />
     <None Include="Extern\glm\detail\func_geometric.inl" />
@@ -508,7 +513,7 @@
     <None Include="Extern\glm\gtx\vector_angle.inl" />
     <None Include="Extern\glm\gtx\vector_query.inl" />
     <None Include="Extern\glm\gtx\wrap.inl" />
-    <None Include="Assets\Shaders\aabb.glsl" />
+    <None Include="Assets\Shaders\default.glsl" />
     <None Include="Assets\Shaders\default.shader" />
     <None Include="Assets\Shaders\lighting.shader" />
   </ItemGroup>

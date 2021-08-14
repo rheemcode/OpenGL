@@ -10,12 +10,15 @@ enum MODEL_FORMAT
 	GLTF,
 };
 
+class Model;
+
 
 class ModelLoader
 {
 public:
 
-	bool LoadModel(MODEL_FORMAT modelFormat, std::string_view p_filePath, class Model* p_model );
+	bool LoadModel(MODEL_FORMAT modelFormat, const std::string& p_filePath, Model* p_model );
+	bool LoadAsStaticModel(MODEL_FORMAT modelFormat, const std::string& p_filePath, Model* p_model);
 };
 
 struct TextureNameMap
@@ -41,6 +44,7 @@ class Model
 {
 	friend ModelLoader;
 	friend class MeshRendererComponent;
+	friend class StaticMeshRendererComponent;
 
 	const Transform* m_transform = nullptr;
 
@@ -61,6 +65,10 @@ public:
 		m_texture->Bind(id);
 	}
 
+	void BindTextures()
+	{
+		m_texture->BindAll();
+	}
 	void SetTransform(const Transform& p_transform) { m_transform = &p_transform; }
 	void SetTextures(uint32_t count);
 
@@ -69,3 +77,12 @@ public:
 	Model(std::string p_modelFilePath, MODEL_FORMAT p_modelFormat);
 };
 
+class StaticModel : public Model
+{
+	friend class StaticMeshRendererComponent;
+public:
+
+	StaticModel();
+	StaticModel(std::string p_modelFilePath);
+	StaticModel(std::string, MODEL_FORMAT p_modelFormat);
+};

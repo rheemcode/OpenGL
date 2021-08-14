@@ -35,10 +35,12 @@ bool GLLogCall(const char* function, const char* file, int line)
             break;
         case GL_OUT_OF_MEMORY:
             errorName = "Out Of Memory";
+        case GL_INVALID_FRAMEBUFFER_OPERATION:
+            errorName = "Invalid FrameBuffer Operation";
             break;
         }
         ss << "[OPEN GL Error] {" << error << "}" << "[" << errorName << "]" << function << file << line << std::endl;
-        Console::Log(ss.str().c_str());
+        Console::Log(ss.str().c_str(), LogMode::ERROR);
         return false;
     }
 

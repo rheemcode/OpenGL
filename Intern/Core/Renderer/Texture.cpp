@@ -38,6 +38,15 @@ void Texture::Bind(uint32_t p_val)
 	GLCall(glBindTexture(GL_TEXTURE_2D, m_ID[p_val]));
 }
 
+void Texture::BindAll()
+{
+	for (int i = 0; i < textureCount; i++)
+	{
+		GLCall(glActiveTexture(GL_TEXTURE0 + i));
+		GLCall(glBindTexture(GL_TEXTURE_2D, m_ID[i]));
+	}
+}
+
 void Texture::BindCubeMap()
 {
 	GLCall(glActiveTexture(GL_TEXTURE0));

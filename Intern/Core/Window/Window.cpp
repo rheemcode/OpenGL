@@ -1005,12 +1005,13 @@ void Display::SetMouseMode(MouseMode p_mouseMode)
 
 void Display::ProcessEvents()
 {
+
 	while (PeekMessageW(&m_msg, nullptr, NULL, NULL, PM_REMOVE))
 	{
 		TranslateMessage(&m_msg);
 		DispatchMessageW(&m_msg);
 	}
-
+	
 	ProcessKeyEvents();
 }
 
@@ -1328,7 +1329,7 @@ int Display::CreateWindowDisplay(WindowMode p_mode, const LPCWSTR& windowName, u
 
 	DragAcceptFiles(windowData.hwnd, true);
 
-	window->Init();
+	//window->Init();
 	m_Windows[++m_windowCount] = window;
 	windowData.windowID = m_windowCount;
 
@@ -1398,7 +1399,7 @@ Display::Display(HINSTANCE p_hInstance, WindowFlags p_flags, WindowMode p_mainWi
 
 	m_mouseMode = MOUSE_MODE_VISIBLE;
 	mouseOutside = true;
-	useRawInput = true;
+	useRawInput = false;
 
 	RAWINPUTDEVICE Rid[1];
 	Rid[0].usUsagePage = 0x01;

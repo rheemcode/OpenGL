@@ -27,23 +27,12 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PWSTR pCmdLine,
 
 	Display::Create(hInstance, (WindowFlags)flags, WINDOW_MODE_WINDOWED, size);
 	Display* display = Display::GetSingleton();
-	display->m_Windows[0]->MakeCurrent();
 	display->UseVysnc(false);
 
 	Scene::Init();
 	Scene* scene = Scene::GetSingleton();
-
-	Renderer2D renderer2D;
-
-	Console::Log("HELLO WORLD");
-
-	std::cout << "Hello World";
-
-	Renderer::Init();
-
-	renderer2D.Init();
-
-
+	scene->BeginScene();
+	//scene->CreateDefaultActor();
 
 	Time::Create();
 
@@ -51,6 +40,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PWSTR pCmdLine,
 	static uint32_t frame = 0;
 	static uint32_t frames = 0;
 
+	int i = 0;
 	while (!Display::isCloseRequest)
 	{
 		auto ticks = Time::GetSingleton()->GetTicks();
@@ -59,19 +49,16 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PWSTR pCmdLine,
 		lastTicks = ticks;
 		frames++;
 
-		Renderer::SetClearColor(.4f, .4f, .4f, 1);
-		Renderer::Clear();
-		Renderer::BeginScene(scene->GetSceneCamera());
 		scene->Sync();
-		scene->OnUpdate(delta / 1000000.f);
-		scene->Render();
-		Renderer::Render();
-		Renderer::EndScene();
-		display->SwapBuffer();
+		scene->RunLoop(delta / 1000000.f);
+		if (i == 0)
+		{
+			scene->CreateDefaultActor();
+			i = 1;
+		}
 		display->ProcessEvents();
 		if (frame > 1000000)
 		{
-			//Console::Log("Delta: " + std::to_string(delta / 1000000) + "\n");
 			Console::Log("Frames Drawn:" + std::to_string(frames) + "\n");
 			Console::Log("FPS:" + std::to_string(frames) + "\n");
 			frame %= 1000000;
@@ -80,5 +67,5 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PWSTR pCmdLine,
 
 	}
 	scene->Shutdown();
-	//t.join();
+	return 0;
 }

@@ -390,7 +390,7 @@ void AABB::GrowBy(float p_amount) {
 	position.x -= p_amount;
 	position.y -= p_amount;
 	position.z -= p_amount;
-	size.x += 2.0 * p_amount;
-	size.y += 2.0 * p_amount;
-	size.z += 2.0 * p_amount;
+	size.x += 2.0f * p_amount;
+	size.y += 2.0f * p_amount;
+	size.z += 2.0f * p_amount;
 }

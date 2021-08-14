@@ -1,5 +1,6 @@
 #include "Input.h"
 #include <Windows.h>
+#include "..\Window\Window.h"
 #include <cstdint>
 
 Input* Input::s_Instance;
@@ -13,6 +14,11 @@ void Input::Init()
 	{
 		s_Instance = new Input();
 	}
+}
+void Input::SetMouseMode(MouseMode p_mouseMode)
+{
+	Display::GetSingleton()->m_mouseMode = p_mouseMode;
+	//Display::GetSingleton()->SetMouseMode(p_mouseMode);
 }
 
 Input::~Input()

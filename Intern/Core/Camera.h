@@ -64,7 +64,9 @@ class SceneCamera : public Camera
 
 public:
 	SceneCamera(const CameraSettings& p_cameraSetting)
-		: Camera(p_cameraSetting){}
+		: Camera(p_cameraSetting) {
+		cameraController.transform = &transform;
+	}
 	
 	void OnEvent(const Event& event);
 	void OnUpdate(float p_delta)

@@ -9,6 +9,7 @@ class Component;
 
 class Actor
 {
+	std::string name;
 	uint32_t componentCount = 0;
 	Transform m_transform;
 	std::unordered_multimap<std::string, std::shared_ptr<Component>> m_components;
@@ -18,10 +19,10 @@ public:
 	const Transform& GetTransform() const { return m_transform; }
 	const Vector3& GetWorldPosition() const { return m_transform.GetWorldPosition(); }
 	const Vector3& GetLocalPosition() const { return m_transform.GetLocalPosition(); }
-	void SetLocalPosition(const Vector3&  p_position)  
-	{ 
-		m_transform.SetLocalPosition(p_position); 
-	}
+	void SetLocalPosition(const Vector3&  p_position)  { m_transform.SetLocalPosition(p_position); }
+
+	void SetName(const std::string& p_name) { name = p_name;  }
+	const std::string& GetName() const { return name;  }
 	const Quaternion& GetWorldRotation() const { return m_transform.GetWorldRotation(); }
 	const Quaternion& GetLocationRotation() const { return m_transform.GetLocalRotation(); }
 	

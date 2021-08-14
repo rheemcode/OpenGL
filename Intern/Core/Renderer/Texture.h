@@ -30,6 +30,7 @@ class Texture
 public:
 	void Bind();
 	void Bind(uint32_t p_val);
+	void BindAll();
 	void BindCubeMap();
 	void UnBind();
 	void Delete();

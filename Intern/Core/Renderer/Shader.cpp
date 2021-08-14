@@ -11,13 +11,6 @@ Shader::Shader(const std::string& filePath)
 	ParseShader(filePath);
 }
 
-Shader::Shader()
-{
-
-}
-
-
-
 void Shader::ParseShader(const std::string& filePath)
 {
 
@@ -32,7 +25,8 @@ void Shader::ParseShader(const std::string& filePath)
 
 	while (getline(stream, line))
 	{
-		if (line.find(shaderVar) != std::string::npos)
+
+		if (line.find(shaderVar) != std::string::npos && line.find("//", 0, 2) == std::string::npos)
 		{
 
 			if (line.find("vertex") != std::string::npos)
@@ -57,8 +51,36 @@ void Shader::ParseShader(const std::string& filePath)
 				result = str;
 				result = result.substr(0, result.size() - 1);
 			}
+			
+			size_t pos;
+			if ((pos = result.find('[')) != result.npos)
+			{
+				const std::string numstr = result.substr(pos, (result.size() - pos) - 1);
+				int to = numstr.length();
+				int64_t integer = 0;
+				int64_t sign = 1;
 
-			uniformNames.push_back(result);
+				for (int i = 0; i < to; i++)
+				{
+					char32_t c = numstr[i];
+					if (c >= '0' && c <= 9)
+					{
+						integer *= 10;
+						integer += c - '0';
+					}
+				}
+
+				for (int i = 0; i < integer; i++)
+				{
+					std::stringstream _ss;
+					_ss << result.substr(0, pos) << "[" << i << "]";
+					uniformNames.push_back(_ss.str());
+				}
+			}
+			else
+			{
+				uniformNames.push_back(result);
+			}
 		}
 
 	}
@@ -71,16 +93,29 @@ void Shader::ParseShader(const std::string& filePath)
 void Shader::CreateShader()
 {
     program = glCreateProgram();
-	unsigned int vs = CompileShader(vertexSource, GL_VERTEX_SHADER);
-	unsigned int fs = CompileShader(fragmentSource, GL_FRAGMENT_SHADER);
+	uint32_t vs;
+	uint32_t fs;
 
-	GLCall(glAttachShader(program, vs));
-	GLCall(glAttachShader(program, fs));
+	if (vertexSource.size() != 0)
+	{
+		vs = CompileShader(vertexSource, GL_VERTEX_SHADER);
+		GLCall(glAttachShader(program, vs));
+	}
+
+	if (fragmentSource.size() != 0)
+	{
+		fs = CompileShader(fragmentSource, GL_FRAGMENT_SHADER);
+		GLCall(glAttachShader(program, fs));
+	}
+	
+
 	GLCall(glLinkProgram(program));
 	GLCall(glValidateProgram(program));
 
-	glDeleteShader(vs);
-	glDeleteShader(fs);
+	if (vertexSource.size() != 0)
+		glDeleteShader(vs);
+	if (fragmentSource.size() != 0)
+		glDeleteShader(fs);
 
 	glUseProgram(program);
 	
@@ -111,7 +146,7 @@ unsigned int Shader::CompileShader(const std::string& src, unsigned int type)
 		//file.write("\n", 1);
 		GLCall(glGetShaderInfoLog(id, length, &length, message));
 		ss << message;
-		Console::Error(ss.str().c_str());
+		Console::Log(ss.str().c_str(), LogMode::ERROR);
 		return 0;
 	}
 	return id;

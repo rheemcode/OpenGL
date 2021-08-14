@@ -15,13 +15,7 @@ constexpr int MAIN_WINDOW_ID = 1;
 
 
 /* Bad Bad API but we'll work with it*/
-enum MouseMode
-{
-	MOUSE_MODE_VISIBLE,
-	MOUSE_MODE_HIDDEN,
-	MOUSE_MODE_CAPTURED,
-	MOUSE_MODE_CONFINED
-};
+
 
 enum KeyState
 {
@@ -159,6 +153,7 @@ class Display
 
 	bool isShift, isControl, isAlt;
 	bool frameAction;
+	friend class Input;
 	MouseMode m_mouseMode = MouseMode::MOUSE_MODE_VISIBLE;
 	CursorShape m_cursorShape = CursorShape::CURSOR_ARROW;
 	KeyEvent keyEventBuffer[512];
@@ -169,6 +164,7 @@ class Display
 
 	WindowID focusedWindow = -1;
 
+	std::array<Window*, 3> m_Windows;
 
 	bool oldMouseInvalid;
 	bool mouseOutside;
@@ -179,10 +175,12 @@ class Display
 	Display(HINSTANCE p_hInstance, WindowFlags p_flags, WindowMode p_mainWindowMode, Size2 p_windowSize);
 public:
 	static bool isCloseRequest;
+
+	Window* GetMainWindow() const { return m_Windows[0]; }
+
 	static void Create(HINSTANCE p_hInstance, WindowFlags p_flags, WindowMode p_mainWindowMode, Size2 p_windowSize);
 	LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam);
 	void GetWindowStyles(bool p_main_window, bool p_fullscreen, bool p_borderless, bool p_resizable, bool p_maximized, bool p_no_activate_focus, DWORD& r_style, DWORD& r_style_ex);
-	std::array<Window*, 3> m_Windows;
 	
 	int CreateWindowDisplay(WindowMode mode, const LPCWSTR& windowName, uint32_t p_flags, const RECT& p_rect);
 	void SetWindowFlags(WindowFlags p_flags, bool p_enabled, WindowID windowID);

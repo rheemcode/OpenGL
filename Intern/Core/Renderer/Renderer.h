@@ -66,6 +66,7 @@ struct RendererData
 
     Matrix4x4 view;
     Matrix4x4 proj;
+    Matrix4x4 shadowMatrix;
 };
 
 class Renderer
@@ -86,14 +87,19 @@ public:
 
    static void Init();
    static void Clear();
+    static  void ShutDown();
    static void AddMeshes(const class Mesh& p_rendererComponent);
    
    static void SetClearColor(float r, float g, float b, float a) { RenderCommand::SetClearColor(r, g, b, a); }
    static void BeginScene(const Camera& camera);
+
+   static void RenderSkybox();
+
+   static void RenderShadows();
    //void Render(const Primitive& primitive, const Light& light);
    static void Render(const Primitive& primitive);
    void Render(const AABB& p_aabb);
-   static void Render();
+   static void Render(const std::vector<Mesh>& p_meshes);
    //static void Render(std::shared_ptr<class MeshRendererComponent> p_rendererComponent);
    static void Render(const std::unique_ptr<Primitive>& primitive);
    void SetViewport(int x, int y, int width, int height);

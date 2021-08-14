@@ -5,16 +5,18 @@
 #include "Components/MeshRendererComponent.h"
 #include "Input/Input.h"
 #include "Thread.h"
+#include "glm/glm.hpp"
 
 void RenderCommand::Init()
 {
 	GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
 	GLCall(glEnable(GL_DEPTH_TEST));
 	GLCall(glDepthFunc(GL_LEQUAL));
-	GLCall(glEnable(GL_CULL_FACE));
-	
-//	GLCall(glEnable(GL_BLEND));
-//	GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+	//GLCall(glEnable(GL_CULL_FACE));
+
+	//GLCall(glEnable(GL_SCISSOR_TEST));
+	//GLCall(glEnable(GL_BLEND));
+	//GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 }
 
 void RenderCommand::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
@@ -29,7 +31,8 @@ void RenderCommand::SetClearColor(float r, float g, float b, float a)
 
 void RenderCommand::Clear()
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//	GLCall(glClearDepth(1.0f));
+	//GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 }
 
 void RenderCommand::DrawIndexed(const VertexArray& vertexArray)
@@ -80,7 +83,7 @@ void Renderer::Init()
 {
 	renderData.m_aabbVertexArray = std::make_unique<VertexArray>();
 	renderData.m_aabbVertexBuffer = std::make_unique<VertexBuffer>(sizeof(aabVertices));
-	renderData.shader = std::make_unique<Shader>("Assets/Shaders/aabb.glsl");
+	renderData.shader = std::make_unique<Shader>("Assets/Shaders/default.glsl");
 	renderData.m_aabbVertexBuffer->SetLayout({ { GL_FLOAT, 0, 3, 0 } });
 	renderData.m_aabbVertexArray->SetIndices(indices, 24);
 	renderData.m_aabbVertexArray->AddBuffer(*renderData.m_aabbVertexBuffer.get());
@@ -92,9 +95,30 @@ void Renderer::Clear()
 	RenderCommand::Clear();
 }
 
+void Renderer::ShutDown()
+{	
+	renderData.m_aabbVertexArray.reset();
+	renderData.m_aabbVertexBuffer.reset();
+	renderData.shader.reset();
+}
+
 void Renderer::AddMeshes(const class Mesh& p_mesh)
 {
 	s_renderMeshes.push_back(p_mesh);
+}
+
+
+void Renderer::RenderSkybox()
+{
+	SkyBox* skybox = SkyBox::GetSingleton();
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	Matrix4x4 viewMat = renderData.view;
+	viewMat[3] = { 0, 0, 0, 1.f };
+	skybox->BeginRender(renderData.proj * viewMat);
+	GLCall(glDisable(GL_CULL_FACE));
+	RenderCommand::DrawIndexed(skybox->GetIndices());
+	GLCall(glEnable(GL_CULL_FACE));
 }
 
 void Renderer::BeginScene(const Camera& camera )
@@ -102,18 +126,41 @@ void Renderer::BeginScene(const Camera& camera )
 	//s_renderMeshes.clear();
 	renderData.view = camera.GetViewMatrix();
 	renderData.proj = camera.GetProjectionMatrix();
+
+	Matrix4x4 scaleBias = Matrix4x4(
+		{ 0.5f, 0, 0, 0 },
+		{ 0, 0.5f, 0, 0 },
+		{ 0, 0, 0.5f, 0 },
+		{ 0.5f, 0.5f, 0.5f, 1.0f }
+	);
+
+	//Matrix4x4 Proj = Matrix4x4::CreateFrustum(-1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1000.f);
+	Matrix4x4 Proj = Matrix4x4::CreateOrtho(-1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1000.f);
+	Matrix4x4 View = Matrix4x4::CreateLookAt({ 3.5f, 21.0f, 72.0f }, { 0, 0, 0 }, { 0, 1.f, 0 });
+
+
 	
+	Scene::sceneShader->Bind();
 	Scene::sceneShader->UploadUniformMat4("projView", renderData.proj * renderData.view);
-	SkyBox* skybox = SkyBox::GetSingleton();
+	Scene::sceneShader->UploadUniformMat4("shadowBias", scaleBias * Proj * View);;
 
-	Matrix4x4 viewMat = renderData.view;
-	viewMat[3] = { 0, 0, 0, 1.f };
-	skybox->BeginRender(renderData.proj * viewMat);
-	GLCall(glDisable(GL_CULL_FACE));
-	RenderCommand::DrawIndexed(skybox->GetIndices());
-	GLCall(glEnable(GL_CULL_FACE));
+//	RenderSkybox();
+	Scene::shadowShader->Bind();
+	Scene::shadowShader->UploadUniformMat4("projView", Proj * View);
+}
 
-	Scene::sceneShader->UploadUniformMat4("proj", renderData.proj);
+void Renderer::RenderShadows()
+{
+	glEnable(GL_DEPTH_TEST);
+	//GLCall(glDepthFunc(GL_LESS));
+
+	Scene::shadowShader->Bind();
+
+	glViewport(0, 0, 1024, 1024);
+	Scene* scene = Scene::GetSingleton();
+	scene->BindFBO(FrameBufferName::SHADOW);
+	float depth = 1.f;
+	glClear(GL_DEPTH_BUFFER_BIT);	
 }
 
 void Renderer::Render(const Primitive& primitive)
@@ -129,7 +176,7 @@ void Renderer::Render(const AABB& p_aabb)
 
 static bool shouldCull = false;
 
-void Renderer::Render()
+void Renderer::Render(const std::vector<Mesh>& p_meshes)
 {
 	//THREAD_LOCK
 //	mutex.lock();
@@ -137,128 +184,52 @@ void Renderer::Render()
 	const auto& lights = Scene::GetLight();
 	const auto& shader = *Scene::sceneShader;
 	shader.Bind();
-	for (int i = 0; i < Scene::GetLightCount(); ++i)
-	{
-		auto& light = lights[i];
-		std::stringstream ss;
-
-		if (light->LightSource == light->DIRECTIONAL_LIGHT)
-		{
-			ss << "Lights[" << i << "]." << "LightType";
-			shader.UploadUniformInt(ss.str(), light->LightSource);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Ambient";
-			shader.UploadUniformVec3(ss.str(), envLight.Ambient);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Color";
-			shader.UploadUniformVec3(ss.str(), light->LightColor);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Direction";
-			shader.UploadUniformVec3(ss.str(), light->Direction);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Use";
-			shader.UploadUniformInt(ss.str(), light->Use);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Energy";
-			shader.UploadUniformFloat(ss.str(), light->Energy);
-			ss.str(std::string());
-		}
-		else if (light->LightSource == light->POINT_LIGHT)
-		{
-			const auto pLight = &(PointLight&)*light;
-			ss << "Lights[" << i << "]." << "LightType";
-			shader.UploadUniformInt(ss.str(), pLight->LightSource);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Ambient";
-			shader.UploadUniformVec3(ss.str(), envLight.Ambient);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Color";
-			shader.UploadUniformVec3(ss.str(), pLight->LightColor);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Direction";
-			shader.UploadUniformVec3(ss.str(), pLight->Direction);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Position";
-			shader.UploadUniformVec3(ss.str(), pLight->Position);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Energy";
-			shader.UploadUniformFloat(ss.str(), pLight->Energy);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Radius";
-			shader.UploadUniformFloat(ss.str(), pLight->Radius);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "LightAttenuation";
-			shader.UploadUniformVec2(ss.str(), pLight->LightAttenuation);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Use";
-			shader.UploadUniformInt(ss.str(), pLight->Use);
-			ss.str(std::string());
-		}
-		else
-		{
-			const auto spLight = &(SpotLight&)*light;
-			ss << "Lights[" << i << "]." << "LightType";
-			shader.UploadUniformInt(ss.str(), spLight->LightSource);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Ambient";
-			shader.UploadUniformVec3(ss.str(), envLight.Ambient);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Color";
-			shader.UploadUniformVec3(ss.str(), spLight->LightColor);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Direction";
-			shader.UploadUniformVec3(ss.str(), spLight->Direction);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Position";
-			shader.UploadUniformVec3(ss.str(), spLight->Position);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Energy";
-			shader.UploadUniformFloat(ss.str(), spLight->Energy);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Radius";
-			shader.UploadUniformFloat(ss.str(), spLight->Radius);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "LightAttenuation";
-			shader.UploadUniformVec2(ss.str(), spLight->LightAttenuation);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Cutoff";
-			shader.UploadUniformFloat(ss.str(), spLight->innerCutoff);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "OuterCutoff";
-			shader.UploadUniformFloat(ss.str(), spLight->outerCutoff);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Use";
-			shader.UploadUniformInt(ss.str(), spLight->Use);
-		}
-	}
-
+	
 	Scene* scene = Scene::GetSingleton();
-	std::vector<Mesh> tempMeshes(scene->GetCulledMeshes());
-	for (const auto& mesh : tempMeshes)
+
+	for (const auto& mesh : p_meshes)
 	{
 
 		const auto& material = mesh.GetMaterial();
 		const auto& attribs = mesh.GetVertexAttribs();
 		attribs.Bind();
-
+	
 		GLCall(glBindTexture(GL_TEXTURE_2D, 0));
+		//mesh.GetModelInstance()->BindTextures();
 		if (mesh.GetMaterial().Diffuse != -1)
 		{
 			mesh.GetModelInstance()->BindTexture(mesh.GetMaterial().Diffuse);
-			shader.UploadUniformInt("Material.diffuseMap", mesh.GetMaterial().Diffuse);
-			shader.UploadUniformInt("diffuseTextures[" + std::to_string(mesh.GetMaterial().Diffuse) + "]", mesh.GetMaterial().Diffuse);
 		}
 
-		shader.UploadUniformVec4("Material.Color", material.Color);
-		shader.UploadUniformFloat("Material.Shininess", material.Shininess);
-		shader.UploadUniformFloat("Material.SpecularHighlights", material.SpecularHighlights);
+		
 		shader.UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
-		shader.UploadUniformFloat("AmbientEnergy", envLight.Energy);
-		shader.UploadUniformVec4("ViewPosition", { renderData.view[3].x, renderData.view[3].y, renderData.view[3].z, 1.0f });
+		//RenderShadows();
+		//Scene::shadowShader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
+		//RenderCommand::DrawIndexed(attribs);
+		//glDisable(GL_DEPTH_TEST);
+
+	//	glEnable(GL_DEPTH_TEST);
+	//	glDepthFunc(GL_LESS);
+//
+		//float depth(1.f);
+		//glClearBufferfv(GL_DEPTH, 0, &depth);
+		//glClearBufferfv(GL_COLOR, 0, &Vector4(0, 0, 0, 1)[0]);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0, 0, 1200, 700);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		Scene::sceneShader->Bind();
+		//glUniform1i(9, 0);
+		
+	//	glActiveTexture(GL_TEXTURE0 + 3);
+	//
+	// 
+		//scene->BindFBOTex(SHADOWMAP);
+		//mesh.GetModelInstance()->BindTextures();
 		RenderCommand::DrawIndexed(attribs);
+		//glDisable(GL_DEPTH_TEST);
 		drawCalls++;
 
-	/*	Vector3 a;
+		Vector3 a;
 		Vector3 b;
 
 		int c = 0;
@@ -272,21 +243,19 @@ void Renderer::Render()
 			d += 2;
 		}
 
-
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		renderData.shader->Bind();
 		renderData.m_aabbVertexArray->Bind();
 		renderData.m_aabbVertexBuffer->BufferSubData(aabVertices, 0, sizeof(aabVertices));
 		renderData.shader->UploadUniformMat4("projView", renderData.proj * renderData.view);
 		renderData.shader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
 		RenderCommand::RenderLines(*renderData.m_aabbVertexArray);
-		shader.Bind();*/
+		shader.Bind();
 	}
 		
-	
-//	Console::Log("Draw Calls: " + std::to_string(drawCalls) + "\n");
+
 	drawCalls = 0;
-	//THREAD_UNLOCK
-	//mutex.unlock();
+
 }
 
 void Renderer::Render(const std::unique_ptr<Primitive>& primitive)
@@ -412,9 +381,6 @@ void Renderer::Render(const std::unique_ptr<Primitive>& primitive)
 	shader.UploadUniformVec4("ViewPosition", { renderData.view[3].x, renderData.view[3].y, renderData.view[3].z, 1.0f });
 
 	RenderCommand::DrawIndexed(attribs);
-
-
-	
 }
 
 void Renderer::SetViewport(int x, int y, int width, int height)

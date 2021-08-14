@@ -40,6 +40,8 @@ public:
 	inline static Point2 GetMousePosition();
 	void OnEvent(const Event& event);
 	
+	static void SetMouseMode(MouseMode p_mouseMode);
+
 	inline static void SetMousePos(const Point2& p_pos);
 	inline static void SetMousePos(const int& p_posX, const int& p_posY);
 	

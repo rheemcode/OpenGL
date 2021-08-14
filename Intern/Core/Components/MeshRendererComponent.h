@@ -5,8 +5,8 @@
 
 class MeshRendererComponent : public Component
 {
-	std::shared_ptr<Model> m_model;
 protected:
+	std::shared_ptr<Model> m_model;
 	virtual ComponentCategory GetComponentCategoryImpl() const override { return ComponentCategory::Renderable; }
 	virtual std::string GetComponentNameImpl() const override { return "Renderer Component"; }
 
@@ -19,7 +19,9 @@ public:
 	}
 	//Model& GetModel() { return *m_model; }
 	const std::vector<Mesh>& GetMeshes() const { return m_model->GetMeshes();}
+	
 	void UpdateTransform();
+	
 	MeshRendererComponent(std::shared_ptr<Actor> p_actor);
 	MeshRendererComponent(std::shared_ptr<Actor> p_actor, const std::string& p_modelFilePath);
 };

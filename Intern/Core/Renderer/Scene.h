@@ -5,6 +5,7 @@
 #include "Tests/Object.h"
 #include <Tests/Primitive.h>
 #include "Renderer/Renderer.h"
+#include "Buffers/FrameBuffer.h"
 #include "Renderer/SkyBox.h"
 #include "Math/Transform.h"
 #include "Events/Event.h"
@@ -111,9 +112,11 @@ class Scene
 	std::vector<class Mesh> culledMeshes;
 	std::vector<class Mesh> meshes;
 
+	std::unique_ptr<FrameBuffer> m_frameBuffer;
 	std::unique_ptr<UniformBuffer> m_LightsBuffer;
 	std::unique_ptr<SceneCamera> sceneCamera;
 	static std::unique_ptr<Shader> sceneShader;
+	static std::unique_ptr<Shader> shadowShader;
 	
 	friend class Renderer;
 	static const EnviromentLight& GetEnviromentLight();
@@ -132,18 +135,21 @@ class Scene
 
 
 	void _Render();
+	void ThreadRunLoop(float p_delta);
 	void _Update(float p_delta);
 	void ThreadLoop();
 	void ThreadExit();
 	void ThreadFlush();
 	void ThreadRender();
+	void ThreadCreateDefaultActor();
 	static void ThreadCallback(void* p_instance);
 	void ThreadUpdate(float p_delta);
 
 public:
 	void Sync();
 
-	const std::vector<Mesh>& GetCulledMeshes();
+	void RunLoop(float p_delta);
+	std::vector<Mesh>& GetCulledMeshes();
 	const SceneCamera& GetSceneCamera() const { return *sceneCamera; }
 	void Render();
 	void OnUpdate(float p_delta);
@@ -151,13 +157,18 @@ public:
 	void AddActor(std::shared_ptr<class Actor>& p_actor);
 	void OnEvent(const Event& event);
 	void Shutdown();
-
+	void BindFBO(FrameBufferName name) { m_frameBuffer->Bind(name); }
+	void BindFBOTex(FrameBufferTexture name) { m_frameBuffer->BindTexture(name); }
 	static Scene* GetSingleton();
-//	void InitLightUniforms();
+	void InitLightUniforms();
 
 	static void Init();
 	
+	void CreateActor();
+	void CreateDefaultActor();
+	void ThreadBeginScene();
+	void BeginScene();
 	Scene();
-	~Scene() {}
+	~Scene();
 };
 
