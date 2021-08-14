@@ -55,7 +55,7 @@ void Shader::ParseShader(const std::string& filePath)
 			size_t pos;
 			if ((pos = result.find('[')) != result.npos)
 			{
-				const std::string numstr = result.substr(pos, (result.size() - pos) - 1);
+				const std::string numstr = result.substr(pos + 1, (result.size() - pos) - 2);
 				int to = numstr.length();
 				int64_t integer = 0;
 				int64_t sign = 1;
@@ -63,7 +63,7 @@ void Shader::ParseShader(const std::string& filePath)
 				for (int i = 0; i < to; i++)
 				{
 					char32_t c = numstr[i];
-					if (c >= '0' && c <= 9)
+					if (c >= '0' && c <= '9')
 					{
 						integer *= 10;
 						integer += c - '0';

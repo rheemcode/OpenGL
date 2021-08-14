@@ -41,6 +41,7 @@ uniform vec4  ViewPosition;
 uniform float SpecularStrength;
 uniform float Shininess;
 uniform float AmbientEnergy;
+uniform int currentTex;
 
 struct LightProperties
 {
@@ -65,8 +66,7 @@ layout(std140) uniform LightsUniform
 {
     LightProperties Lights;
 };
-uniform sampler2D diffuseTexture;
-uniform sampler2D diffuseTexture2;
+uniform sampler2D diffuseTexture[3];
 uniform sampler2D depthTexture;
 
 uniform MaterialProperties Material;
@@ -77,15 +77,15 @@ out vec4 FragColor;
 vec3 lightDir;
 float attenuation;
 
-float ShadowCalculation(vec4 ShadowPos)
-{
-    vec3 projCoords = ShadowPos.xyz / ShadowPos.w;
-    projCoords = projCoords * 0.5 + 0.5;
-    float closestDepth = texture(depthTexture, projCoords.xy).r;
-    float currentDepth = projCoords.z;
-    float shadow = currentDepth > closestDepth ? 1.0 : 0.0;
-    return shadow;
-}
+//float ShadowCalculation(vec4 ShadowPos)
+//{
+//    vec3 projCoords = ShadowPos.xyz / ShadowPos.w;
+//    projCoords = projCoords * 0.5 + 0.5;
+//    float closestDepth = texture(depthTexture, projCoords.xy).r;
+//    float currentDepth = projCoords.z;
+//    float shadow = currentDepth > closestDepth ? 1.0 : 0.0;
+//    return shadow;
+//}
 
 void main()
 {
@@ -110,9 +110,10 @@ void main()
     vec3 Ambient = vec3(Lights.Ambient) * Lights.AmbientEnergy * attenuation;
     vec3 Diffuse = vec3(Lights.Color) * NdotL * Lights.Energy * attenuation;
 
-    float shadow = ShadowCalculation(ShadowCoord);
+  //  float shadow = ShadowCalculation(ShadowCoord);
     vec3 Light = Ambient + ( Diffuse * (1.0));
 
-    vec3 color = min(Light * vec3(texture(diffuseTexture2, TexCoord)), vec3(1.0));
+    vec3 color = min(Light * vec3(texture(diffuseTexture[currentTex], TexCoord)), vec3(1.0));
     FragColor = vec4(color, 1);
+   // FragColor = vec4(vec3(texture(diffuseTexture[currentTex], TexCoord)), 1);
 };

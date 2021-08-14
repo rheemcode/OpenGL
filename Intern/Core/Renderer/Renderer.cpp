@@ -32,7 +32,7 @@ void RenderCommand::SetClearColor(float r, float g, float b, float a)
 void RenderCommand::Clear()
 {
 //	GLCall(glClearDepth(1.0f));
-	//GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+	GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 }
 
 void RenderCommand::DrawIndexed(const VertexArray& vertexArray)
@@ -195,38 +195,17 @@ void Renderer::Render(const std::vector<Mesh>& p_meshes)
 		attribs.Bind();
 	
 		GLCall(glBindTexture(GL_TEXTURE_2D, 0));
-		//mesh.GetModelInstance()->BindTextures();
+		mesh.GetModelInstance()->BindTextures();
 		if (mesh.GetMaterial().Diffuse != -1)
 		{
-			mesh.GetModelInstance()->BindTexture(mesh.GetMaterial().Diffuse);
+		//	mesh.GetModelInstance()->BindTexture(mesh.GetMaterial().Diffuse);
+			shader.UploadUniformInt("currentTex", mesh.GetMaterial().Diffuse);
+			shader.UploadUniformInt("diffuseTexture[" + std::to_string(mesh.GetMaterial().Diffuse) + "]", mesh.GetMaterial().Diffuse);
 		}
 
 		
 		shader.UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
-		//RenderShadows();
-		//Scene::shadowShader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
-		//RenderCommand::DrawIndexed(attribs);
-		//glDisable(GL_DEPTH_TEST);
-
-	//	glEnable(GL_DEPTH_TEST);
-	//	glDepthFunc(GL_LESS);
-//
-		//float depth(1.f);
-		//glClearBufferfv(GL_DEPTH, 0, &depth);
-		//glClearBufferfv(GL_COLOR, 0, &Vector4(0, 0, 0, 1)[0]);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glViewport(0, 0, 1200, 700);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		Scene::sceneShader->Bind();
-		//glUniform1i(9, 0);
-		
-	//	glActiveTexture(GL_TEXTURE0 + 3);
-	//
-	// 
-		//scene->BindFBOTex(SHADOWMAP);
-		//mesh.GetModelInstance()->BindTextures();
 		RenderCommand::DrawIndexed(attribs);
-		//glDisable(GL_DEPTH_TEST);
 		drawCalls++;
 
 		Vector3 a;
@@ -243,7 +222,6 @@ void Renderer::Render(const std::vector<Mesh>& p_meshes)
 			d += 2;
 		}
 
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		renderData.shader->Bind();
 		renderData.m_aabbVertexArray->Bind();
 		renderData.m_aabbVertexBuffer->BufferSubData(aabVertices, 0, sizeof(aabVertices));
