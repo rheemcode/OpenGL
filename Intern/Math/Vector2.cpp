@@ -8,15 +8,6 @@ Vector2 Vector2::Abs(Vector2& p_vec)
 	return Vector2(Math::Abs(p_vec.x), Math::Abs(p_vec.y));
 }
 
-float Vector2::Length(const Vector2& p_vec)
-{
-	return Math::Sqrt(Vector2::LengthSq(p_vec));
-}
-
-float Vector2::LengthSq(const Vector2& p_vec)
-{
-	return Vector2::Dot(p_vec, p_vec);
-}
 
 Vector2::Vector2(const Vector3& p_vec)
 {
@@ -91,11 +82,6 @@ float Vector2::DirToAngle(const Vector2& p_vec)
 float Vector2::AngleToPoint(const Vector2& p_vec, const Vector2& p_point)
 {
 	return Math::ATan2(p_vec.y - p_point.y, p_vec.x - p_point.x);
-}
-
-float Vector2::Dot(const Vector2& p_vecA, const Vector2& p_vecB)
-{
-	return p_vecA.x * p_vecB.x + p_vecA.y * p_vecB.y;
 }
 
 float Vector2::Cross(const Vector2& p_vecA, const Vector2& p_vecB)

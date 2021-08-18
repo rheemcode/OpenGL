@@ -89,6 +89,7 @@ bool ModelLoader::LoadModel(MODEL_FORMAT modelFormat, const std::string& p_fileP
 						VertexAttrib vAttrib;
 						
 						vAttrib.vertices = { attribs.vertices[3 * size_t(idx.vertex_index) + 0], attribs.vertices[3 * size_t(idx.vertex_index) + 1], attribs.vertices[3 * size_t(idx.vertex_index) + 2] };
+						vAttrib.vertices *= 5.f;
 						if (f == 0)
 							boundindBox.position = vAttrib.vertices;
 						boundindBox.ExpandTo(vAttrib.vertices);
@@ -259,6 +260,7 @@ bool ModelLoader::LoadAsStaticModel(MODEL_FORMAT modelFormat, const std::string&
 						VertexAttrib vAttrib;
 
 						vAttrib.vertices = { attribs.vertices[3 * size_t(idx.vertex_index) + 0], attribs.vertices[3 * size_t(idx.vertex_index) + 1], attribs.vertices[3 * size_t(idx.vertex_index) + 2] };
+						vAttrib.vertices *= 5.f;
 						if (f == 0)
 						{
 							//totalBoundingBox.position = vAttrib.vertices;
@@ -296,18 +298,18 @@ bool ModelLoader::LoadAsStaticModel(MODEL_FORMAT modelFormat, const std::string&
 				if (shapes[s].mesh.material_ids[0] >= 0)
 				{
 					const auto& diffuseTex = materials[shapes[s].mesh.material_ids[0]].diffuse_texname;
-					//	if (diffuseTex != "")
-					//	{
-						//	auto result = std::find(std::begin(p_model->m_textureNames), std::end(p_model->m_textureNames), diffuseTex);
-						//	if (result != std::end(p_model->m_textureNames) && result->loaded)
-						//	{
-						//		material->Diffuse = result->id;
-						//		material->Color = { materials[shapes[s].mesh.material_ids[0]].diffuse[0], materials[shapes[s].mesh.material_ids[0]].diffuse[1], materials[shapes[s].mesh.material_ids[0]].diffuse[2], 1.f };
-							//}
-					//	}
+					if (diffuseTex != "")
+						{
+							auto result = std::find(std::begin(p_model->m_textureNames), std::end(p_model->m_textureNames), diffuseTex);
+							if (result != std::end(p_model->m_textureNames) && result->loaded)
+							{
+								//material->Diffuse = result->id;
+								//material->Color = { materials[shapes[s].mesh.material_ids[0]].diffuse[0], materials[shapes[s].mesh.material_ids[0]].diffuse[1], materials[shapes[s].mesh.material_ids[0]].diffuse[2], 1.f };
+							}
+						}
 
-						//else
-					/*/*/ {
+					else
+					 {
 						//	material->Diffuse = -1;
 						//	material->Color = { materials[shapes[s].mesh.material_ids[0]].diffuse[0], materials[shapes[s].mesh.material_ids[0]].diffuse[1], materials[shapes[s].mesh.material_ids[0]].diffuse[2], 1.f };
 						//}

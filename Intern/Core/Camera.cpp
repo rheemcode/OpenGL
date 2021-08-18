@@ -10,6 +10,7 @@ Camera::Camera(const CameraMode& mode)
 
 Camera::Camera(const CameraSettings& setting)
 {
+	m_cameraSettings = setting;
 	m_ProjectionMatrix = MakeProjectionMatrix(setting);
 }
 
@@ -19,11 +20,11 @@ Matrix4x4 Camera::MakeProjectionMatrix(const CameraMode& projectionMode)
 	{
 		case (CameraMode::ORTHOGRAPHIC):
 		{
-			break;
+			return Matrix4x4::CreateOrtho(m_cameraSettings.left, m_cameraSettings.right, m_cameraSettings.top, m_cameraSettings.bottom, m_cameraSettings.znear, m_cameraSettings.zfar);
 		}
 		case (CameraMode::PERSPECTIVE):
 		{
-			return Matrix4x4::CreatePerspective(Math::Deg2Rad(65.f), 1.f, 0.1f, 2000.f);
+			return Matrix4x4::CreatePerspective(Math::Deg2Rad(m_cameraSettings.fovY), m_cameraSettings.ratio, m_cameraSettings.znear, m_cameraSettings.zfar);
 		}
 	}
 
@@ -36,11 +37,11 @@ Matrix4x4 Camera::MakeProjectionMatrix(const CameraSettings& setting)
 	{
 		case (CameraMode::ORTHOGRAPHIC):
 		{
-			return Matrix4x4::CreateOrtho(-1 ,1, 1, -1, 1.f, -300.f);
+			return Matrix4x4::CreateOrtho(m_cameraSettings.left, m_cameraSettings.right, m_cameraSettings.top, m_cameraSettings.bottom, m_cameraSettings.znear, m_cameraSettings.zfar);
 		}
 		case (CameraMode::PERSPECTIVE):
 		{
-			return Matrix4x4::CreatePerspective(Math::Deg2Rad(setting.fovY), setting.ratio, 0.1f, 2000.f);
+			return Matrix4x4::CreatePerspective(Math::Deg2Rad(m_cameraSettings.fovY), m_cameraSettings.ratio, m_cameraSettings.znear, m_cameraSettings.zfar);
 		}
 	}
 
@@ -51,34 +52,6 @@ void SceneCamera::OnEvent(const Event& event)
 {
 	cameraController.OnEvent(event);
 }
-
-//
-//void Camera::Translate(Vector3 p_position)
-//{	
-//	glm::eye
-//	glm::scale()
-//	glm::quat q(rotation.w, rotation.x, rotation.y, rotation.z);
-//	glm::mat4 mat = glm::translate(glm::mat4_cast(q), { p_position.x, p_position.y, p_position.z });
-//	auto forward = q * glm::vec3( 0, 0, -1 );
-//	m_ViewMatrix = Matrix4x4::Translate(Quaternion::ToMatrix4x4(rotation), -p_position);
-//	position = p_position;
-//	position2 = p_position;
-//}
-//
-//void Camera::Rotate(float angle, Vector3 axis)
-//{
-//	rotation = Quaternion::Rotate(rotation, angle, axis);
-//	m_ViewMatrix =  Quaternion::ToMatrix4x4(rotation) * Matrix4x4::CreateTranslation(-position);
-//	eulerAngles = Quaternion::EulerAngles(rotation);
-//
-//}
-//
-//void Camera::SetRotation(const Quaternion& quat)
-//{
-//	rotation = quat;
-//	m_ViewMatrix = Quaternion::ToMatrix4x4(rotation) * Matrix4x4::CreateTranslation(-position);
-//	eulerAngles = Quaternion::EulerAngles(rotation);
-//}
 
 const Matrix4x4& Camera::GetProjectionMatrix() const
 {

@@ -17,16 +17,9 @@ enum class CameraMode
 
 struct CameraSettings
 {
-	CameraSettings() {}
-
-	CameraSettings(CameraMode _mode, float _ratio, float _fovY)
-		: mode(_mode), ratio(_ratio), fovY(_fovY)
-
-	{
-	}
-
 	CameraMode mode;
 	float fovY, znear, zfar;
+	float left, right, bottom, top;
 	float winWidth, winHeight;
 	float ratio;
 };
@@ -34,6 +27,7 @@ struct CameraSettings
 class Camera
 {
 protected:
+	CameraSettings m_cameraSettings;
 	Matrix4x4 m_ProjectionMatrix;
 	Matrix4x4 m_ViewMatrix;
 	Matrix4x4 m_ViewProjectionMatrix;
@@ -48,6 +42,8 @@ public:
 	const Matrix4x4& GetViewMatrix() const;
 	const Matrix4x4& GetProjectionMatrix() const;
 	const Matrix4x4& GetViewProjectionMatrix() const;
+	
+	const CameraSettings GetCameraSettings() const { return m_cameraSettings; }
 
 	virtual Frustum& GetFrustum() { return m_Frustum; };
 
@@ -69,6 +65,8 @@ public:
 	}
 	
 	void OnEvent(const Event& event);
+
+	const Transform& GetTransform() const { return transform; }
 	void OnUpdate(float p_delta)
 	{
 		cameraController.HandleKeyboardInput(transform, p_delta);

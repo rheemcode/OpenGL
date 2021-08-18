@@ -92,6 +92,22 @@ typedef Vector2 Point2;
 typedef Vector2 Size2;
 
 
+inline float Vector2::Length(const Vector2& p_vec)
+{
+	return Math::Sqrt(Vector2::LengthSq(p_vec));
+}
+
+inline float Vector2::LengthSq(const Vector2& p_vec)
+{
+	return Vector2::Dot(p_vec, p_vec);
+}
+
+
+inline float Vector2::Dot(const Vector2& p_vecA, const Vector2& p_vecB)
+{
+	return p_vecA.x * p_vecB.x + p_vecA.y * p_vecB.y;
+}
+
 
 inline Vector2 operator*(float p_scalar, const Vector2& p_vec) {
 	return Vector2(p_vec.x * p_scalar, p_vec.x * p_scalar);

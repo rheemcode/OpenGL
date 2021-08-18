@@ -59,6 +59,7 @@ void Scene::_Render()
 			}
 		}
 	}
+	m_shadowBox.UpdateBounds();
 	Renderer::BeginScene(GetSceneCamera());
 	Renderer::Render(culledMeshes);
 }
@@ -103,8 +104,8 @@ void Scene::ThreadLoop()
 
 void Scene::ThreadExit()
 {
-	running = false;
 	Renderer::ShutDown();
+	running = false;
 }
 
 void Scene::ThreadFlush()
@@ -177,7 +178,6 @@ void Scene::OnEvent(const Event& event)
 		const auto& ke = (KeyEvent&)event;
 	}
 
-
 }
 
 void Scene::Shutdown()
@@ -232,16 +232,20 @@ void Scene::InitLightUniforms()
 	lightData.Color = {1.f, 1.f, 1.f, 1.f};
 	lightData.Direction = { 0, -0.3f, -1.f, 1.f };
 	lightData.AmbientEnergy = 1.f;
-	lightData.Energy = .69;
+	lightData.Energy = .69f;
 	if (1 and 2)
 		auto i = 2;
+
+	const auto light = static_cast<DirectionalLight*>(m_lights[0].get());
+
 	auto* buffer = malloc(uboSize);
-	memcpy((char*)buffer + offset[0], &lightData.LightType, 4);
-	memcpy((char*)buffer + offset[1], &lightData.Ambient, 16);
-	memcpy((char*)buffer + offset[2], &lightData.Color, 16);
-	memcpy((char*)buffer + offset[3], &lightData.Direction, 16);
+	auto ambient = light->LightColor / 2;
+	memcpy((char*)buffer + offset[0], &light->LightSource, 4);
+	memcpy((char*)buffer + offset[1], &ambient, 16);
+	memcpy((char*)buffer + offset[2], &light->LightColor, 16);
+	memcpy((char*)buffer + offset[3], &light->Direction, 16);
 	memcpy((char*)buffer + offset[4], &lightData.AmbientEnergy, 4);
-	memcpy((char*)buffer + offset[5], &lightData.Energy, 4);
+	memcpy((char*)buffer + offset[5], &light->Energy, 4);
 	m_LightsBuffer->SetData(80, buffer, 0);
 	free(buffer);
 }
@@ -261,51 +265,8 @@ void Scene::CreateActor()
 
 }
 
-void Scene::ThreadCreateDefaultActor()
+void Scene::CreateSkyLight()
 {
-	std::shared_ptr<Actor> actor = std::make_shared<Actor>();
-	std::shared_ptr<TransformComponent> tComponent = std::make_shared<TransformComponent>(actor);
-	std::shared_ptr<MeshRendererComponent> renderComponent = std::make_shared<MeshRendererComponent>(actor, "./Assets/Madara_Uchiha.obj");
-	actor->AddComponent(tComponent);
-	actor->AddComponent(renderComponent);
-
-	AddActor(actor);
-}
-
-void Scene::CreateDefaultActor()
-{
-	commandQueue.Push(this, &Scene::ThreadCreateDefaultActor);
-}
-
-void Scene::ThreadBeginScene()
-{
-	Display* display = Display::GetSingleton();
-	display->GetMainWindow()->Init();
-	display->GetMainWindow()->BindEventCallback(std::bind(&Scene::OnEvent, this, std::placeholders::_1));
-	display->GetMainWindow()->ReleaseCurrent();
-	display->GetMainWindow()->MakeCurrent();
-
-	Renderer::Init();
-	Renderer2D renderer2D;
-	renderer2D.Init();
-	CameraSettings cameraSettings;
-
-	cameraSettings.mode = CameraMode::PERSPECTIVE;
-	cameraSettings.fovY = 70.f;
-	cameraSettings.winWidth = 1200;
-	cameraSettings.winHeight = 700;
-	cameraSettings.ratio = cameraSettings.winWidth / cameraSettings.winHeight;
-
-
-	sceneCamera = std::make_unique<SceneCamera>(cameraSettings);
-	sceneShader = std::make_unique<Shader>("Assets/Shaders/lighting.shader");
-	shadowShader = std::make_unique<Shader>("Assets/Shaders/depth.glsl");
-	
-	sceneShader->Bind();
-	m_frameBuffer = std::make_unique<FrameBuffer>();
-	InitLightUniforms();
-	SkyBox::Create();
-
 	m_EnviromentLight.Ambient = { 1.f, 1.f, 1.f };
 	m_EnviromentLight.Energy = .19f;
 
@@ -319,7 +280,65 @@ void Scene::ThreadBeginScene()
 
 	pLight->Use = true;
 	m_lights[0] = std::move(pLight);
+	InitLightUniforms();
+}
 
+void Scene::ThreadCreateDefaultActor()
+{
+	std::shared_ptr<Actor> actor = std::make_shared<Actor>();
+	std::shared_ptr<TransformComponent> tComponent = std::make_shared<TransformComponent>(actor);
+	std::shared_ptr<MeshRendererComponent> renderComponent = std::make_shared<MeshRendererComponent>(actor, "./Assets/test2.obj");
+	actor->AddComponent(tComponent);
+	actor->AddComponent(renderComponent);
+
+	AddActor(actor);
+}
+
+void Scene::CreateDefaultActor()
+{
+	commandQueue.Push(this, &Scene::ThreadCreateDefaultActor);
+}
+
+void Scene::InitSceneCamera()
+{
+	Display* display = Display::GetSingleton();
+	CameraSettings cameraSettings;
+	cameraSettings.mode = CameraMode::PERSPECTIVE;
+	cameraSettings.fovY = 70.f;
+	cameraSettings.znear = 0.1f;
+	cameraSettings.zfar = 300.f;
+	cameraSettings.winWidth = display->GetMainWindow()->GetWidth();
+	cameraSettings.winHeight = display->GetMainWindow()->GetHeight();
+	cameraSettings.ratio = cameraSettings.winWidth / cameraSettings.winHeight;
+
+
+	sceneCamera = std::make_unique<SceneCamera>(cameraSettings);
+	m_shadowBox = ShadowBox(Matrix4x4(), sceneCamera->GetTransform(), cameraSettings);
+}
+
+
+void Scene::ThreadBeginScene()
+{
+	Display* display = Display::GetSingleton();
+	display->GetMainWindow()->Init();
+	display->GetMainWindow()->BindEventCallback(std::bind(&Scene::OnEvent, this, std::placeholders::_1));
+	display->GetMainWindow()->ReleaseCurrent();
+	display->GetMainWindow()->MakeCurrent();
+
+	Renderer::Init();
+
+	sceneShader = std::make_unique<Shader>("Assets/Shaders/lighting.shader");
+	shadowShader = std::make_unique<Shader>("Assets/Shaders/depth.glsl");
+	
+	sceneShader->Bind();
+
+	CreateSkyLight();
+	InitSceneCamera();
+	m_shadowBuffer = std::make_unique<ShadowBuffer>();
+	m_shadowBuffer->CreateTexture();
+	m_shadowBuffer->AttachDepthTexture(2048, 2048);
+
+	SkyBox::Create();
 }
 
 void Scene::BeginScene()

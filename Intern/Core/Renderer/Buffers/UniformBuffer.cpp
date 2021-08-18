@@ -1,7 +1,7 @@
 #include "UniformBuffer.h"
 #include "UniformBuffer.h"
 #include "../Debug.h"
-
+#include "glm/glm.hpp"
 
 UniformBuffer::UniformBuffer(uint32_t size, const void* data, uint32_t binding)
 {

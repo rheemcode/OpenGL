@@ -60,6 +60,11 @@ public:
 	const std::vector<Mesh>& GetMeshes() const { return m_meshes; }
 	const Transform& GetTransform() const { return *m_transform; }
 	
+	void ActiveTexture(uint32_t count)
+	{
+		m_texture->ActiveTexture(count);
+	}
+
 	void BindTexture(uint32_t id)
 	{
 		m_texture->Bind(id);

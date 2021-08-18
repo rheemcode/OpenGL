@@ -10,6 +10,8 @@
 #include "Math/Transform.h"
 #include "Events/Event.h"
 #include "Console.h"
+#include "ShadowBox.h"
+
 #include <chrono>
 
 
@@ -112,7 +114,11 @@ class Scene
 	std::vector<class Mesh> culledMeshes;
 	std::vector<class Mesh> meshes;
 
-	std::unique_ptr<FrameBuffer> m_frameBuffer;
+	using ShadowBuffer = FrameBuffer;
+	std::unique_ptr<ShadowBuffer> m_shadowBuffer;
+	ShadowBox m_shadowBox;
+
+
 	std::unique_ptr<UniformBuffer> m_LightsBuffer;
 	std::unique_ptr<SceneCamera> sceneCamera;
 	static std::unique_ptr<Shader> sceneShader;
@@ -150,23 +156,30 @@ public:
 
 	void RunLoop(float p_delta);
 	std::vector<Mesh>& GetCulledMeshes();
+	
 	const SceneCamera& GetSceneCamera() const { return *sceneCamera; }
+	const ShadowBox& GetShadowBox() const { return m_shadowBox;  }
+	Vector3 GetSkyLightDirection() const { return m_lights[0]->Direction; }
+
 	void Render();
 	void OnUpdate(float p_delta);
 	void AddObject(std::unique_ptr<Primitive>& primitive);
 	void AddActor(std::shared_ptr<class Actor>& p_actor);
 	void OnEvent(const Event& event);
 	void Shutdown();
-	void BindFBO(FrameBufferName name) { m_frameBuffer->Bind(name); }
-	void BindFBOTex(FrameBufferTexture name) { m_frameBuffer->BindTexture(name); }
+	void BindFBO(FrameBufferName::Type name) { m_shadowBuffer->Bind(name); }
+	void BindFBOTex(FrameBufferTexture::Type name) { m_shadowBuffer->BindTexture(name); }
 	static Scene* GetSingleton();
 	void InitLightUniforms();
 
 	static void Init();
 	
 	void CreateActor();
+	void CreateSkyLight();
 	void CreateDefaultActor();
 	void ThreadBeginScene();
+
+	void InitSceneCamera();
 	void BeginScene();
 	Scene();
 	~Scene();

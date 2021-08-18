@@ -7,11 +7,13 @@
 #include "Thread.h"
 #include "glm/glm.hpp"
 
+
+
 void RenderCommand::Init()
 {
 	GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
 	GLCall(glEnable(GL_DEPTH_TEST));
-	GLCall(glDepthFunc(GL_LEQUAL));
+	GLCall(glDepthFunc(GL_LESS));
 	//GLCall(glEnable(GL_CULL_FACE));
 
 	//GLCall(glEnable(GL_SCISSOR_TEST));
@@ -61,6 +63,9 @@ void RenderCommand::RenderLines(const VertexArray& vertexArray)
 }
 
 RendererData Renderer::renderData;
+RendererData Renderer::testRenderData;
+ShadowData Renderer::shadowData;
+
 static Vector3 temp_aabbVertices[] =
 {
 	{-1.f, -1.f, -1.f}, // 0
@@ -81,12 +86,28 @@ std::vector<Mesh> Renderer::s_renderMeshes;
 
 void Renderer::Init()
 {
-	renderData.m_aabbVertexArray = std::make_unique<VertexArray>();
+	/*renderData.m_aabbVertexArray = std::make_unique<VertexArray>();
 	renderData.m_aabbVertexBuffer = std::make_unique<VertexBuffer>(sizeof(aabVertices));
 	renderData.shader = std::make_unique<Shader>("Assets/Shaders/default.glsl");
 	renderData.m_aabbVertexBuffer->SetLayout({ { GL_FLOAT, 0, 3, 0 } });
 	renderData.m_aabbVertexArray->SetIndices(indices, 24);
 	renderData.m_aabbVertexArray->AddBuffer(*renderData.m_aabbVertexBuffer.get());
+	*/
+	float testRender[] = {
+		 -0.5f, -0.5f, 0.0f,  0.0f, 0.0f,
+		 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+		 0.5f,  0.5f, 0.0f,  1.0f, 1.0f,
+		 -0.5f,  0.5f, 0.0f, 0.0f, 1.0f };
+	
+	uint32_t quadIndices[] = {0, 1, 2, 2, 3, 0};
+
+	testRenderData.m_aabbVertexArray = std::make_unique<VertexArray>();
+	testRenderData.m_aabbVertexBuffer = std::make_unique<VertexBuffer>(testRender, sizeof(testRender));
+	testRenderData.shader = std::make_unique<Shader>("Assets/Shaders/depthtest.glsl");
+	testRenderData.m_aabbVertexBuffer->SetLayout({ { GL_FLOAT, 0, 3, 0 }, { GL_FLOAT, 1, 2, 0 } });
+	testRenderData.m_aabbVertexArray->SetIndices(quadIndices, 6);
+	testRenderData.m_aabbVertexArray->AddBuffer(*testRenderData.m_aabbVertexBuffer.get());
+
 	RenderCommand::Init();
 }
 
@@ -97,9 +118,9 @@ void Renderer::Clear()
 
 void Renderer::ShutDown()
 {	
-	renderData.m_aabbVertexArray.reset();
-	renderData.m_aabbVertexBuffer.reset();
-	renderData.shader.reset();
+	testRenderData.m_aabbVertexArray.reset();
+	testRenderData.m_aabbVertexBuffer.reset();
+	testRenderData.shader.reset();
 }
 
 void Renderer::AddMeshes(const class Mesh& p_mesh)
@@ -126,41 +147,35 @@ void Renderer::BeginScene(const Camera& camera )
 	//s_renderMeshes.clear();
 	renderData.view = camera.GetViewMatrix();
 	renderData.proj = camera.GetProjectionMatrix();
+//	BeginShadow();
+	RenderSkybox();
+}
 
-	Matrix4x4 scaleBias = Matrix4x4(
-		{ 0.5f, 0, 0, 0 },
-		{ 0, 0.5f, 0, 0 },
-		{ 0, 0, 0.5f, 0 },
-		{ 0.5f, 0.5f, 0.5f, 1.0f }
-	);
+void Renderer::BeginShadow()
+{
+	Scene* scene = Scene::GetSingleton();
 
-	//Matrix4x4 Proj = Matrix4x4::CreateFrustum(-1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1000.f);
-	Matrix4x4 Proj = Matrix4x4::CreateOrtho(-1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1000.f);
-	Matrix4x4 View = Matrix4x4::CreateLookAt({ 3.5f, 21.0f, 72.0f }, { 0, 0, 0 }, { 0, 1.f, 0 });
-
-
+	const auto& shadowBox = scene->GetShadowBox();
+	shadowData.UpdateView(scene->GetSkyLightDirection(), shadowBox.GetCenter());
+	shadowData.UpdateProjection(shadowBox.GetWidth(), shadowBox.GetHeight(), shadowBox.GetLength());
 	
+	Matrix4x4 offset = Matrix4x4::CreateTranslation({ 0.5f, 0.5f, 0.5f });
+	offset = Matrix4x4::Scale(offset, { 0.5f, 0.5f, 0.5f });
+	Matrix4x4 bias = Matrix4x4(1.f);
+	bias[3][3] = 1.f;
+	Scene::shadowShader->Bind();
+	Scene::shadowShader->UploadUniformMat4("lightSpaceMatrix", (shadowData.Proj * shadowData.View));
+
 	Scene::sceneShader->Bind();
 	Scene::sceneShader->UploadUniformMat4("projView", renderData.proj * renderData.view);
-	Scene::sceneShader->UploadUniformMat4("shadowBias", scaleBias * Proj * View);;
+	Scene::sceneShader->UploadUniformMat4("shadowSpaceMatrix", bias * (offset * (shadowData.Proj * shadowData.View)));
 
-//	RenderSkybox();
-	Scene::shadowShader->Bind();
-	Scene::shadowShader->UploadUniformMat4("projView", Proj * View);
+	glUseProgram(0);
 }
 
 void Renderer::RenderShadows()
 {
-	glEnable(GL_DEPTH_TEST);
-	//GLCall(glDepthFunc(GL_LESS));
 
-	Scene::shadowShader->Bind();
-
-	glViewport(0, 0, 1024, 1024);
-	Scene* scene = Scene::GetSingleton();
-	scene->BindFBO(FrameBufferName::SHADOW);
-	float depth = 1.f;
-	glClear(GL_DEPTH_BUFFER_BIT);	
 }
 
 void Renderer::Render(const Primitive& primitive)
@@ -176,16 +191,18 @@ void Renderer::Render(const AABB& p_aabb)
 
 static bool shouldCull = false;
 
+
 void Renderer::Render(const std::vector<Mesh>& p_meshes)
 {
-	//THREAD_LOCK
-//	mutex.lock();
-	const auto& envLight = Scene::GetEnviromentLight();
-	const auto& lights = Scene::GetLight();
 	const auto& shader = *Scene::sceneShader;
 	shader.Bind();
 	
+	//glBindTexture(GL_TEXTURE_2D, 0);
 	Scene* scene = Scene::GetSingleton();
+	glViewport(0, 0, 2048, 2048);
+	scene->BindFBO(FrameBufferName::DEPTH);
+	glClear(GL_DEPTH_BUFFER_BIT);
+	Scene::shadowShader->Bind();
 
 	for (const auto& mesh : p_meshes)
 	{
@@ -193,47 +210,89 @@ void Renderer::Render(const std::vector<Mesh>& p_meshes)
 		const auto& material = mesh.GetMaterial();
 		const auto& attribs = mesh.GetVertexAttribs();
 		attribs.Bind();
-	
-		GLCall(glBindTexture(GL_TEXTURE_2D, 0));
-		mesh.GetModelInstance()->BindTextures();
-		if (mesh.GetMaterial().Diffuse != -1)
-		{
-		//	mesh.GetModelInstance()->BindTexture(mesh.GetMaterial().Diffuse);
-			shader.UploadUniformInt("currentTex", mesh.GetMaterial().Diffuse);
-			shader.UploadUniformInt("diffuseTexture[" + std::to_string(mesh.GetMaterial().Diffuse) + "]", mesh.GetMaterial().Diffuse);
-		}
-
-		
-		shader.UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
+		//glDisableVertexAttribArray(1);
+		//glDisableVertexAttribArray(2);
+		Scene::shadowShader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
+		glCullFace(GL_FRONT);
 		RenderCommand::DrawIndexed(attribs);
-		drawCalls++;
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glCullFace(GL_BACK);
+	}
+//	glEnableVertexAttribArray(1);
+//	glEnableVertexAttribArray(2);
+	#ifdef DRAW_QUAD
 
-		Vector3 a;
-		Vector3 b;
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, 1200, 700);
+	GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+	testRenderData.shader->Bind();
+	testRenderData.shader->SetInt("depthMap", 0);
+	testRenderData.m_aabbVertexArray->Bind();
+	scene->BindFBOTex(FrameBufferTexture::SHADOWMAP);
+	glActiveTexture(GL_TEXTURE0);
+	RenderCommand::DrawIndexed(*testRenderData.m_aabbVertexArray);
+	#else // _DEBUG
 
-		int c = 0;
-		int d = 1;
-		for (int i = 0; i < 12; i++)
+	shader.Bind();
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, 1200, 700);
+//	GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+	shader.UploadUniformInt("depthTexture", 0);
+	glActiveTexture(GL_TEXTURE0);
+	scene->BindFBOTex(FrameBufferTexture::SHADOWMAP);
+	for (const auto& mesh : p_meshes)
+	{
+
+		const auto& material = mesh.GetMaterial();
+		const auto& attribs = mesh.GetVertexAttribs();
+		attribs.Bind();
+
+	//	GLCall(glBindTexture(GL_TEXTURE_2D, 0));
+
+	//	mesh.GetModelInstance()->BindTextures();
+
+		if (mesh.GetMaterial().Diffuse != -1 && mesh.GetMaterial().Diffuse != 0)
 		{
-			mesh.GetAABB().GetEdge(i, a, b);
-			aabVertices[c] = a;
-			aabVertices[d] = b;
-			c += 2;
-			d += 2;
+			mesh.GetModelInstance()->ActiveTexture(mesh.GetMaterial().Diffuse);
+			mesh.GetModelInstance()->BindTexture(mesh.GetMaterial().Diffuse);
+			shader.UploadUniformInt("currentTex", mesh.GetMaterial().Diffuse);
+			shader.UploadUniformInt("diffuseTexture[" + std::to_string(mesh.GetMaterial().Diffuse - 1) + "]", mesh.GetMaterial().Diffuse);
 		}
 
-		renderData.shader->Bind();
-		renderData.m_aabbVertexArray->Bind();
-		renderData.m_aabbVertexBuffer->BufferSubData(aabVertices, 0, sizeof(aabVertices));
-		renderData.shader->UploadUniformMat4("projView", renderData.proj * renderData.view);
-		renderData.shader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
-		RenderCommand::RenderLines(*renderData.m_aabbVertexArray);
-		shader.Bind();
+		shader.UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
+
+		RenderCommand::DrawIndexed(attribs);
+
+
+		//	RenderCommand::DrawIndexed(attribs);
+		//	drawCalls++;
+
+		//	Vector3 a;
+		//	Vector3 b;
+
+		//	int c = 0;
+		//	int d = 1;
+		//	for (int i = 0; i < 12; i++)
+		//	{
+		//		mesh.GetAABB().GetEdge(i, a, b);
+		//		aabVertices[c] = a;
+		//		aabVertices[d] = b;
+		//		c += 2;
+		//		d += 2;
+		//	}
+
+		//	renderData.shader->Bind();
+		//	renderData.m_aabbVertexArray->Bind();
+		//	renderData.m_aabbVertexBuffer->BufferSubData(aabVertices, 0, sizeof(aabVertices));
+		//	renderData.shader->UploadUniformMat4("projView", renderData.proj * renderData.view);
+		//	renderData.shader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
+		//	RenderCommand::RenderLines(*renderData.m_aabbVertexArray);
+		//	shader.Bind();
+		//}
+
 	}
-		
-
 	drawCalls = 0;
-
+	#endif
 }
 
 void Renderer::Render(const std::unique_ptr<Primitive>& primitive)
@@ -246,107 +305,7 @@ void Renderer::Render(const std::unique_ptr<Primitive>& primitive)
 	attribs.Bind();
 	const auto& shader = *Scene::sceneShader;
 
-
-
-	int i = 0;
-	
-	for (int i = 0; i < Scene::GetLightCount(); ++i)
-	{
-		auto& light = lights[i];
-		std::stringstream ss;
-
-		if (light->LightSource == light->DIRECTIONAL_LIGHT)
-		{
-			ss << "Lights[" << i << "]." << "LightType";
-			shader.UploadUniformInt(ss.str(), light->LightSource);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Ambient";
-			shader.UploadUniformVec3(ss.str(), envLight.Ambient);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Color";
-			shader.UploadUniformVec3(ss.str(), light->LightColor);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Direction";
-			shader.UploadUniformVec3(ss.str(), light->Direction);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Use";
-			shader.UploadUniformInt(ss.str(), light->Use);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Energy";
-			shader.UploadUniformFloat(ss.str(), light->Energy);
-			ss.str(std::string());
-		}
-		else if (light->LightSource == light->POINT_LIGHT)
-		{
-			const auto pLight = &(PointLight&)*light;
-			ss << "Lights[" << i << "]." << "LightType";
-			shader.UploadUniformInt(ss.str(), pLight->LightSource);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Ambient";
-			shader.UploadUniformVec3(ss.str(), envLight.Ambient);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Color";
-			shader.UploadUniformVec3(ss.str(), pLight->LightColor);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Direction";
-			shader.UploadUniformVec3(ss.str(), pLight->Direction);			
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Position";
-			shader.UploadUniformVec3(ss.str(), pLight->Position);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Energy";
-			shader.UploadUniformFloat(ss.str(), pLight->Energy);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Radius";
-			shader.UploadUniformFloat(ss.str(), pLight->Radius);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "LightAttenuation";
-			shader.UploadUniformVec2(ss.str(), pLight->LightAttenuation);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Use";
-			shader.UploadUniformInt(ss.str(), pLight->Use);
-			ss.str(std::string());
-		}
-		else
-		{
-			const auto spLight = &(SpotLight&)*light;
-			ss << "Lights[" << i << "]." << "LightType";
-			shader.UploadUniformInt(ss.str(), spLight->LightSource);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Ambient";
-			shader.UploadUniformVec3(ss.str(), envLight.Ambient);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Color";
-			shader.UploadUniformVec3(ss.str(), spLight->LightColor);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Direction";
-			shader.UploadUniformVec3(ss.str(), spLight->Direction);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Position";
-			shader.UploadUniformVec3(ss.str(), spLight->Position);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Energy";
-			shader.UploadUniformFloat(ss.str(), spLight->Energy);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Radius";
-			shader.UploadUniformFloat(ss.str(), spLight->Radius);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "LightAttenuation";
-			shader.UploadUniformVec2(ss.str(), spLight->LightAttenuation);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Cutoff";
-			shader.UploadUniformFloat(ss.str(), spLight->innerCutoff);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "OuterCutoff";
-			shader.UploadUniformFloat(ss.str(), spLight->outerCutoff);
-			ss.str(std::string());
-			ss << "Lights[" << i << "]." << "Use";
-			shader.UploadUniformInt(ss.str(), spLight->Use);
-		}
-	}
-	//glBindTexture(GL_TEXTURE_2D, 0);
-	//if (primitive->GetMaterial().Diffuse != -1)
-		
+	int i = 0;	
 
 	shader.UploadUniformVec4("Material.Color", material.Color);
 	shader.UploadUniformFloat("Material.Shininess", material.Shininess);

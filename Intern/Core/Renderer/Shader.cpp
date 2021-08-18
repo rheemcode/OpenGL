@@ -2,9 +2,8 @@
 #include <GL/glew.h>
 #include <iostream>
 #include <sstream>
-#include "Debug.h"
 #include "Math/Vector2.h"
-#include "Core/Console.h"
+#include "Debug.h"
 
 Shader::Shader(const std::string& filePath)
 {
@@ -92,22 +91,25 @@ void Shader::ParseShader(const std::string& filePath)
 
 void Shader::CreateShader()
 {
-    program = glCreateProgram();
-	uint32_t vs;
-	uint32_t fs;
+
+	uint32_t vs = 0;
+	uint32_t fs = 0;
 
 	if (vertexSource.size() != 0)
 	{
 		vs = CompileShader(vertexSource, GL_VERTEX_SHADER);
-		GLCall(glAttachShader(program, vs));
+
 	}
 
 	if (fragmentSource.size() != 0)
 	{
 		fs = CompileShader(fragmentSource, GL_FRAGMENT_SHADER);
-		GLCall(glAttachShader(program, fs));
+
 	}
 	
+	program = glCreateProgram();
+	GLCall(glAttachShader(program, vs));
+	GLCall(glAttachShader(program, fs));
 
 	GLCall(glLinkProgram(program));
 	GLCall(glValidateProgram(program));
@@ -125,6 +127,7 @@ void Shader::CreateShader()
 	}
 
 	uniformNames.clear();
+	glUseProgram(0);
 }
 
 unsigned int Shader::CompileShader(const std::string& src, unsigned int type)
@@ -146,6 +149,7 @@ unsigned int Shader::CompileShader(const std::string& src, unsigned int type)
 		//file.write("\n", 1);
 		GLCall(glGetShaderInfoLog(id, length, &length, message));
 		ss << message;
+		std::cout << ss.str();
 		Console::Log(ss.str().c_str(), LogMode::ERROR);
 		return 0;
 	}

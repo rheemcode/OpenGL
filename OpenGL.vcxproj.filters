@@ -15,34 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Intern\Core\Renderer\Shader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Extern\glm\detail\glm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Intern\Core\Renderer\Renderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Intern\Core\Renderer\Buffers\IndexBuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Intern\Core\Renderer\Buffers\VertexBuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Intern\Core\Renderer\VertexArray.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Intern\Core\Renderer\Buffers\BufferLayout.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Intern\main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Intern\Core\Camera.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Intern\Core\Window\Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Intern\Math\Matrix3x3.cpp">
@@ -66,55 +42,7 @@
     <ClCompile Include="Intern\Math\Math.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Intern\Core\Renderer\OpenGLContext.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Intern\Core\Input\Input.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Intern\Core\Renderer\Debug.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Intern\Core\Renderer\Texture.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Intern\Tests\Sprite.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Intern\Core\Renderer\Scene.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Intern\Tests\Quad.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Intern\Core\Renderer\Buffers\UniformBuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Intern\Math\Transform.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Intern\Core\SceneCameraController.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Intern\Core\Mesh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Intern\Core\Model.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Intern\Core\Console.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Intern\Core\Actor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Intern\Core\Components\MeshRendererComponent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Intern\Core\Components\TransformComponent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Intern\Core\Components\Component.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Intern\Math\Plane.cpp">
@@ -126,35 +54,110 @@
     <ClCompile Include="Intern\Math\Frustum.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Intern\Core\Renderer\SkyBox.cpp">
+    <ClCompile Include="Intern\Core\Renderer\Shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Intern\Core\Timestep.cpp">
+    <ClCompile Include="Intern\Core\Components\Component.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Intern\Core\Thread.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Intern\Core\CommandBuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Intern\Tests\Cube.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Intern\Tests\Sphere.cpp">
+    <ClCompile Include="Intern\Core\Components\MeshRendererComponent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Intern\Core\Components\StaticMeshRendererComponent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Intern\Core\Components\TransformComponent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Core\Input\Input.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Core\Renderer\Buffers\BufferLayout.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Intern\Core\Renderer\Buffers\FrameBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Core\Renderer\Buffers\IndexBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Core\Renderer\Buffers\UniformBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Core\Renderer\Buffers\VertexBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Core\Renderer\Debug.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Core\Renderer\OpenGLContext.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Core\Renderer\Renderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Core\Renderer\Scene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Core\Renderer\SkyBox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Core\Renderer\Texture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Core\Renderer\VertexArray.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Core\Window\Window.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Core\Actor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Core\Camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Core\CommandBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Core\Console.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Core\Mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Core\Model.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Core\SceneCameraController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Core\Thread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Core\Timestep.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Tests\Cube.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Tests\Quad.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Tests\Sphere.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Tests\Sprite.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Tests\Torus.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Intern\Core\ShadowBox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Intern\Core\Renderer\Shader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Extern\glm\detail\_features.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -581,33 +584,6 @@
     <ClInclude Include="Extern\glm\vector_relational.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Intern\Core\Renderer\Renderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Intern\Core\Renderer\Buffers\VertexBuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Intern\Core\Renderer\Buffers\IndexBuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Intern\Core\Renderer\VertexArray.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Intern\Core\Renderer\Buffers\BufferLayout.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Intern\Tests\Primitive.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Intern\Core\Window\Window.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Intern\Tests\Object.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Intern\Core\Camera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Intern\Math\fdecl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -632,7 +608,64 @@
     <ClInclude Include="Intern\Math\Vector3.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Intern\Core\Renderer\OpenGLContext.h">
+    <ClInclude Include="Extern\tiny_obj_loader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Math\AABB.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Math\Plane.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Math\Frustum.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Math\Transform.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Test.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Extern\GLFW\include\GLFW\glfw3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Extern\GLFW\include\GLFW\glfw3native.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Extern\GLEW\include\GL\glew.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Extern\GLEW\include\GL\eglew.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Extern\GLEW\include\GL\glxew.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Extern\GLEW\include\GL\wglew.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Core\Renderer\Shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Extern\learnopengl\camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Extern\learnopengl\filesystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Extern\learnopengl\shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Core\Components\Component.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Core\Components\MeshRendererComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Core\Components\StaticMeshRendererComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Core\Components\TransformComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Intern\Core\Events\ApplicationEvent.h">
@@ -647,34 +680,67 @@
     <ClInclude Include="Intern\Core\Events\MouseEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Intern\Core\Input\KeyCode.h">
+    <ClInclude Include="Intern\Core\Input\Input.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Intern\Core\Input\Input.h">
+    <ClInclude Include="Intern\Core\Input\KeyCode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Intern\Core\Input\Mouse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Intern\Core\Renderer\Debug.h">
+    <ClInclude Include="Intern\Core\Renderer\Buffers\BufferLayout.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Intern\Core\Renderer\Texture.h">
+    <ClInclude Include="Intern\Core\Renderer\Buffers\FrameBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Intern\Tests\Sprite.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Intern\Core\Renderer\Scene.h">
+    <ClInclude Include="Intern\Core\Renderer\Buffers\IndexBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Intern\Core\Renderer\Buffers\UniformBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Intern\Core\SceneCameraController.h">
+    <ClInclude Include="Intern\Core\Renderer\Buffers\VertexBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Core\Renderer\Debug.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Intern\Core\Renderer\Material.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Core\Renderer\OpenGLContext.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Core\Renderer\Renderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Core\Renderer\Scene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Core\Renderer\SkyBox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Core\Renderer\Texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Core\Renderer\VertexArray.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Core\Window\Window.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Core\Actor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Core\Camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Core\CommandBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Core\Console.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Intern\Core\Mesh.h">
@@ -683,58 +749,37 @@
     <ClInclude Include="Intern\Core\Model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Extern\tiny_obj_loader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Intern\Core\Console.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Intern\Core\Components\Component.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Intern\Core\Components\TransformComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Intern\Core\Components\MeshRendererComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Intern\Math\AABB.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Intern\Math\Plane.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Intern\Math\Frustum.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Intern\Core\Actor.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Intern\Math\Transform.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Intern\Core\Renderer\SkyBox.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Intern\Core\Timestep.h">
+    <ClInclude Include="Intern\Core\SceneCameraController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Intern\Core\Thread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Intern\Core\CommandBuffer.h">
+    <ClInclude Include="Intern\Core\Timestep.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Intern\Tests\Cube.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Intern\Tests\Object.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Tests\Primitive.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Tests\Quad.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Intern\Tests\Sphere.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Intern\Core\Components\StaticMeshRendererComponent.h">
+    <ClInclude Include="Intern\Tests\Sprite.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Intern\Core\Renderer\Buffers\FrameBuffer.h">
+    <ClInclude Include="Intern\Tests\Torus.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Core\ShadowBox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -1070,6 +1115,7 @@
     <None Include="Assets\Shaders\lighting.shader" />
     <None Include="Assets\Shaders\default.glsl" />
     <None Include="Assets\Shaders\depth.glsl" />
+    <None Include="Assets\Shaders\depthtest.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Extern\glm\CMakeLists.txt" />

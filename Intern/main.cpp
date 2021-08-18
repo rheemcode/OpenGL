@@ -14,6 +14,7 @@
 #include "Renderer/Renderer.h"
 #include "Timestep.h"
 
+#include "Test.h"
 
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PWSTR pCmdLine, int nCmdShow)
@@ -29,6 +30,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PWSTR pCmdLine,
 	Display* display = Display::GetSingleton();
 	display->UseVysnc(false);
 
+
+#ifndef TEST
 	Scene::Init();
 	Scene* scene = Scene::GetSingleton();
 	scene->BeginScene();
@@ -67,5 +70,15 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PWSTR pCmdLine,
 
 	}
 	scene->Shutdown();
+#else 
+	Test* test = new Test();
+	test->Init();
+
+	while (true)
+	{
+		test->Run();
+	}
+
+#endif
 	return 0;
 }

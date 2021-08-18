@@ -1,25 +1,21 @@
 #shader vertex
-#version 410 core
+#version 330 core
 
 
-layout(location = 0) in vec3 vPos;
+layout (location = 0) in vec3 aPos;
 
-uniform mat4 projView;
+uniform mat4 lightSpaceMatrix;
 uniform mat4 model;
 
-void main()  
-{  
-     gl_Position = projView * model * vec4(vPos, 1.0);
-};
-
-
+void main()
+{
+    gl_Position = lightSpaceMatrix * model * vec4(aPos, 1.0);
+}
 
 #shader fragment
 #version 410 core
 
-//out vec4 FragColor;
-
- void main()  
- {  
-   gl_FragDepth = gl_FragCoord.z;
- };
+void main()
+{             
+    // gl_FragDepth = gl_FragCoord.z;
+}

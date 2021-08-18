@@ -28,21 +28,32 @@
 
 void Texture::Bind()
 {
-	GLCall(glActiveTexture(GL_TEXTURE0));
+	GLCall(glActiveTexture(GL_TEXTURE1));
 	GLCall(glBindTexture(GL_TEXTURE_2D, m_ID[0]));
+}
+
+void Texture::ActiveTexture(uint32_t count)
+{
+	if (textureCount > 1)
+	{
+		// GL_TEXTURE because GL_TEXTURE0 is shadowMap texture
+		glActiveTexture(GL_TEXTURE0 + count);
+		return;
+	}
+
+	GLCall(glActiveTexture(GL_TEXTURE1));
 }
 
 void Texture::Bind(uint32_t p_val)
 {
-	GLCall(glActiveTexture(GL_TEXTURE0 + p_val));
-	GLCall(glBindTexture(GL_TEXTURE_2D, m_ID[p_val]));
+	GLCall(glBindTexture(GL_TEXTURE_2D, m_ID[p_val - 1]));
 }
 
 void Texture::BindAll()
 {
 	for (int i = 0; i < textureCount; i++)
 	{
-		GLCall(glActiveTexture(GL_TEXTURE0 + i));
+		GLCall(glActiveTexture(GL_TEXTURE1 + i));
 		GLCall(glBindTexture(GL_TEXTURE_2D, m_ID[i]));
 	}
 }
@@ -90,8 +101,7 @@ void Texture::BufferData(unsigned char* data, int width, int height, DataFormat 
 
 uint32_t Texture::AddImage(const std::string& filepath)
 {
-	Bind(textureCount);
-	stbi_set_flip_vertically_on_load(1);
+
 	const unsigned char* imgData = stbi_load(filepath.c_str(), &m_Width, &m_Height, &m_Components, 0);
 
 	if (m_Components == 3)
@@ -106,11 +116,15 @@ uint32_t Texture::AddImage(const std::string& filepath)
 		m_InternalFormat = RGBA8;
 	}
 
-	TEXTURE_INIT_2D
-
 	if (imgData)
 	{
-		GLCall(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, imgData));
+		++textureCount;
+		ActiveTexture(textureCount);
+		Bind(textureCount);
+		stbi_set_flip_vertically_on_load(1);
+
+		TEXTURE_PARAM_2D
+		GLCall(glTexImage2D(GL_TEXTURE_2D, 0, m_InternalFormat, m_Width, m_Height, 0, m_DataFormat, GL_UNSIGNED_BYTE, imgData));
 		GLCall(glGenerateMipmap(GL_TEXTURE_2D));
 		levels += 1;
 	}
@@ -118,11 +132,12 @@ uint32_t Texture::AddImage(const std::string& filepath)
 	xOffset += (m_Width);
 	yOffset += (m_Height);
 	stbi_image_free((void*)imgData);
-	return textureCount++;
+	return textureCount;
 }
 
 uint32_t Texture::AddImage(const std::string& filepath, uint32_t id)
 {
+	ActiveTexture(id);
 	Bind(id);
 	const unsigned char* imgData = stbi_load(filepath.c_str(), &m_Width, &m_Height, &m_Components, 0);
 
@@ -195,6 +210,7 @@ Texture::Texture(uint32_t width, uint32_t height)
 	: m_Width(width), m_Height(height), m_Components(4), m_DataFormat(RGB), m_InternalFormat(RGB8), xOffset(0), yOffset(0)
 {
 	glGenTextures(1, m_ID);
+	ActiveTexture(0);
 	GLCall(glBindTexture(GL_TEXTURE_2D, m_ID[0]));
 	
 	TEXTURE_INIT_2D

@@ -70,6 +70,30 @@ public:
 		return m_localRotation * Vector3::Right();
 	}
 
+	void operator=(const Transform& p_transform)
+	{
+		m_localPosition = (p_transform.m_localPosition);
+		m_localRotation = (p_transform.m_localRotation);
+		m_localScale = (p_transform.m_localScale);
+		m_localMatrix = (p_transform.m_localMatrix);
+		m_worldMatrix = (p_transform.m_worldMatrix);
+
+		hasParent = p_transform.hasParent;
+		transformDirty = p_transform.transformDirty;
+	}
+
+	void operator=(Transform&& p_transform) noexcept
+	{
+		m_localPosition = std::move(p_transform.m_localPosition);
+		m_localRotation = std::move(p_transform.m_localRotation);
+		m_localScale = std::move(p_transform.m_localScale);
+		m_localMatrix = std::move(p_transform.m_localMatrix);
+		m_worldMatrix = std::move(p_transform.m_worldMatrix);
+
+		hasParent = p_transform.hasParent;
+		transformDirty = p_transform.transformDirty;
+	}
+
 	Transform();
 	Transform(Transform&& p_transform) noexcept;
 	Transform(const Transform& p_transform);
