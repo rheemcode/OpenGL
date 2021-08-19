@@ -168,7 +168,7 @@ uint32_t Texture::AddImage(const std::string& filepath, uint32_t id)
 void Texture::AddCubeMapImage(const std::array<std::string, 6>& p_files)
 {
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, m_ID[0]);
+	GLCall(glBindTexture(GL_TEXTURE_CUBE_MAP, m_ID[0]));
 
 	//stbi_set_flip_vertically_on_load(1);
 	TEXTURE_INIT_CUBE_MAP

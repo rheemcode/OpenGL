@@ -11,10 +11,10 @@
 
 void RenderCommand::Init()
 {
-	GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
+	GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
 	GLCall(glEnable(GL_DEPTH_TEST));
-	GLCall(glDepthFunc(GL_LESS));
-	//GLCall(glEnable(GL_CULL_FACE));
+	GLCall(glDepthFunc(GL_LEQUAL));
+	GLCall(glEnable(GL_CULL_FACE));
 
 	//GLCall(glEnable(GL_SCISSOR_TEST));
 	//GLCall(glEnable(GL_BLEND));
@@ -93,7 +93,7 @@ void Renderer::Init()
 	renderData.m_aabbVertexArray->SetIndices(indices, 24);
 	renderData.m_aabbVertexArray->AddBuffer(*renderData.m_aabbVertexBuffer.get());
 	*/
-	float testRender[] = {
+	/*float testRender[] = {
 		 -0.5f, -0.5f, 0.0f,  0.0f, 0.0f,
 		 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
 		 0.5f,  0.5f, 0.0f,  1.0f, 1.0f,
@@ -106,7 +106,7 @@ void Renderer::Init()
 	testRenderData.shader = std::make_unique<Shader>("Assets/Shaders/depthtest.glsl");
 	testRenderData.m_aabbVertexBuffer->SetLayout({ { GL_FLOAT, 0, 3, 0 }, { GL_FLOAT, 1, 2, 0 } });
 	testRenderData.m_aabbVertexArray->SetIndices(quadIndices, 6);
-	testRenderData.m_aabbVertexArray->AddBuffer(*testRenderData.m_aabbVertexBuffer.get());
+	testRenderData.m_aabbVertexArray->AddBuffer(*testRenderData.m_aabbVertexBuffer.get());*/
 
 	RenderCommand::Init();
 }
@@ -133,8 +133,7 @@ void Renderer::RenderSkybox()
 {
 	SkyBox* skybox = SkyBox::GetSingleton();
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	Matrix4x4 viewMat = renderData.view;
+	Matrix4x4 viewMat = Matrix4x4(0);
 	viewMat[3] = { 0, 0, 0, 1.f };
 	skybox->BeginRender(renderData.proj * viewMat);
 	GLCall(glDisable(GL_CULL_FACE));
@@ -147,7 +146,7 @@ void Renderer::BeginScene(const Camera& camera )
 	//s_renderMeshes.clear();
 	renderData.view = camera.GetViewMatrix();
 	renderData.proj = camera.GetProjectionMatrix();
-//	BeginShadow();
+	//BeginShadow();
 	RenderSkybox();
 }
 
@@ -194,105 +193,105 @@ static bool shouldCull = false;
 
 void Renderer::Render(const std::vector<Mesh>& p_meshes)
 {
-	const auto& shader = *Scene::sceneShader;
-	shader.Bind();
-	
-	//glBindTexture(GL_TEXTURE_2D, 0);
-	Scene* scene = Scene::GetSingleton();
-	glViewport(0, 0, 2048, 2048);
-	scene->BindFBO(FrameBufferName::DEPTH);
-	glClear(GL_DEPTH_BUFFER_BIT);
-	Scene::shadowShader->Bind();
-
-	for (const auto& mesh : p_meshes)
-	{
-
-		const auto& material = mesh.GetMaterial();
-		const auto& attribs = mesh.GetVertexAttribs();
-		attribs.Bind();
-		//glDisableVertexAttribArray(1);
-		//glDisableVertexAttribArray(2);
-		Scene::shadowShader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
-		glCullFace(GL_FRONT);
-		RenderCommand::DrawIndexed(attribs);
-		glBindTexture(GL_TEXTURE_2D, 0);
-		glCullFace(GL_BACK);
-	}
-//	glEnableVertexAttribArray(1);
-//	glEnableVertexAttribArray(2);
-	#ifdef DRAW_QUAD
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glViewport(0, 0, 1200, 700);
-	GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-	testRenderData.shader->Bind();
-	testRenderData.shader->SetInt("depthMap", 0);
-	testRenderData.m_aabbVertexArray->Bind();
-	scene->BindFBOTex(FrameBufferTexture::SHADOWMAP);
-	glActiveTexture(GL_TEXTURE0);
-	RenderCommand::DrawIndexed(*testRenderData.m_aabbVertexArray);
-	#else // _DEBUG
-
-	shader.Bind();
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glViewport(0, 0, 1200, 700);
+//	const auto& shader = *Scene::sceneShader;
+//	shader.Bind();
+//	
+//	//glBindTexture(GL_TEXTURE_2D, 0);
+//	Scene* scene = Scene::GetSingleton();
+//	glViewport(0, 0, 2048, 2048);
+//	scene->BindFBO(FrameBufferName::DEPTH);
+//	glClear(GL_DEPTH_BUFFER_BIT);
+//	Scene::shadowShader->Bind();
+//
+//	for (const auto& mesh : p_meshes)
+//	{
+//
+//		const auto& material = mesh.GetMaterial();
+//		const auto& attribs = mesh.GetVertexAttribs();
+//		attribs.Bind();
+//		//glDisableVertexAttribArray(1);
+//		//glDisableVertexAttribArray(2);
+//		Scene::shadowShader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
+//		glCullFace(GL_FRONT);
+//		RenderCommand::DrawIndexed(attribs);
+//		glBindTexture(GL_TEXTURE_2D, 0);
+//		glCullFace(GL_BACK);
+//	}
+////	glEnableVertexAttribArray(1);
+////	glEnableVertexAttribArray(2);
+//	#ifdef DRAW_QUAD
+//
+//	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+//	glViewport(0, 0, 1200, 700);
 //	GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-	shader.UploadUniformInt("depthTexture", 0);
-	glActiveTexture(GL_TEXTURE0);
-	scene->BindFBOTex(FrameBufferTexture::SHADOWMAP);
-	for (const auto& mesh : p_meshes)
-	{
-
-		const auto& material = mesh.GetMaterial();
-		const auto& attribs = mesh.GetVertexAttribs();
-		attribs.Bind();
-
-	//	GLCall(glBindTexture(GL_TEXTURE_2D, 0));
-
-	//	mesh.GetModelInstance()->BindTextures();
-
-		if (mesh.GetMaterial().Diffuse != -1 && mesh.GetMaterial().Diffuse != 0)
-		{
-			mesh.GetModelInstance()->ActiveTexture(mesh.GetMaterial().Diffuse);
-			mesh.GetModelInstance()->BindTexture(mesh.GetMaterial().Diffuse);
-			shader.UploadUniformInt("currentTex", mesh.GetMaterial().Diffuse);
-			shader.UploadUniformInt("diffuseTexture[" + std::to_string(mesh.GetMaterial().Diffuse - 1) + "]", mesh.GetMaterial().Diffuse);
-		}
-
-		shader.UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
-
-		RenderCommand::DrawIndexed(attribs);
-
-
-		//	RenderCommand::DrawIndexed(attribs);
-		//	drawCalls++;
-
-		//	Vector3 a;
-		//	Vector3 b;
-
-		//	int c = 0;
-		//	int d = 1;
-		//	for (int i = 0; i < 12; i++)
-		//	{
-		//		mesh.GetAABB().GetEdge(i, a, b);
-		//		aabVertices[c] = a;
-		//		aabVertices[d] = b;
-		//		c += 2;
-		//		d += 2;
-		//	}
-
-		//	renderData.shader->Bind();
-		//	renderData.m_aabbVertexArray->Bind();
-		//	renderData.m_aabbVertexBuffer->BufferSubData(aabVertices, 0, sizeof(aabVertices));
-		//	renderData.shader->UploadUniformMat4("projView", renderData.proj * renderData.view);
-		//	renderData.shader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
-		//	RenderCommand::RenderLines(*renderData.m_aabbVertexArray);
-		//	shader.Bind();
-		//}
-
-	}
-	drawCalls = 0;
-	#endif
+//	testRenderData.shader->Bind();
+//	testRenderData.shader->SetInt("depthMap", 0);
+//	testRenderData.m_aabbVertexArray->Bind();
+//	scene->BindFBOTex(FrameBufferTexture::SHADOWMAP);
+//	glActiveTexture(GL_TEXTURE0);
+//	RenderCommand::DrawIndexed(*testRenderData.m_aabbVertexArray);
+//	#else // _DEBUG
+//
+//	shader.Bind();
+//	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+//	glViewport(0, 0, 1200, 700);
+////	GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+//	shader.UploadUniformInt("depthTexture", 0);
+//	glActiveTexture(GL_TEXTURE0);
+//	scene->BindFBOTex(FrameBufferTexture::SHADOWMAP);
+//	for (const auto& mesh : p_meshes)
+//	{
+//
+//		const auto& material = mesh.GetMaterial();
+//		const auto& attribs = mesh.GetVertexAttribs();
+//		attribs.Bind();
+//
+//	//	GLCall(glBindTexture(GL_TEXTURE_2D, 0));
+//
+//	//	mesh.GetModelInstance()->BindTextures();
+//
+//		if (mesh.GetMaterial().Diffuse != -1 && mesh.GetMaterial().Diffuse != 0)
+//		{
+//			mesh.GetModelInstance()->ActiveTexture(mesh.GetMaterial().Diffuse);
+//			mesh.GetModelInstance()->BindTexture(mesh.GetMaterial().Diffuse);
+//			shader.UploadUniformInt("currentTex", mesh.GetMaterial().Diffuse);
+//			shader.UploadUniformInt("diffuseTexture[" + std::to_string(mesh.GetMaterial().Diffuse - 1) + "]", mesh.GetMaterial().Diffuse);
+//		}
+//
+//		shader.UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
+//
+//		RenderCommand::DrawIndexed(attribs);
+//
+//
+//		//	RenderCommand::DrawIndexed(attribs);
+//		//	drawCalls++;
+//
+//		//	Vector3 a;
+//		//	Vector3 b;
+//
+//		//	int c = 0;
+//		//	int d = 1;
+//		//	for (int i = 0; i < 12; i++)
+//		//	{
+//		//		mesh.GetAABB().GetEdge(i, a, b);
+//		//		aabVertices[c] = a;
+//		//		aabVertices[d] = b;
+//		//		c += 2;
+//		//		d += 2;
+//		//	}
+//
+//		//	renderData.shader->Bind();
+//		//	renderData.m_aabbVertexArray->Bind();
+//		//	renderData.m_aabbVertexBuffer->BufferSubData(aabVertices, 0, sizeof(aabVertices));
+//		//	renderData.shader->UploadUniformMat4("projView", renderData.proj * renderData.view);
+//		//	renderData.shader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
+//		//	RenderCommand::RenderLines(*renderData.m_aabbVertexArray);
+//		//	shader.Bind();
+//		//}
+//
+//	}
+//	drawCalls = 0;
+//	#endif
 }
 
 void Renderer::Render(const std::unique_ptr<Primitive>& primitive)

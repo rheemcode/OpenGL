@@ -91,6 +91,7 @@ float ShadowCalculation(vec4 ShadowPos)
     float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
     if (projCoords.z > 1.0)
         shadow = 0;
+
     return shadow;
 }
 

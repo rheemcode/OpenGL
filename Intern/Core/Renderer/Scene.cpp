@@ -66,7 +66,7 @@ void Scene::_Render()
 
 void Scene::ThreadRunLoop(float p_delta)
 {
-	//Renderer::SetClearColor(.4f, .4f, .4f, 1);
+	Renderer::SetClearColor(.4f, .4f, .4f, 1);
 	Renderer::Clear();
 	drawPending += 2;
 	ThreadUpdate(p_delta);
@@ -334,11 +334,11 @@ void Scene::ThreadBeginScene()
 
 	CreateSkyLight();
 	InitSceneCamera();
-	m_shadowBuffer = std::make_unique<ShadowBuffer>();
-	m_shadowBuffer->CreateTexture();
-	m_shadowBuffer->AttachDepthTexture(2048, 2048);
-
-	SkyBox::Create();
+	//m_shadowBuffer = std::make_unique<ShadowBuffer>();
+	//m_shadowBuffer->CreateTexture();
+//	m_shadowBuffer->AttachDepthTexture(2048, 2048);
+//
+   	SkyBox::Create();
 }
 
 void Scene::BeginScene()
