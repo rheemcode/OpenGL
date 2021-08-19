@@ -76,17 +76,17 @@ SimpleVec4& Matrix4x4::operator[](const int& p_index)
 Vector4 operator*(const Matrix4x4& p_mat, const Vector4& p_vec)
 {
 
-	const Vector4 Mov0(p_vec[0]);
-	const Vector4 Mov1(p_vec[1]);
-	const Vector4 Mul0 = p_mat[0] * Mov0;
-	const Vector4 Mul1 = p_mat[1] * Mov1;
-	const Vector4 Add0 = Mul0 + Mul1;
-	const Vector4 Mov2(p_vec[2]);
-	const Vector4 Mov3(p_vec[3]);
-	const Vector4 Mul2 = p_mat[2] * Mov2;
-	const Vector4 Mul3 = p_mat[3] * Mov3;
-	const Vector4 Add1 = Mul2 + Mul3;
-	const Vector4 Add2 = Add0 + Add1;
+	Vector4 const Mov0(p_vec[0]);
+	Vector4 const Mov1(p_vec[1]);
+	Vector4 const Mul0 = p_mat[0] * Mov0;
+	Vector4 const Mul1 = p_mat[1] * Mov1;
+	Vector4 const Add0 = Mul0 + Mul1;
+	Vector4 const Mov2(p_vec[2]);
+	Vector4 const Mov3(p_vec[3]);
+	Vector4 const Mul2 = p_mat[2] * Mov2;
+	Vector4 const Mul3 = p_mat[3] * Mov3;
+	Vector4 const Add1 = Mul2 + Mul3;
+	Vector4 const Add2 = Add0 + Add1;
 	return Add2;
 
 }

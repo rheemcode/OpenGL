@@ -39,15 +39,12 @@ void Window::BindEventCallback(EventCallback p_eventCallback)
 
 void Window::EventDispatcher(const Event& event)
 {
-	if (callback != nullptr)
-		callback(event);
+	callback(event);
 }
 
-void Window::WindowResized(int p_width, int p_height)
+void Window::WindowResized(int width, int height)
 {
-	windowData.width = p_width;
-	windowData.height = p_height;
-	glViewport(0, 0, p_width, p_height);
+	glViewport(0, 0, width, height);
 }
 
 Window::Window()

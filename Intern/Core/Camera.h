@@ -19,7 +19,7 @@ struct CameraSettings
 {
 	CameraMode mode;
 	float fovY, znear, zfar;
-	float left, right, bottom, top;
+	float left, right, top, bottom;
 	float winWidth, winHeight;
 	float ratio;
 };
@@ -28,6 +28,7 @@ class Camera
 {
 protected:
 	CameraSettings m_cameraSettings;
+
 	Matrix4x4 m_ProjectionMatrix;
 	Matrix4x4 m_ViewMatrix;
 	Matrix4x4 m_ViewProjectionMatrix;
@@ -42,8 +43,6 @@ public:
 	const Matrix4x4& GetViewMatrix() const;
 	const Matrix4x4& GetProjectionMatrix() const;
 	const Matrix4x4& GetViewProjectionMatrix() const;
-	
-	const CameraSettings GetCameraSettings() const { return m_cameraSettings; }
 
 	virtual Frustum& GetFrustum() { return m_Frustum; };
 
@@ -55,18 +54,15 @@ public:
 
 class SceneCamera : public Camera
 {
+
 	Transform transform;
 	SceneCameraController cameraController;
 
 public:
-	SceneCamera(const CameraSettings& p_cameraSetting)
-		: Camera(p_cameraSetting) {
-		cameraController.transform = &transform;
-	}
-	
-	void OnEvent(const Event& event);
-
+	const CameraSettings GetCameraSettings() const { return m_cameraSettings; }
 	const Transform& GetTransform() const { return transform; }
+
+	void OnEvent(const Event& event);
 	void OnUpdate(float p_delta)
 	{
 		cameraController.HandleKeyboardInput(transform, p_delta);
@@ -86,5 +82,9 @@ public:
 		m_ViewMatrix = Matrix4x4::Inverse(transform.GetWorldMatrix());
 	}
 
+	SceneCamera(const CameraSettings& p_cameraSetting)
+		: Camera(p_cameraSetting) {
+		cameraController.transform = &transform;
+	}
 
 };

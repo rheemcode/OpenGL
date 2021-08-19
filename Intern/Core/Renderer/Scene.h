@@ -18,7 +18,7 @@
 struct Light
 {
 	friend class Scene;
-	
+
 	enum LightSource
 	{
 		DIRECTIONAL_LIGHT = 1,
@@ -27,7 +27,7 @@ struct Light
 	};
 
 	LightSource LightSource;
-	
+
 	Vector3 LightColor;
 	Vector3 Position;
 	Vector3 Direction;
@@ -98,7 +98,7 @@ class Scene
 		Vector3 Ambient;
 		float Energy;
 	};
-	
+
 	static Scene* s_instance;
 
 	static uint32_t lightCount;
@@ -123,7 +123,7 @@ class Scene
 	std::unique_ptr<SceneCamera> sceneCamera;
 	static std::unique_ptr<Shader> sceneShader;
 	static std::unique_ptr<Shader> shadowShader;
-	
+
 	friend class Renderer;
 	static const EnviromentLight& GetEnviromentLight();
 	static const std::array<std::unique_ptr<Light>, 10>& GetLight();
@@ -156,9 +156,9 @@ public:
 
 	void RunLoop(float p_delta);
 	std::vector<Mesh>& GetCulledMeshes();
-	
+
 	const SceneCamera& GetSceneCamera() const { return *sceneCamera; }
-	const ShadowBox& GetShadowBox() const { return m_shadowBox;  }
+	const ShadowBox& GetShadowBox() const { return m_shadowBox; }
 	Vector3 GetSkyLightDirection() const { return m_lights[0]->Direction; }
 
 	void Render();
@@ -173,7 +173,7 @@ public:
 	void InitLightUniforms();
 
 	static void Init();
-	
+
 	void CreateActor();
 	void CreateSkyLight();
 	void CreateDefaultActor();
@@ -184,4 +184,3 @@ public:
 	Scene();
 	~Scene();
 };
-

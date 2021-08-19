@@ -11,9 +11,9 @@
 
 void RenderCommand::Init()
 {
-	GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
+	GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
 	GLCall(glEnable(GL_DEPTH_TEST));
-	GLCall(glDepthFunc(GL_LEQUAL));
+	GLCall(glDepthFunc(GL_LESS));
 	GLCall(glEnable(GL_CULL_FACE));
 
 	//GLCall(glEnable(GL_SCISSOR_TEST));
@@ -33,7 +33,8 @@ void RenderCommand::SetClearColor(float r, float g, float b, float a)
 
 void RenderCommand::Clear()
 {
-//	GLCall(glClearDepth(1.0f));
+	//	GLCall(glClearDepth(1.0f));
+	
 	GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 }
 
@@ -41,14 +42,14 @@ void RenderCommand::DrawIndexed(const VertexArray& vertexArray)
 {
 	//vertexArray.Bind();
 	GLCall(glDrawElements(GL_TRIANGLES, vertexArray.GetIndicies(), GL_UNSIGNED_INT, 0));
-//	glDrawArrays(GL_TRIANGLES, 0, vertexArray.GetIndicies());
+	//	glDrawArrays(GL_TRIANGLES, 0, vertexArray.GetIndicies());
 }
 
 void RenderCommand::DrawIndexed(const uint32_t& p_indices)
 {
 	//vertexArray.Bind();
 	GLCall(glDrawElements(GL_TRIANGLES, p_indices, GL_UNSIGNED_INT, 0));
-//	glDrawArrays(GL_TRIANGLES, 0, vertexArray.GetIndicies());
+	//	glDrawArrays(GL_TRIANGLES, 0, vertexArray.GetIndicies());
 }
 
 void RenderCommand::RenderLines(const VertexArray& vertexArray)
@@ -57,7 +58,7 @@ void RenderCommand::RenderLines(const VertexArray& vertexArray)
 	//glPolygonOffset(.1f, .1f); // move polygon backward
 
 	vertexArray.Bind();
-//	GLCall(glDrawElements(GL_LINES, vertexArray.GetIndicies(), GL_UNSIGNED_INT, 0));
+	//	GLCall(glDrawElements(GL_LINES, vertexArray.GetIndicies(), GL_UNSIGNED_INT, 0));
 	glDrawArrays(GL_LINES, 0, 24);
 	//glDisable(GL_POLYGON_OFFSET_FILL);
 }
@@ -72,7 +73,7 @@ static Vector3 temp_aabbVertices[] =
 	{ 1.f, -1.f, -1.f}, // 1
 	{ 1.f, 1.f, -1.f},  // 2
 	{ -1.f, 1.f, -1.f}, // 3	
-	
+
 	{-1.f, -1.f, 1.f}, // 4
 	{ 1.f, -1.f, 1.f}, // 5
 	{ 1.f, 1.f,  1.f},  // 6
@@ -81,7 +82,7 @@ static Vector3 temp_aabbVertices[] =
 
 static Vector3 aabVertices[24];
 
-static uint32_t indices[] = { 0, 1, 1, 2, 2, 3, 3, 0, 0, 4, 4, 5, 5, 1, 5, 6, 2, 6, 6, 7, 7, 3, 7, 4};
+static uint32_t indices[] = { 0, 1, 1, 2, 2, 3, 3, 0, 0, 4, 4, 5, 5, 1, 5, 6, 2, 6, 6, 7, 7, 3, 7, 4 };
 std::vector<Mesh> Renderer::s_renderMeshes;
 
 void Renderer::Init()
@@ -93,20 +94,20 @@ void Renderer::Init()
 	renderData.m_aabbVertexArray->SetIndices(indices, 24);
 	renderData.m_aabbVertexArray->AddBuffer(*renderData.m_aabbVertexBuffer.get());
 	*/
-	/*float testRender[] = {
+	float testRender[] = {
 		 -0.5f, -0.5f, 0.0f,  0.0f, 0.0f,
 		 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
 		 0.5f,  0.5f, 0.0f,  1.0f, 1.0f,
 		 -0.5f,  0.5f, 0.0f, 0.0f, 1.0f };
-	
-	uint32_t quadIndices[] = {0, 1, 2, 2, 3, 0};
+
+	uint32_t quadIndices[] = { 0, 1, 2, 2, 3, 0 };
 
 	testRenderData.m_aabbVertexArray = std::make_unique<VertexArray>();
 	testRenderData.m_aabbVertexBuffer = std::make_unique<VertexBuffer>(testRender, sizeof(testRender));
 	testRenderData.shader = std::make_unique<Shader>("Assets/Shaders/depthtest.glsl");
 	testRenderData.m_aabbVertexBuffer->SetLayout({ { GL_FLOAT, 0, 3, 0 }, { GL_FLOAT, 1, 2, 0 } });
 	testRenderData.m_aabbVertexArray->SetIndices(quadIndices, 6);
-	testRenderData.m_aabbVertexArray->AddBuffer(*testRenderData.m_aabbVertexBuffer.get());*/
+	testRenderData.m_aabbVertexArray->AddBuffer(*testRenderData.m_aabbVertexBuffer.get());
 
 	RenderCommand::Init();
 }
@@ -117,7 +118,7 @@ void Renderer::Clear()
 }
 
 void Renderer::ShutDown()
-{	
+{
 	testRenderData.m_aabbVertexArray.reset();
 	testRenderData.m_aabbVertexBuffer.reset();
 	testRenderData.shader.reset();
@@ -133,7 +134,8 @@ void Renderer::RenderSkybox()
 {
 	SkyBox* skybox = SkyBox::GetSingleton();
 
-	Matrix4x4 viewMat = Matrix4x4(0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	Matrix4x4 viewMat = renderData.view;
 	viewMat[3] = { 0, 0, 0, 1.f };
 	skybox->BeginRender(renderData.proj * viewMat);
 	GLCall(glDisable(GL_CULL_FACE));
@@ -141,12 +143,12 @@ void Renderer::RenderSkybox()
 	GLCall(glEnable(GL_CULL_FACE));
 }
 
-void Renderer::BeginScene(const Camera& camera )
+void Renderer::BeginScene(const Camera& camera)
 {
 	//s_renderMeshes.clear();
 	renderData.view = camera.GetViewMatrix();
 	renderData.proj = camera.GetProjectionMatrix();
-	//BeginShadow();
+	BeginShadow();
 	RenderSkybox();
 }
 
@@ -157,7 +159,7 @@ void Renderer::BeginShadow()
 	const auto& shadowBox = scene->GetShadowBox();
 	shadowData.UpdateView(scene->GetSkyLightDirection(), shadowBox.GetCenter());
 	shadowData.UpdateProjection(shadowBox.GetWidth(), shadowBox.GetHeight(), shadowBox.GetLength());
-	
+
 	Matrix4x4 offset = Matrix4x4::CreateTranslation({ 0.5f, 0.5f, 0.5f });
 	offset = Matrix4x4::Scale(offset, { 0.5f, 0.5f, 0.5f });
 	Matrix4x4 bias = Matrix4x4(1.f);
@@ -178,7 +180,7 @@ void Renderer::RenderShadows()
 }
 
 void Renderer::Render(const Primitive& primitive)
-{	
+{
 }
 
 static int drawCalls = 0;
@@ -193,105 +195,105 @@ static bool shouldCull = false;
 
 void Renderer::Render(const std::vector<Mesh>& p_meshes)
 {
-//	const auto& shader = *Scene::sceneShader;
-//	shader.Bind();
-//	
-//	//glBindTexture(GL_TEXTURE_2D, 0);
-//	Scene* scene = Scene::GetSingleton();
-//	glViewport(0, 0, 2048, 2048);
-//	scene->BindFBO(FrameBufferName::DEPTH);
-//	glClear(GL_DEPTH_BUFFER_BIT);
-//	Scene::shadowShader->Bind();
-//
-//	for (const auto& mesh : p_meshes)
-//	{
-//
-//		const auto& material = mesh.GetMaterial();
-//		const auto& attribs = mesh.GetVertexAttribs();
-//		attribs.Bind();
-//		//glDisableVertexAttribArray(1);
-//		//glDisableVertexAttribArray(2);
-//		Scene::shadowShader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
-//		glCullFace(GL_FRONT);
-//		RenderCommand::DrawIndexed(attribs);
-//		glBindTexture(GL_TEXTURE_2D, 0);
-//		glCullFace(GL_BACK);
-//	}
-////	glEnableVertexAttribArray(1);
-////	glEnableVertexAttribArray(2);
-//	#ifdef DRAW_QUAD
-//
-//	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-//	glViewport(0, 0, 1200, 700);
-//	GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-//	testRenderData.shader->Bind();
-//	testRenderData.shader->SetInt("depthMap", 0);
-//	testRenderData.m_aabbVertexArray->Bind();
-//	scene->BindFBOTex(FrameBufferTexture::SHADOWMAP);
-//	glActiveTexture(GL_TEXTURE0);
-//	RenderCommand::DrawIndexed(*testRenderData.m_aabbVertexArray);
-//	#else // _DEBUG
-//
-//	shader.Bind();
-//	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-//	glViewport(0, 0, 1200, 700);
-////	GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-//	shader.UploadUniformInt("depthTexture", 0);
-//	glActiveTexture(GL_TEXTURE0);
-//	scene->BindFBOTex(FrameBufferTexture::SHADOWMAP);
-//	for (const auto& mesh : p_meshes)
-//	{
-//
-//		const auto& material = mesh.GetMaterial();
-//		const auto& attribs = mesh.GetVertexAttribs();
-//		attribs.Bind();
-//
-//	//	GLCall(glBindTexture(GL_TEXTURE_2D, 0));
-//
-//	//	mesh.GetModelInstance()->BindTextures();
-//
-//		if (mesh.GetMaterial().Diffuse != -1 && mesh.GetMaterial().Diffuse != 0)
-//		{
-//			mesh.GetModelInstance()->ActiveTexture(mesh.GetMaterial().Diffuse);
-//			mesh.GetModelInstance()->BindTexture(mesh.GetMaterial().Diffuse);
-//			shader.UploadUniformInt("currentTex", mesh.GetMaterial().Diffuse);
-//			shader.UploadUniformInt("diffuseTexture[" + std::to_string(mesh.GetMaterial().Diffuse - 1) + "]", mesh.GetMaterial().Diffuse);
-//		}
-//
-//		shader.UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
-//
-//		RenderCommand::DrawIndexed(attribs);
-//
-//
-//		//	RenderCommand::DrawIndexed(attribs);
-//		//	drawCalls++;
-//
-//		//	Vector3 a;
-//		//	Vector3 b;
-//
-//		//	int c = 0;
-//		//	int d = 1;
-//		//	for (int i = 0; i < 12; i++)
-//		//	{
-//		//		mesh.GetAABB().GetEdge(i, a, b);
-//		//		aabVertices[c] = a;
-//		//		aabVertices[d] = b;
-//		//		c += 2;
-//		//		d += 2;
-//		//	}
-//
-//		//	renderData.shader->Bind();
-//		//	renderData.m_aabbVertexArray->Bind();
-//		//	renderData.m_aabbVertexBuffer->BufferSubData(aabVertices, 0, sizeof(aabVertices));
-//		//	renderData.shader->UploadUniformMat4("projView", renderData.proj * renderData.view);
-//		//	renderData.shader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
-//		//	RenderCommand::RenderLines(*renderData.m_aabbVertexArray);
-//		//	shader.Bind();
-//		//}
-//
-//	}
-//	drawCalls = 0;
-//	#endif
+	const auto& shader = *Scene::sceneShader;
+	shader.Bind();
+
+	//glBindTexture(GL_TEXTURE_2D, 0);
+	Scene* scene = Scene::GetSingleton();
+	glViewport(0, 0, 2048, 2048);
+	scene->BindFBO(FrameBufferName::DEPTH);
+	glClear(GL_DEPTH_BUFFER_BIT);
+	Scene::shadowShader->Bind();
+
+	for (const auto& mesh : p_meshes)
+	{
+
+		const auto& material = mesh.GetMaterial();
+		const auto& attribs = mesh.GetVertexAttribs();
+		attribs.Bind();
+		//glDisableVertexAttribArray(1);
+		//glDisableVertexAttribArray(2);
+		Scene::shadowShader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
+		glCullFace(GL_FRONT);
+		RenderCommand::DrawIndexed(attribs);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glCullFace(GL_BACK);
+	}
+	//	glEnableVertexAttribArray(1);
+	//	glEnableVertexAttribArray(2);
+#ifdef DRAW_QUAD
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, 1200, 700);
+	GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+	testRenderData.shader->Bind();
+	testRenderData.shader->SetInt("depthMap", 0);
+	testRenderData.m_aabbVertexArray->Bind();
+	scene->BindFBOTex(FrameBufferTexture::SHADOWMAP);
+	glActiveTexture(GL_TEXTURE0);
+	RenderCommand::DrawIndexed(*testRenderData.m_aabbVertexArray);
+#else // _DEBUG
+
+	shader.Bind();
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, 1200, 700);
+	//	GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+	shader.UploadUniformInt("depthTexture", 0);
+	glActiveTexture(GL_TEXTURE0);
+	scene->BindFBOTex(FrameBufferTexture::SHADOWMAP);
+	for (const auto& mesh : p_meshes)
+	{
+
+		const auto& material = mesh.GetMaterial();
+		const auto& attribs = mesh.GetVertexAttribs();
+		attribs.Bind();
+
+		//	GLCall(glBindTexture(GL_TEXTURE_2D, 0));
+
+		//	mesh.GetModelInstance()->BindTextures();
+
+		if (mesh.GetMaterial().Diffuse != -1 && mesh.GetMaterial().Diffuse != 0)
+		{
+			mesh.GetModelInstance()->ActiveTexture(mesh.GetMaterial().Diffuse);
+			mesh.GetModelInstance()->BindTexture(mesh.GetMaterial().Diffuse);
+			shader.UploadUniformInt("currentTex", mesh.GetMaterial().Diffuse);
+			shader.UploadUniformInt("diffuseTexture[" + std::to_string(mesh.GetMaterial().Diffuse - 1) + "]", mesh.GetMaterial().Diffuse);
+		}
+
+		shader.UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
+
+		RenderCommand::DrawIndexed(attribs);
+
+
+		//	RenderCommand::DrawIndexed(attribs);
+		//	drawCalls++;
+
+		//	Vector3 a;
+		//	Vector3 b;
+
+		//	int c = 0;
+		//	int d = 1;
+		//	for (int i = 0; i < 12; i++)
+		//	{
+		//		mesh.GetAABB().GetEdge(i, a, b);
+		//		aabVertices[c] = a;
+		//		aabVertices[d] = b;
+		//		c += 2;
+		//		d += 2;
+		//	}
+
+		//	renderData.shader->Bind();
+		//	renderData.m_aabbVertexArray->Bind();
+		//	renderData.m_aabbVertexBuffer->BufferSubData(aabVertices, 0, sizeof(aabVertices));
+		//	renderData.shader->UploadUniformMat4("projView", renderData.proj * renderData.view);
+		//	renderData.shader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
+		//	RenderCommand::RenderLines(*renderData.m_aabbVertexArray);
+		//	shader.Bind();
+		//}
+
+	}
+	drawCalls = 0;
+#endif
 }
 
 void Renderer::Render(const std::unique_ptr<Primitive>& primitive)
@@ -304,7 +306,7 @@ void Renderer::Render(const std::unique_ptr<Primitive>& primitive)
 	attribs.Bind();
 	const auto& shader = *Scene::sceneShader;
 
-	int i = 0;	
+	int i = 0;
 
 	shader.UploadUniformVec4("Material.Color", material.Color);
 	shader.UploadUniformFloat("Material.Shininess", material.Shininess);
@@ -313,7 +315,7 @@ void Renderer::Render(const std::unique_ptr<Primitive>& primitive)
 	shader.UploadUniformMat4("model", primitive->GetTransform());
 	shader.UploadUniformFloat("AmbientEnergy", envLight.Energy);
 	//material
-	
+
 	shader.UploadUniformVec4("ViewPosition", { renderData.view[3].x, renderData.view[3].y, renderData.view[3].z, 1.0f });
 
 	RenderCommand::DrawIndexed(attribs);
@@ -351,7 +353,7 @@ void Renderer2D::Init()
 
 	m_Data.m_vao = std::make_unique<VertexArray>();
 	//m_Data.m_ib = std::make_unique<IndexBuffer>(quadIndices, m_Data.MaxIndices);
-	m_Data.m_vb = std::make_unique<VertexBuffer>( m_Data.MaxVertices * sizeof(VertexAttribs));
+	m_Data.m_vb = std::make_unique<VertexBuffer>(m_Data.MaxVertices * sizeof(VertexAttribs));
 	m_Data.m_vao->SetIndexBuffer(IndexBuffer(quadIndices, m_Data.MaxIndices));
 	m_Data.shader = std::make_unique<Shader>("src/Shaders/default.shader");
 
@@ -392,7 +394,7 @@ void Renderer2D::Flush()
 		return;
 
 	uint32_t size = (uint32_t)((uint8_t*)m_Data.vertexAttribPtr - (uint8_t*)m_Data.vertexAttribBase);
-	int val[] = { 0, 1, 2, 3, 4, 5};
+	int val[] = { 0, 1, 2, 3, 4, 5 };
 	m_Data.shader->SetIntArray("tex", val, 6);
 
 	for (uint32_t i = 0; i < m_Data.textureSlotIndex; i++)
@@ -419,9 +421,9 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Texture& texture)
 
 
 	float textureIndex = 0.0f;
-	for (uint32_t i = 0; i < m_Data.textureSlotIndex ; i++)
+	for (uint32_t i = 0; i < m_Data.textureSlotIndex; i++)
 	{
-		
+
 		if (*m_Data.textures[i].get() == texture)
 		{
 			textureIndex = float(i + 1);
@@ -433,7 +435,7 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Texture& texture)
 	{
 		textureIndex = (float)m_Data.textureSlotIndex;
 		m_Data.textures[m_Data.textureSlotIndex] = std::make_unique<Texture>(texture);
-		m_Data.textureSlotIndex ++;
+		m_Data.textureSlotIndex++;
 	}
 
 	for (int i = 0; i < quadVertexCount; i++)
@@ -452,5 +454,3 @@ void Renderer2D::DrawSprite(const Sprite& sprite)
 {
 	DrawQuad(sprite.GetTransform(), sprite.GetTexture());
 }
-
-

@@ -66,7 +66,7 @@ void Scene::_Render()
 
 void Scene::ThreadRunLoop(float p_delta)
 {
-	Renderer::SetClearColor(.4f, .4f, .4f, 1);
+	//Renderer::SetClearColor(.4f, .4f, .4f, 1);
 	Renderer::Clear();
 	drawPending += 2;
 	ThreadUpdate(p_delta);
@@ -104,8 +104,8 @@ void Scene::ThreadLoop()
 
 void Scene::ThreadExit()
 {
-	Renderer::ShutDown();
 	running = false;
+	Renderer::ShutDown();
 }
 
 void Scene::ThreadFlush()
@@ -178,6 +178,7 @@ void Scene::OnEvent(const Event& event)
 		const auto& ke = (KeyEvent&)event;
 	}
 
+
 }
 
 void Scene::Shutdown()
@@ -232,20 +233,16 @@ void Scene::InitLightUniforms()
 	lightData.Color = {1.f, 1.f, 1.f, 1.f};
 	lightData.Direction = { 0, -0.3f, -1.f, 1.f };
 	lightData.AmbientEnergy = 1.f;
-	lightData.Energy = .69f;
+	lightData.Energy = .69;
 	if (1 and 2)
 		auto i = 2;
-
-	const auto light = static_cast<DirectionalLight*>(m_lights[0].get());
-
 	auto* buffer = malloc(uboSize);
-	auto ambient = light->LightColor / 2;
-	memcpy((char*)buffer + offset[0], &light->LightSource, 4);
-	memcpy((char*)buffer + offset[1], &ambient, 16);
-	memcpy((char*)buffer + offset[2], &light->LightColor, 16);
-	memcpy((char*)buffer + offset[3], &light->Direction, 16);
+	memcpy((char*)buffer + offset[0], &lightData.LightType, 4);
+	memcpy((char*)buffer + offset[1], &lightData.Ambient, 16);
+	memcpy((char*)buffer + offset[2], &lightData.Color, 16);
+	memcpy((char*)buffer + offset[3], &lightData.Direction, 16);
 	memcpy((char*)buffer + offset[4], &lightData.AmbientEnergy, 4);
-	memcpy((char*)buffer + offset[5], &light->Energy, 4);
+	memcpy((char*)buffer + offset[5], &lightData.Energy, 4);
 	m_LightsBuffer->SetData(80, buffer, 0);
 	free(buffer);
 }
@@ -263,24 +260,6 @@ void Scene::Init()
 void Scene::CreateActor()
 {
 
-}
-
-void Scene::CreateSkyLight()
-{
-	m_EnviromentLight.Ambient = { 1.f, 1.f, 1.f };
-	m_EnviromentLight.Energy = .19f;
-
-	auto pLight = std::make_unique<DirectionalLight>();
-	pLight->LightColor = { 1.0f, 1.f, 1.0f };
-	pLight->Energy = 1.5f;
-	pLight->Direction = { 0, -.1f, -0.3f };
-	pLight->LightSource = Light::DIRECTIONAL_LIGHT;
-	pLight->Position = { 0, .7f, -1.f };
-	pLight->LightAttenuation = { 1.f, 1.f };
-
-	pLight->Use = true;
-	m_lights[0] = std::move(pLight);
-	InitLightUniforms();
 }
 
 void Scene::ThreadCreateDefaultActor()
@@ -306,7 +285,7 @@ void Scene::InitSceneCamera()
 	cameraSettings.mode = CameraMode::PERSPECTIVE;
 	cameraSettings.fovY = 70.f;
 	cameraSettings.znear = 0.1f;
-	cameraSettings.zfar = 300.f;
+	cameraSettings.zfar = 1000.f;
 	cameraSettings.winWidth = display->GetMainWindow()->GetWidth();
 	cameraSettings.winHeight = display->GetMainWindow()->GetHeight();
 	cameraSettings.ratio = cameraSettings.winWidth / cameraSettings.winHeight;
@@ -316,6 +295,26 @@ void Scene::InitSceneCamera()
 	m_shadowBox = ShadowBox(Matrix4x4(), sceneCamera->GetTransform(), cameraSettings);
 }
 
+void Scene::CreateSkyLight()
+{
+
+	sceneShader->Bind();
+
+	m_EnviromentLight.Ambient = { 1.f, 1.f, 1.f };
+	m_EnviromentLight.Energy = .19f;
+
+	auto pLight = std::make_unique<DirectionalLight>();
+	pLight->LightColor = { 1.0f, 1.f, 1.0f };
+	pLight->Energy = 1.5f;
+	pLight->Direction = { 0, -.1f, -0.3f };
+	pLight->LightSource = Light::DIRECTIONAL_LIGHT;
+	pLight->Position = { 0, .7f, -1.f };
+	pLight->LightAttenuation = { 1.f, 1.f };
+
+	pLight->Use = true;
+	m_lights[0] = std::move(pLight);
+	InitLightUniforms();
+}
 
 void Scene::ThreadBeginScene()
 {
@@ -326,19 +325,21 @@ void Scene::ThreadBeginScene()
 	display->GetMainWindow()->MakeCurrent();
 
 	Renderer::Init();
+	/*Renderer2D renderer2D;
+	renderer2D.Init();*/
+
+	InitSceneCamera();
 
 	sceneShader = std::make_unique<Shader>("Assets/Shaders/lighting.shader");
 	shadowShader = std::make_unique<Shader>("Assets/Shaders/depth.glsl");
-	
-	sceneShader->Bind();
+
+	m_shadowBuffer = std::make_unique<FrameBuffer>();
+	m_shadowBuffer->CreateTexture();
+	m_shadowBuffer->AttachDepthTexture();
 
 	CreateSkyLight();
-	InitSceneCamera();
-	//m_shadowBuffer = std::make_unique<ShadowBuffer>();
-	//m_shadowBuffer->CreateTexture();
-//	m_shadowBuffer->AttachDepthTexture(2048, 2048);
-//
-   	SkyBox::Create();
+
+	SkyBox::Create();
 }
 
 void Scene::BeginScene()

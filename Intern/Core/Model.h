@@ -17,7 +17,7 @@ class ModelLoader
 {
 public:
 
-	bool LoadModel(MODEL_FORMAT modelFormat, const std::string& p_filePath, Model* p_model );
+	bool LoadModel(MODEL_FORMAT modelFormat, const std::string& p_filePath, Model* p_model);
 	bool LoadAsStaticModel(MODEL_FORMAT modelFormat, const std::string& p_filePath, Model* p_model);
 };
 
@@ -30,14 +30,14 @@ struct TextureNameMap
 	bool operator==(const TextureNameMap& p_other) const
 	{
 		return name == name;
-	}	
-	
+	}
+
 	bool operator==(const std::string& p_name) const
 	{
 		return name == p_name;
 	}
 
-	
+
 };
 
 class Model
@@ -59,7 +59,7 @@ class Model
 public:
 	const std::vector<Mesh>& GetMeshes() const { return m_meshes; }
 	const Transform& GetTransform() const { return *m_transform; }
-	
+
 	void ActiveTexture(uint32_t count)
 	{
 		m_texture->ActiveTexture(count);

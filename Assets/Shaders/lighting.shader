@@ -17,7 +17,7 @@ layout(location = 4) out vec3 Normal;
 uniform mat4 projView;
 uniform mat4 model;
 uniform mat4 shadowSpaceMatrix;
- 
+
 void main()
 {
     ShadowCoord = shadowSpaceMatrix * (model * vec4(vPos, 1.0));
@@ -57,7 +57,7 @@ struct LightProperties
 };
 
 struct MaterialProperties
-{   
+{
     int diffuseMap;
     vec4 Color;
     float Shininess;
@@ -82,7 +82,7 @@ float attenuation;
 
 float ShadowCalculation(vec4 ShadowPos)
 {
-   
+
     vec3 projCoords = ShadowPos.xyz / ShadowPos.w;
     float closestDepth = texture(depthTexture, projCoords.xy).r;
     float currentDepth = projCoords.z;
@@ -120,11 +120,11 @@ void main()
     vec3 Diffuse = vec3(Lights.Color) * NdotL * Lights.Energy * attenuation;
 
     float shadow = ShadowCalculation(ShadowCoord);
-    vec3 Light = Ambient + ((1.0 - shadow) *  Diffuse);
-   // Light = (Ambient) + (Diffuse);
+    vec3 Light = Ambient + ((1.0 - shadow) * Diffuse);
+    // Light = (Ambient) + (Diffuse);
 
-    //vec3 color = min(Light * vec3(texture(diffuseTexture[currentTex], TexCoord)), vec3(1.0));
+     //vec3 color = min(Light * vec3(texture(diffuseTexture[currentTex], TexCoord)), vec3(1.0));
     vec3 color = min(Light, vec3(1.0));
     FragColor = vec4(color, 1);
-   // FragColor = vec4(vec3(texture(diffuseTexture[currentTex], TexCoord)), 1);
+    // FragColor = vec4(vec3(texture(diffuseTexture[currentTex], TexCoord)), 1);
 };

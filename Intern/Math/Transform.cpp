@@ -101,7 +101,6 @@ Transform::Transform(const Transform& p_transform)
 	m_localScale    = (p_transform.m_localScale);
 	m_localMatrix   = (p_transform.m_localMatrix);
 	m_worldMatrix   = (p_transform.m_worldMatrix);
-
 	hasParent = p_transform.hasParent;
 	transformDirty = p_transform.transformDirty;
 }

@@ -124,7 +124,7 @@ uint32_t Texture::AddImage(const std::string& filepath)
 		stbi_set_flip_vertically_on_load(1);
 
 		TEXTURE_PARAM_2D
-		GLCall(glTexImage2D(GL_TEXTURE_2D, 0, m_InternalFormat, m_Width, m_Height, 0, m_DataFormat, GL_UNSIGNED_BYTE, imgData));
+			GLCall(glTexImage2D(GL_TEXTURE_2D, 0, m_InternalFormat, m_Width, m_Height, 0, m_DataFormat, GL_UNSIGNED_BYTE, imgData));
 		GLCall(glGenerateMipmap(GL_TEXTURE_2D));
 		levels += 1;
 	}
@@ -172,30 +172,30 @@ void Texture::AddCubeMapImage(const std::array<std::string, 6>& p_files)
 
 	//stbi_set_flip_vertically_on_load(1);
 	TEXTURE_INIT_CUBE_MAP
-	//stbi_convert_wchar_to_utf8
+		//stbi_convert_wchar_to_utf8
 
-	for (int i = 0; i < 6; i++)
-	{
-		auto& imgFile = p_files[i];
-		const uint8_t* imgData = stbi_load(imgFile.c_str(), &m_Width, &m_Height, &m_Components, 0);
-		
-		if (m_Components == 3)
+		for (int i = 0; i < 6; i++)
+		{
+			auto& imgFile = p_files[i];
+			const uint8_t* imgData = stbi_load(imgFile.c_str(), &m_Width, &m_Height, &m_Components, 0);
+
+			if (m_Components == 3)
 			{
 				m_DataFormat = RGB;
 				m_InternalFormat = RGB8;
 			}
 
-		if (m_Components == 4)
-		{
-			m_DataFormat = RGBA;
-			m_InternalFormat = RGBA8;
+			if (m_Components == 4)
+			{
+				m_DataFormat = RGBA;
+				m_InternalFormat = RGBA8;
+			}
+
+
+
+			int target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + i;
+			GLCall(glTexSubImage2D(target, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, imgData));
 		}
-
-
-
-		int target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + i;
-		GLCall(glTexSubImage2D(target, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, imgData));
-	}
 
 	TEXTURE_PARAM_CUBE_MAP
 }
@@ -212,7 +212,7 @@ Texture::Texture(uint32_t width, uint32_t height)
 	glGenTextures(1, m_ID);
 	ActiveTexture(0);
 	GLCall(glBindTexture(GL_TEXTURE_2D, m_ID[0]));
-	
+
 	TEXTURE_INIT_2D
 }
 
@@ -243,7 +243,7 @@ Texture::Texture(const std::string& filename, uint32_t count)
 	glGenTextures(count, m_ID);
 	Bind();
 	TEXTURE_INIT_2D
-	GLCall(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, imgData));
+		GLCall(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, imgData));
 	GLCall(glGenerateMipmap(GL_TEXTURE_2D));
 }
 
