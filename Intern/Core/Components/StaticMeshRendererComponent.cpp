@@ -1,3 +1,4 @@
+#include <glpch.h>
 #include "StaticMeshRendererComponent.h"
 
 StaticMeshRendererComponent::StaticMeshRendererComponent(std::shared_ptr<Actor> p_actor, std::string p_filePath)

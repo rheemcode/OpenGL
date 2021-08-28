@@ -1,11 +1,13 @@
+#include <glpch.h>
 #include "Renderer.h"
-#include "Renderer/Debug.h"
+#include "Debug.h"
 #include "Renderer.h"
-#include "Renderer/Scene.h"
+#include "Scene.h"
 #include "Components/MeshRendererComponent.h"
 #include "Input/Input.h"
 #include "Thread.h"
 #include "glm/glm.hpp"
+#include "Buffers/FrameBuffer.h"
 
 
 
@@ -15,7 +17,10 @@ void RenderCommand::Init()
 	GLCall(glEnable(GL_DEPTH_TEST));
 	GLCall(glDepthFunc(GL_LESS));
 	GLCall(glEnable(GL_CULL_FACE));
-
+	//glHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);
+	//glHint(GL_POLYGON_SMOOTH_HINT, GL_FASTEST);
+	//glHint(GL_TEXTURE_COMPRESSION_HINT, GL_FASTEST);
+	//glHint(GL_FRAGMENT_SHADER_DERIVATIVE_HINT, GL_FASTEST);
 	//GLCall(glEnable(GL_SCISSOR_TEST));
 	//GLCall(glEnable(GL_BLEND));
 	//GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
@@ -62,6 +67,8 @@ void RenderCommand::RenderLines(const VertexArray& vertexArray)
 	glDrawArrays(GL_LINES, 0, 24);
 	//glDisable(GL_POLYGON_OFFSET_FILL);
 }
+
+
 
 RendererData Renderer::renderData;
 RendererData Renderer::testRenderData;
@@ -139,7 +146,7 @@ void Renderer::RenderSkybox()
 	viewMat[3] = { 0, 0, 0, 1.f };
 	skybox->BeginRender(renderData.proj * viewMat);
 	GLCall(glDisable(GL_CULL_FACE));
-	RenderCommand::DrawIndexed(skybox->GetIndices());
+	RenderCommand::DrawIndexed(skybox->	GetIndices());
 	GLCall(glEnable(GL_CULL_FACE));
 }
 
@@ -154,7 +161,7 @@ void Renderer::BeginScene(const Camera& camera)
 
 void Renderer::BeginShadow()
 {
-	Scene* scene = Scene::GetSingleton();
+	Scene* scene = Scene::GetActiveScene();
 
 	const auto& shadowBox = scene->GetShadowBox();
 	shadowData.UpdateView(scene->GetSkyLightDirection(), shadowBox.GetCenter());
@@ -164,12 +171,11 @@ void Renderer::BeginShadow()
 	offset = Matrix4x4::Scale(offset, { 0.5f, 0.5f, 0.5f });
 	Matrix4x4 bias = Matrix4x4(1.f);
 	bias[3][3] = 1.f;
-	Scene::shadowShader->Bind();
-	Scene::shadowShader->UploadUniformMat4("lightSpaceMatrix", (shadowData.Proj * shadowData.View));
-
-	Scene::sceneShader->Bind();
-	Scene::sceneShader->UploadUniformMat4("projView", renderData.proj * renderData.view);
-	Scene::sceneShader->UploadUniformMat4("shadowSpaceMatrix", bias * (offset * (shadowData.Proj * shadowData.View)));
+	scene->shadowShader->Bind();
+	scene->shadowShader->UploadUniformMat4("lightSpaceMatrix", (shadowData.Proj * shadowData.View));
+	scene->sceneShader->Bind();
+	scene->sceneShader->UploadUniformMat4("projView", renderData.proj * renderData.view);
+	scene->sceneShader->UploadUniformMat4("shadowSpaceMatrix", bias * (offset * (shadowData.Proj * shadowData.View)));
 
 	glUseProgram(0);
 }
@@ -190,38 +196,71 @@ void Renderer::Render(const AABB& p_aabb)
 
 }
 
+void Renderer::RenderShaderTest(const Shader& shader, const float& deltaTime)
+{
+
+}
 static bool shouldCull = false;
 
 
-void Renderer::Render(const std::vector<Mesh>& p_meshes)
+void Renderer::RenderTest(const std::vector<Mesh>& p_meshes)
 {
-	const auto& shader = *Scene::sceneShader;
-	shader.Bind();
+	Scene* scene = Scene::GetActiveScene();
+	const auto& sceneTestShader = scene->testShader;
+	sceneTestShader->Bind();
 
-	//glBindTexture(GL_TEXTURE_2D, 0);
-	Scene* scene = Scene::GetSingleton();
-	glViewport(0, 0, 2048, 2048);
-	scene->BindFBO(FrameBufferName::DEPTH);
-	glClear(GL_DEPTH_BUFFER_BIT);
-	Scene::shadowShader->Bind();
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, 1200, 700);
+
+	SkyBox* skybox = SkyBox::GetSingleton();
+	skybox->BindTexture();
+	sceneTestShader->UploadUniformMat4("proj", renderData.proj);
+	sceneTestShader->UploadUniformMat4("view", renderData.view);
+	sceneTestShader->UploadUniformVec3("camPos", Vector3(renderData.view[3].x, renderData.view[3].y, renderData.view[3].z));
 
 	for (const auto& mesh : p_meshes)
 	{
-
-		const auto& material = mesh.GetMaterial();
 		const auto& attribs = mesh.GetVertexAttribs();
 		attribs.Bind();
-		//glDisableVertexAttribArray(1);
-		//glDisableVertexAttribArray(2);
-		Scene::shadowShader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
-		glCullFace(GL_FRONT);
+
+		sceneTestShader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
+
 		RenderCommand::DrawIndexed(attribs);
+	}
+}
+
+void Renderer::Render(const std::vector<Mesh>& p_meshes)
+{
+	Scene* scene = Scene::GetActiveScene();
+
+	const auto& sceneShader = scene->sceneShader;
+	const auto& sceneShadowShader = scene->shadowShader;
+
+	sceneShader->Bind();
+
+	glViewport(0, 0, 2048, 2048);
+	scene->BindFBO(FrameBufferName::DEPTH);
+	glClear(GL_DEPTH_BUFFER_BIT);
+	sceneShadowShader->Bind();
+
+	for (const auto& mesh : p_meshes)
+	{
+		const auto& attribs = mesh.GetVertexAttribs();
+		attribs.Bind();
+
+		const auto& material = mesh.GetMaterial();
+	
+		scene->shadowShader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
+	
+		glCullFace(GL_FRONT);
+		
+		RenderCommand::DrawIndexed(attribs);
+		
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glCullFace(GL_BACK);
 	}
-	//	glEnableVertexAttribArray(1);
-	//	glEnableVertexAttribArray(2);
-#ifdef DRAW_QUAD
+	
+#ifdef DRAW_DEPTH_MAP
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, 1200, 700);
@@ -232,64 +271,67 @@ void Renderer::Render(const std::vector<Mesh>& p_meshes)
 	scene->BindFBOTex(FrameBufferTexture::SHADOWMAP);
 	glActiveTexture(GL_TEXTURE0);
 	RenderCommand::DrawIndexed(*testRenderData.m_aabbVertexArray);
+
 #else // _DEBUG
 
-	shader.Bind();
+	sceneShader->Bind();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, 1200, 700);
-	//	GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-	shader.UploadUniformInt("depthTexture", 0);
+
+	sceneShader->UploadUniformInt("depthTexture", 0);
 	glActiveTexture(GL_TEXTURE0);
 	scene->BindFBOTex(FrameBufferTexture::SHADOWMAP);
+
 	for (const auto& mesh : p_meshes)
 	{
-
-		const auto& material = mesh.GetMaterial();
 		const auto& attribs = mesh.GetVertexAttribs();
 		attribs.Bind();
 
-		//	GLCall(glBindTexture(GL_TEXTURE_2D, 0));
+		const auto& material = mesh.GetMaterial();
 
+		//	GLCall(glBindTexture(GL_TEXTURE_2D, 0));
 		//	mesh.GetModelInstance()->BindTextures();
 
-		if (mesh.GetMaterial().Diffuse != -1 && mesh.GetMaterial().Diffuse != 0)
+		if (mesh.GetMaterial().Diffuse != -1)
 		{
-			mesh.GetModelInstance()->ActiveTexture(mesh.GetMaterial().Diffuse);
-			mesh.GetModelInstance()->BindTexture(mesh.GetMaterial().Diffuse);
-			shader.UploadUniformInt("currentTex", mesh.GetMaterial().Diffuse);
-			shader.UploadUniformInt("diffuseTexture[" + std::to_string(mesh.GetMaterial().Diffuse - 1) + "]", mesh.GetMaterial().Diffuse);
+			sceneShader->UploadUniformInt("diffuseTexture", Model::TEX_DIFFUSE);
+			mesh.GetModelInstance()->ActiveTexture(mesh.GetMaterial().Diffuse, Model::TEX_DIFFUSE);
+			mesh.GetModelInstance()->BindTexture(mesh.GetMaterial().Diffuse, Model::TEX_DIFFUSE);
+			sceneShader->UploadUniformInt("currentTex", mesh.GetMaterial().Diffuse);
 		}
 
-		shader.UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
+		sceneShader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
 
 		RenderCommand::DrawIndexed(attribs);
 
+#ifdef RENDER_AABB
 
-		//	RenderCommand::DrawIndexed(attribs);
-		//	drawCalls++;
+		RenderCommand::DrawIndexed(attribs);
+		drawCalls++;
 
-		//	Vector3 a;
-		//	Vector3 b;
+		Vector3 a;
+		Vector3 b;
 
-		//	int c = 0;
-		//	int d = 1;
-		//	for (int i = 0; i < 12; i++)
-		//	{
-		//		mesh.GetAABB().GetEdge(i, a, b);
-		//		aabVertices[c] = a;
-		//		aabVertices[d] = b;
-		//		c += 2;
-		//		d += 2;
-		//	}
+		int c = 0;
+		int d = 1;
+		for (int i = 0; i < 12; i++)
+		{
+			mesh.GetAABB().GetEdge(i, a, b);
+			aabVertices[c] = a;
+			aabVertices[d] = b;
+			c += 2;
+			d += 2;
+		}
 
-		//	renderData.shader->Bind();
-		//	renderData.m_aabbVertexArray->Bind();
-		//	renderData.m_aabbVertexBuffer->BufferSubData(aabVertices, 0, sizeof(aabVertices));
-		//	renderData.shader->UploadUniformMat4("projView", renderData.proj * renderData.view);
-		//	renderData.shader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
-		//	RenderCommand::RenderLines(*renderData.m_aabbVertexArray);
-		//	shader.Bind();
-		//}
+		renderData.shader->Bind();
+		renderData.m_aabbVertexArray->Bind();
+		renderData.m_aabbVertexBuffer->BufferSubData(aabVertices, 0, sizeof(aabVertices));
+		renderData.shader->UploadUniformMat4("projView", renderData.proj * renderData.view);
+		renderData.shader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
+		RenderCommand::RenderLines(*renderData.m_aabbVertexArray);
+		shader.Bind();
+	}
+#endif // RENDER_AABB
 
 	}
 	drawCalls = 0;
@@ -298,27 +340,27 @@ void Renderer::Render(const std::vector<Mesh>& p_meshes)
 
 void Renderer::Render(const std::unique_ptr<Primitive>& primitive)
 {
-	const auto& envLight = Scene::GetEnviromentLight();
-	const auto& lights = Scene::GetLight();
-	const auto& material = primitive->GetMaterial();
+	//const auto& envLight = Scene::GetEnviromentLight();
+	//const auto& lights = Scene::GetLight();
+	//const auto& material = primitive->GetMaterial();
 
-	const auto& attribs = primitive->GetVertexAttribs();
-	attribs.Bind();
-	const auto& shader = *Scene::sceneShader;
+	//const auto& attribs = primitive->GetVertexAttribs();
+	//attribs.Bind();
+	//const auto& shader = *Scene::sceneShader;
 
-	int i = 0;
+	//int i = 0;
 
-	shader.UploadUniformVec4("Material.Color", material.Color);
-	shader.UploadUniformFloat("Material.Shininess", material.Shininess);
-	shader.UploadUniformFloat("Material.SpecularHighlights", material.SpecularHighlights);
+	//shader.UploadUniformVec4("Material.Color", material.Color);
+	//shader.UploadUniformFloat("Material.Shininess", material.Shininess);
+	//shader.UploadUniformFloat("Material.SpecularHighlights", material.SpecularHighlights);
 
-	shader.UploadUniformMat4("model", primitive->GetTransform());
-	shader.UploadUniformFloat("AmbientEnergy", envLight.Energy);
-	//material
+	//shader.UploadUniformMat4("model", primitive->GetTransform());
+	//shader.UploadUniformFloat("AmbientEnergy", envLight.Energy);
+	////material
 
-	shader.UploadUniformVec4("ViewPosition", { renderData.view[3].x, renderData.view[3].y, renderData.view[3].z, 1.0f });
+	//shader.UploadUniformVec4("ViewPosition", { renderData.view[3].x, renderData.view[3].y, renderData.view[3].z, 1.0f });
 
-	RenderCommand::DrawIndexed(attribs);
+	//RenderCommand::DrawIndexed(attribs);
 }
 
 void Renderer::SetViewport(int x, int y, int width, int height)
@@ -328,7 +370,7 @@ void Renderer::SetViewport(int x, int y, int width, int height)
 
 void Renderer::EndScene()
 {
-	s_renderMeshes.clear();
+	Display::GetSingleton()->SwapBuffer();
 }
 
 

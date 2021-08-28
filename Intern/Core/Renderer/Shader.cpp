@@ -1,7 +1,6 @@
-#include "Shader.h"	
+#include <glpch.h>
 #include <GL/glew.h>
-#include <iostream>
-#include <sstream>
+#include "Shader.h"	
 #include "Debug.h"
 #include "Math/Vector2.h"
 #include "Core/Console.h"

@@ -1,6 +1,5 @@
+#include <glpch.h>
 #include "Debug.h"
-#include <iostream>
-#include <sstream>
 #include "Core/Console.h"
 
 void GLClearError()

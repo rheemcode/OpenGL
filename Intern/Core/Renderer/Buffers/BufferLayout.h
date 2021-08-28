@@ -1,6 +1,5 @@
 #pragma once
-#include <vector>
-#include "../Debug.h"
+#include "Debug.h"
 
 struct VertexBufferElement
 {

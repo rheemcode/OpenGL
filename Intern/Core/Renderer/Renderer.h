@@ -6,8 +6,6 @@
 #include "Renderer/Buffers/UniformBuffer.h"
 #include <Tests/Sprite.h>
 #include <Tests/Cube.h>
-#include <memory>
-#include <array>
 #include <Tests/Sphere.h>
 
 struct RenderCommand
@@ -123,7 +121,7 @@ public:
 
 	static void Init();
 	static void Clear();
-	static  void ShutDown();
+	static void ShutDown();
 	static void AddMeshes(const class Mesh& p_rendererComponent);
 
 	static void SetClearColor(float r, float g, float b, float a) { RenderCommand::SetClearColor(r, g, b, a); }
@@ -133,11 +131,14 @@ public:
 	static void RenderSkybox();
 	static void RenderShadows();
 	static void Render(const Primitive& primitive);
-	void Render(const AABB& p_aabb);
+	static void Render(const AABB& p_aabb);
+
 	static void Render(const std::vector<Mesh>& p_meshes);
 
 	static void Render(const std::unique_ptr<Primitive>& primitive);
-	void SetViewport(int x, int y, int width, int height);
+	static void RenderShaderTest(const Shader& shader, const float& deltaTime);
+	static void RenderTest(const std::vector<Mesh>& p_meshes);
+	static void SetViewport(int x, int y, int width, int height);
 	static void EndScene();
 
 };

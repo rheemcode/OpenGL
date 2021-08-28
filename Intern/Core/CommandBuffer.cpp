@@ -1,3 +1,4 @@
+#include <glpch.h>
 #include "CommandBuffer.h"
 
 CommandBuffer::SyncSemaphore* CommandBuffer::_AllocSyncSem()

@@ -1,3 +1,4 @@
+#include <glpch.h>
 #include "SkyBox.h"
 #include <array>
 
@@ -67,6 +68,11 @@ void SkyBox::Init()
         "./Assets/Textures/db.png", // left
         "./Assets/Textures/dm.png",  //top
         "./Assets/Textures/dm.png", }); //bottom
+}
+
+void SkyBox::BindTexture()
+{
+    m_texture->BindCubeMap();
 }
 
 void SkyBox::Create()

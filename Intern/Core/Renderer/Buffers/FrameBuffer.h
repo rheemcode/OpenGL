@@ -1,6 +1,5 @@
 #pragma once
-#include <cstdint>
-#include "..\Debug.h"
+#include "Debug.h"
 #include "Window\Window.h"
 
 namespace FrameBufferName
@@ -34,6 +33,7 @@ public:
 
 	void CreateTexture()
 	{
+		
 		glGenTextures(FrameBufferTexture::MAX, textures);
 
 	}
@@ -60,6 +60,20 @@ public:
 		}
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	}
+
+	void AttachRenderBuffer()
+	{
+		uint32_t rbo;
+		glGenRenderbuffers(1, &rbo);
+		glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, Display::GetSingleton()->GetMainWindow()->GetWidth(), Display::GetSingleton()->GetMainWindow()->GetHeight());
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+			Console::Log("Framebuffer Setup Not Complete");
+		glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
 	}
 

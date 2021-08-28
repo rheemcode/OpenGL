@@ -1,4 +1,5 @@
-#include "../Debug.h"
+#include <glpch.h>
+#include "Debug.h"
 #include "IndexBuffer.h"
 
 IndexBuffer::IndexBuffer()

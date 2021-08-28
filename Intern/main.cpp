@@ -1,20 +1,17 @@
 #define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-#include <iostream>
-#include <fstream>
-#include <thread>
 
+#include <glpch.h>
+//#define GL_DEBUG
 #include "Window/Window.h"
 #include "Tests/Torus.h"
 #include "Tests/Cube.h"
 #include "Tests/Sphere.h"
-#include "Renderer/Scene.h"
+#include "Scene.h"
 #include "Core/Console.h"
-#include "Renderer/Debug.h"
+#include "Debug.h"
 #include "Renderer/Renderer.h"
 #include "Timestep.h"
-
-
+#include "GLApplication.h"
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PWSTR pCmdLine, int nCmdShow)
 {
@@ -29,9 +26,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PWSTR pCmdLine,
 	Display* display = Display::GetSingleton();
 	display->UseVysnc(false);
 
-	Scene::Init();
-	Scene* scene = Scene::GetSingleton();
-	scene->BeginScene();
+	//Scene::Init();
+	//Scene* scene = Scene::GetSingleton();
+	//scene->BeginScene();
 	//scene->CreateDefaultActor();
 
 	Time::Create();
@@ -44,16 +41,17 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PWSTR pCmdLine,
 	while (!Display::isCloseRequest)
 	{
 		auto ticks = Time::GetSingleton()->GetTicks();
+		
 		float delta = float(ticks - lastTicks);
 		frame += delta;
 		lastTicks = ticks;
 		frames++;
 
-		scene->Sync();
-		scene->RunLoop(delta / 1000000.f);
+		//scene->Sync();
+		//scene->RunLoop(delta / 1000000.f);
 		if (i == 0)
 		{
-			scene->CreateDefaultActor();
+	//		scene->CreateDefaultActor();
 			i = 1;
 		}
 		display->ProcessEvents();
@@ -66,6 +64,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PWSTR pCmdLine,
 		}
 
 	}
-	scene->Shutdown();
+	//scene->Shutdown();
 	return 0;
 }

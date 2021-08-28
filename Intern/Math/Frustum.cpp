@@ -1,3 +1,4 @@
+#include <glpch.h>
 #include "Frustum.h"
 
 void Frustum::SetFrustum(float p_fov, float p_aspect, float p_zoom, float p_zNear, float p_zFar, const Matrix4x4& p_transform)

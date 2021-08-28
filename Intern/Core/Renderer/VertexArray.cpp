@@ -1,3 +1,4 @@
+#include <glpch.h>
 #include "Debug.h"
 #include "VertexArray.h"
 

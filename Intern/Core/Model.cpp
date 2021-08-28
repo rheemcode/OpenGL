@@ -1,10 +1,8 @@
+#include <glpch.h>
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 #include "Model.h"
 #include "Components/MeshRendererComponent.h"
-
-#include <algorithm>
-#include <unordered_map>
 
 bool ModelLoader::LoadModel(MODEL_FORMAT modelFormat, const std::string& p_filePath, Model* p_model)
 {
@@ -33,7 +31,8 @@ bool ModelLoader::LoadModel(MODEL_FORMAT modelFormat, const std::string& p_fileP
 		auto& shapes = reader.GetShapes();
 		auto& materials = reader.GetMaterials();
 
-		uint32_t textureCount = 0;
+		uint32_t diffuseTextureCount = 0;
+		uint32_t specularTextureCount = 0;
 
 		// TODO: not just diffuse textures;
 		for (int i = 0; i < materials.size(); i++)
@@ -45,27 +44,36 @@ bool ModelLoader::LoadModel(MODEL_FORMAT modelFormat, const std::string& p_fileP
 				if (result != p_model->m_textureNames.end())
 					continue;
 
-				textureCount++;
+				diffuseTextureCount++;
 				p_model->m_textureNames.push_back({ -1, false, materials[i].diffuse_texname });
 			}
 		}
-		p_model->SetTextures(textureCount);
+		p_model->CreateDiffuseTextures(diffuseTextureCount);
+		//p_model->CreateSpecularTextures(textureCount);
 
-		for (int i = 0; i < materials.size(); i++)
+
+		for (int i = 0; i < diffuseTextureCount; i++)
 		{
-			if (materials[i].diffuse_texname != "")
-			{
-				auto result = std::find(std::begin(p_model->m_textureNames), std::end(p_model->m_textureNames), materials[i].diffuse_texname);
-
-				if (result != p_model->m_textureNames.end() && !result->loaded)
-				{
-					auto texptr = p_model->GetTexture().lock();
-					result->id = texptr->AddImage("./Assets/Textures/" + result->name);
-					result->loaded = true;
-				}
-
-			}
+			auto tex = p_model->GetTexture(Model::TEX_DIFFUSE, i).lock();
+			tex->AddImage("./Assets/Textures/" + p_model->m_textureNames[i].name);
+			p_model->m_textureNames[i].loaded = true;
+			p_model->m_textureNames[i].id = i;
 		}
+		//for (int i = 0; i < materials.size(); i++)
+		//{
+		//	if (materials[i].diffuse_texname != "")
+		//	{
+		//		auto result = std::find(std::begin(p_model->m_textureNames), std::end(p_model->m_textureNames), materials[i].diffuse_texname);
+
+		//		if (result != p_model->m_textureNames.end() && !result->loaded)
+		//		{
+		//		//	auto tex = p_model->GetTexture().lock();
+		//			//result->id = tex->AddImage("./Assets/Textures/" + result->name);
+		//			//result->loaded = true;
+		//		}
+
+		//	}
+		//}
 
 
 
@@ -89,7 +97,7 @@ bool ModelLoader::LoadModel(MODEL_FORMAT modelFormat, const std::string& p_fileP
 					VertexAttrib vAttrib;
 
 					vAttrib.vertices = { attribs.vertices[3 * size_t(idx.vertex_index) + 0], attribs.vertices[3 * size_t(idx.vertex_index) + 1], attribs.vertices[3 * size_t(idx.vertex_index) + 2] };
-					vAttrib.vertices *= 5.f;
+				//	vAttrib.vertices *= 5.f;
 					if (f == 0)
 						boundindBox.position = vAttrib.vertices;
 					boundindBox.ExpandTo(vAttrib.vertices);
@@ -211,7 +219,7 @@ bool ModelLoader::LoadAsStaticModel(MODEL_FORMAT modelFormat, const std::string&
 				p_model->m_textureNames.push_back({ -1, false, materials[i].diffuse_texname });
 			}
 		}
-		p_model->SetTextures(textureCount);
+	//	p_model->SetTextures(textureCount);
 
 		for (int i = 0; i < materials.size(); i++)
 		{
@@ -221,9 +229,9 @@ bool ModelLoader::LoadAsStaticModel(MODEL_FORMAT modelFormat, const std::string&
 
 				if (result != p_model->m_textureNames.end() && !result->loaded)
 				{
-					auto texptr = p_model->GetTexture().lock();
-					result->id = texptr->AddImage("./Assets/Textures/" + result->name);
-					result->loaded = true;
+					//auto texptr = p_model->GetTexture().lock();
+					//result->id = texptr->AddImage("./Assets/Textures/" + result->name);
+					//result->loaded = true;
 				}
 
 			}
@@ -352,9 +360,26 @@ void Model::AddMesh(Mesh&& p_mesh)
 }
 
 
-void Model::SetTextures(uint32_t count)
+void Model::CreateDiffuseTextures(uint32_t count)
 {
-	m_texture = std::make_shared<Texture>(count);
+
+	while (count)
+	{
+		auto tex = std::make_shared<Texture>(1);
+		m_diffuseTextures.push_back(tex);
+		--count;
+	}
+}
+
+
+void Model::CreateSpecularTextures(uint32_t count)
+{
+	while (count)
+	{
+		auto tex = std::make_shared<Texture>(1);
+		m_specularTextures.push_back(tex);
+		--count;
+	}
 }
 
 Model::Model()

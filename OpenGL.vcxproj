@@ -40,13 +40,13 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -122,10 +122,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GLEW_STATIC;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Extern;$(SolutionDir)Extern\GLEW\include\;$(SolutionDir)\Intern\Core;$(SolutionDir)\Intern</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Extern;$(SolutionDir)Extern\GLEW\include\;$(SolutionDir)\Intern\Core;$(SolutionDir)\Intern;$(SolutionDir)\Intern\Core\Renderer</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeaderFile>glpch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -143,10 +145,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GLEW_STATIC;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Extern;$(SolutionDir)Extern\GLEW\include\;$(SolutionDir)\Intern\Core;$(SolutionDir)\Intern</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Extern;$(SolutionDir)Extern\GLEW\include\;$(SolutionDir)\Intern\Core;$(SolutionDir)\Intern;$(SolutionDir)\Intern\Core\Renderer</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeaderFile>glpch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -159,6 +163,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Intern\Core\CameraController.cpp" />
+    <ClCompile Include="Intern\Core\GLApplication.cpp" />
     <ClCompile Include="Intern\Core\Renderer\Buffers\FrameBuffer.cpp" />
     <ClCompile Include="Intern\Core\CommandBuffer.cpp" />
     <ClCompile Include="Intern\Core\Components\Component.cpp" />
@@ -168,22 +174,31 @@
     <ClCompile Include="Intern\Core\Mesh.cpp" />
     <ClCompile Include="Intern\Core\Model.cpp" />
     <ClCompile Include="Intern\Core\Renderer\Buffers\UniformBuffer.cpp" />
-    <ClCompile Include="Intern\Core\Renderer\Scene.cpp" />
+    <ClCompile Include="Intern\Core\Scene.cpp" />
     <ClCompile Include="Intern\Core\SceneCameraController.cpp" />
     <ClCompile Include="Intern\Core\Actor.cpp" />
     <ClCompile Include="Intern\Core\Renderer\SkyBox.cpp" />
     <ClCompile Include="Intern\Core\ShadowBox.cpp" />
     <ClCompile Include="Intern\Core\Thread.cpp" />
     <ClCompile Include="Intern\Core\Components\StaticMeshRendererComponent.cpp" />
+    <ClCompile Include="Intern\Core\SceneCamera.cpp" />
+    <ClInclude Include="Intern\Core\CameraController.h" />
+    <ClInclude Include="Intern\Core\GLApplication.h" />
+    <ClInclude Include="Intern\Core\GLMain.h" />
+    <ClInclude Include="Intern\Core\Window\Display.h" />
+    <ClInclude Include="Intern\glpch.h" />
     <ClInclude Include="Intern\Core\Renderer\Buffers\FrameBuffer.h" />
     <ClInclude Include="Intern\Core\CommandBuffer.h" />
     <ClInclude Include="Intern\Core\Actor.h" />
     <ClCompile Include="Intern\Core\Timestep.cpp" />
+    <ClCompile Include="Intern\Core\Window\Display.cpp" />
+    <ClCompile Include="Intern\glpch.cpp" />
     <ClCompile Include="Intern\Math\AABB.cpp" />
     <ClCompile Include="Intern\Math\Frustum.cpp" />
     <ClCompile Include="Intern\Math\Plane.cpp" />
     <ClInclude Include="Intern\Core\ShadowBox.h" />
     <ClInclude Include="Intern\Core\Timestep.h" />
+    <ClInclude Include="Intern\GLib.h" />
     <ClInclude Include="Intern\Math\Transform.h" />
     <ClCompile Include="Intern\Math\Transform.cpp" />
     <ClCompile Include="Intern\Tests\Cube.cpp" />
@@ -191,7 +206,7 @@
     <ClCompile Include="Intern\Tests\Sphere.cpp" />
     <ClCompile Include="Intern\Tests\Sprite.cpp" />
     <ClCompile Include="Intern\Core\Camera.cpp" />
-    <ClCompile Include="Intern\Core\Renderer\Debug.cpp" />
+    <ClCompile Include="Intern\Core\Debug.cpp" />
     <ClCompile Include="Intern\Core\Input\Input.cpp" />
     <ClCompile Include="Intern\Core\Renderer\OpenGLContext.cpp" />
     <ClCompile Include="Intern\Core\Renderer\Texture.cpp" />
@@ -202,7 +217,6 @@
     <ClCompile Include="Intern\Math\SimpleVec.cpp" />
     <ClCompile Include="Intern\Math\Vector2.cpp" />
     <ClCompile Include="Intern\Math\Vector3.cpp" />
-    <ClCompile Include="Extern\glm\detail\glm.cpp" />
     <ClCompile Include="Intern\Core\Renderer\Renderer.cpp" />
     <ClCompile Include="Intern\Core\Renderer\Shader.cpp" />
     <ClCompile Include="Intern\main.cpp" />
@@ -214,6 +228,8 @@
     <ClInclude Include="Intern\Core\Renderer\SkyBox.h" />
     <ClInclude Include="Intern\Core\Thread.h" />
     <ClInclude Include="Intern\Core\Components\StaticMeshRendererComponent.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="Intern\Core\SceneCamera.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Extern\tiny_obj_loader.h" />
@@ -225,7 +241,7 @@
     <ClInclude Include="Intern\Core\Model.h" />
     <ClInclude Include="Intern\Core\Renderer\Buffers\UniformBuffer.h" />
     <ClInclude Include="Intern\Core\Renderer\Material.h" />
-    <ClInclude Include="Intern\Core\Renderer\Scene.h" />
+    <ClInclude Include="Intern\Core\Scene.h" />
     <ClInclude Include="Intern\Core\SceneCameraController.h" />
     <ClInclude Include="Intern\Math\AABB.h" />
     <ClInclude Include="Intern\Math\Frustum.h" />
@@ -234,7 +250,7 @@
     <ClInclude Include="Intern\Tests\Sphere.h" />
     <ClInclude Include="Intern\Tests\Sprite.h" />
     <ClInclude Include="Intern\Core\Camera.h" />
-    <ClInclude Include="Intern\Core\Renderer\Debug.h" />
+    <ClInclude Include="Intern\Core\Debug.h" />
     <ClInclude Include="Intern\Core\Events\ApplicationEvent.h" />
     <ClInclude Include="Intern\Core\Events\Event.h" />
     <ClInclude Include="Intern\Core\Events\KeyEvent.h" />
@@ -252,148 +268,6 @@
     <ClInclude Include="Intern\Math\SimpleVec.h" />
     <ClInclude Include="Intern\Math\Vector2.h" />
     <ClInclude Include="Intern\Math\Vector3.h" />
-    <ClInclude Include="Extern\glm\common.hpp" />
-    <ClInclude Include="Extern\glm\detail\func_common.hpp" />
-    <ClInclude Include="Extern\glm\detail\func_exponential.hpp" />
-    <ClInclude Include="Extern\glm\detail\func_geometric.hpp" />
-    <ClInclude Include="Extern\glm\detail\func_integer.hpp" />
-    <ClInclude Include="Extern\glm\detail\func_matrix.hpp" />
-    <ClInclude Include="Extern\glm\detail\func_noise.hpp" />
-    <ClInclude Include="Extern\glm\detail\func_packing.hpp" />
-    <ClInclude Include="Extern\glm\detail\func_trigonometric.hpp" />
-    <ClInclude Include="Extern\glm\detail\func_vector_relational.hpp" />
-    <ClInclude Include="Extern\glm\detail\intrinsic_common.hpp" />
-    <ClInclude Include="Extern\glm\detail\intrinsic_exponential.hpp" />
-    <ClInclude Include="Extern\glm\detail\intrinsic_geometric.hpp" />
-    <ClInclude Include="Extern\glm\detail\intrinsic_integer.hpp" />
-    <ClInclude Include="Extern\glm\detail\intrinsic_matrix.hpp" />
-    <ClInclude Include="Extern\glm\detail\intrinsic_trigonometric.hpp" />
-    <ClInclude Include="Extern\glm\detail\intrinsic_vector_relational.hpp" />
-    <ClInclude Include="Extern\glm\detail\precision.hpp" />
-    <ClInclude Include="Extern\glm\detail\setup.hpp" />
-    <ClInclude Include="Extern\glm\detail\type_float.hpp" />
-    <ClInclude Include="Extern\glm\detail\type_gentype.hpp" />
-    <ClInclude Include="Extern\glm\detail\type_half.hpp" />
-    <ClInclude Include="Extern\glm\detail\type_int.hpp" />
-    <ClInclude Include="Extern\glm\detail\type_mat.hpp" />
-    <ClInclude Include="Extern\glm\detail\type_mat2x2.hpp" />
-    <ClInclude Include="Extern\glm\detail\type_mat2x3.hpp" />
-    <ClInclude Include="Extern\glm\detail\type_mat2x4.hpp" />
-    <ClInclude Include="Extern\glm\detail\type_mat3x2.hpp" />
-    <ClInclude Include="Extern\glm\detail\type_mat3x3.hpp" />
-    <ClInclude Include="Extern\glm\detail\type_mat3x4.hpp" />
-    <ClInclude Include="Extern\glm\detail\type_mat4x2.hpp" />
-    <ClInclude Include="Extern\glm\detail\type_mat4x3.hpp" />
-    <ClInclude Include="Extern\glm\detail\type_mat4x4.hpp" />
-    <ClInclude Include="Extern\glm\detail\type_vec.hpp" />
-    <ClInclude Include="Extern\glm\detail\type_vec1.hpp" />
-    <ClInclude Include="Extern\glm\detail\type_vec2.hpp" />
-    <ClInclude Include="Extern\glm\detail\type_vec3.hpp" />
-    <ClInclude Include="Extern\glm\detail\type_vec4.hpp" />
-    <ClInclude Include="Extern\glm\detail\_features.hpp" />
-    <ClInclude Include="Extern\glm\detail\_fixes.hpp" />
-    <ClInclude Include="Extern\glm\detail\_noise.hpp" />
-    <ClInclude Include="Extern\glm\detail\_swizzle.hpp" />
-    <ClInclude Include="Extern\glm\detail\_swizzle_func.hpp" />
-    <ClInclude Include="Extern\glm\detail\_vectorize.hpp" />
-    <ClInclude Include="Extern\glm\exponential.hpp" />
-    <ClInclude Include="Extern\glm\ext.hpp" />
-    <ClInclude Include="Extern\glm\fwd.hpp" />
-    <ClInclude Include="Extern\glm\geometric.hpp" />
-    <ClInclude Include="Extern\glm\glm.hpp" />
-    <ClInclude Include="Extern\glm\gtc\bitfield.hpp" />
-    <ClInclude Include="Extern\glm\gtc\constants.hpp" />
-    <ClInclude Include="Extern\glm\gtc\epsilon.hpp" />
-    <ClInclude Include="Extern\glm\gtc\integer.hpp" />
-    <ClInclude Include="Extern\glm\gtc\matrix_access.hpp" />
-    <ClInclude Include="Extern\glm\gtc\matrix_integer.hpp" />
-    <ClInclude Include="Extern\glm\gtc\matrix_inverse.hpp" />
-    <ClInclude Include="Extern\glm\gtc\matrix_transform.hpp" />
-    <ClInclude Include="Extern\glm\gtc\noise.hpp" />
-    <ClInclude Include="Extern\glm\gtc\packing.hpp" />
-    <ClInclude Include="Extern\glm\gtc\quaternion.hpp" />
-    <ClInclude Include="Extern\glm\gtc\random.hpp" />
-    <ClInclude Include="Extern\glm\gtc\reciprocal.hpp" />
-    <ClInclude Include="Extern\glm\gtc\round.hpp" />
-    <ClInclude Include="Extern\glm\gtc\type_precision.hpp" />
-    <ClInclude Include="Extern\glm\gtc\type_ptr.hpp" />
-    <ClInclude Include="Extern\glm\gtc\ulp.hpp" />
-    <ClInclude Include="Extern\glm\gtc\vec1.hpp" />
-    <ClInclude Include="Extern\glm\gtx\associated_min_max.hpp" />
-    <ClInclude Include="Extern\glm\gtx\bit.hpp" />
-    <ClInclude Include="Extern\glm\gtx\closest_point.hpp" />
-    <ClInclude Include="Extern\glm\gtx\color_space.hpp" />
-    <ClInclude Include="Extern\glm\gtx\color_space_YCoCg.hpp" />
-    <ClInclude Include="Extern\glm\gtx\common.hpp" />
-    <ClInclude Include="Extern\glm\gtx\compatibility.hpp" />
-    <ClInclude Include="Extern\glm\gtx\component_wise.hpp" />
-    <ClInclude Include="Extern\glm\gtx\dual_quaternion.hpp" />
-    <ClInclude Include="Extern\glm\gtx\euler_angles.hpp" />
-    <ClInclude Include="Extern\glm\gtx\extend.hpp" />
-    <ClInclude Include="Extern\glm\gtx\extented_min_max.hpp" />
-    <ClInclude Include="Extern\glm\gtx\fast_exponential.hpp" />
-    <ClInclude Include="Extern\glm\gtx\fast_square_root.hpp" />
-    <ClInclude Include="Extern\glm\gtx\fast_trigonometry.hpp" />
-    <ClInclude Include="Extern\glm\gtx\gradient_paint.hpp" />
-    <ClInclude Include="Extern\glm\gtx\handed_coordinate_space.hpp" />
-    <ClInclude Include="Extern\glm\gtx\integer.hpp" />
-    <ClInclude Include="Extern\glm\gtx\intersect.hpp" />
-    <ClInclude Include="Extern\glm\gtx\io.hpp" />
-    <ClInclude Include="Extern\glm\gtx\log_base.hpp" />
-    <ClInclude Include="Extern\glm\gtx\matrix_cross_product.hpp" />
-    <ClInclude Include="Extern\glm\gtx\matrix_decompose.hpp" />
-    <ClInclude Include="Extern\glm\gtx\matrix_interpolation.hpp" />
-    <ClInclude Include="Extern\glm\gtx\matrix_major_storage.hpp" />
-    <ClInclude Include="Extern\glm\gtx\matrix_operation.hpp" />
-    <ClInclude Include="Extern\glm\gtx\matrix_query.hpp" />
-    <ClInclude Include="Extern\glm\gtx\matrix_transform_2d.hpp" />
-    <ClInclude Include="Extern\glm\gtx\mixed_product.hpp" />
-    <ClInclude Include="Extern\glm\gtx\multiple.hpp" />
-    <ClInclude Include="Extern\glm\gtx\norm.hpp" />
-    <ClInclude Include="Extern\glm\gtx\normal.hpp" />
-    <ClInclude Include="Extern\glm\gtx\normalize_dot.hpp" />
-    <ClInclude Include="Extern\glm\gtx\number_precision.hpp" />
-    <ClInclude Include="Extern\glm\gtx\optimum_pow.hpp" />
-    <ClInclude Include="Extern\glm\gtx\orthonormalize.hpp" />
-    <ClInclude Include="Extern\glm\gtx\perpendicular.hpp" />
-    <ClInclude Include="Extern\glm\gtx\polar_coordinates.hpp" />
-    <ClInclude Include="Extern\glm\gtx\projection.hpp" />
-    <ClInclude Include="Extern\glm\gtx\quaternion.hpp" />
-    <ClInclude Include="Extern\glm\gtx\range.hpp" />
-    <ClInclude Include="Extern\glm\gtx\raw_data.hpp" />
-    <ClInclude Include="Extern\glm\gtx\rotate_normalized_axis.hpp" />
-    <ClInclude Include="Extern\glm\gtx\rotate_vector.hpp" />
-    <ClInclude Include="Extern\glm\gtx\scalar_multiplication.hpp" />
-    <ClInclude Include="Extern\glm\gtx\scalar_relational.hpp" />
-    <ClInclude Include="Extern\glm\gtx\simd_mat4.hpp" />
-    <ClInclude Include="Extern\glm\gtx\simd_quat.hpp" />
-    <ClInclude Include="Extern\glm\gtx\simd_vec4.hpp" />
-    <ClInclude Include="Extern\glm\gtx\spline.hpp" />
-    <ClInclude Include="Extern\glm\gtx\std_based_type.hpp" />
-    <ClInclude Include="Extern\glm\gtx\string_cast.hpp" />
-    <ClInclude Include="Extern\glm\gtx\transform.hpp" />
-    <ClInclude Include="Extern\glm\gtx\transform2.hpp" />
-    <ClInclude Include="Extern\glm\gtx\type_aligned.hpp" />
-    <ClInclude Include="Extern\glm\gtx\vector_angle.hpp" />
-    <ClInclude Include="Extern\glm\gtx\vector_query.hpp" />
-    <ClInclude Include="Extern\glm\gtx\wrap.hpp" />
-    <ClInclude Include="Extern\glm\integer.hpp" />
-    <ClInclude Include="Extern\glm\mat2x2.hpp" />
-    <ClInclude Include="Extern\glm\mat2x3.hpp" />
-    <ClInclude Include="Extern\glm\mat2x4.hpp" />
-    <ClInclude Include="Extern\glm\mat3x2.hpp" />
-    <ClInclude Include="Extern\glm\mat3x3.hpp" />
-    <ClInclude Include="Extern\glm\mat3x4.hpp" />
-    <ClInclude Include="Extern\glm\mat4x2.hpp" />
-    <ClInclude Include="Extern\glm\mat4x3.hpp" />
-    <ClInclude Include="Extern\glm\mat4x4.hpp" />
-    <ClInclude Include="Extern\glm\matrix.hpp" />
-    <ClInclude Include="Extern\glm\packing.hpp" />
-    <ClInclude Include="Extern\glm\trigonometric.hpp" />
-    <ClInclude Include="Extern\glm\vec2.hpp" />
-    <ClInclude Include="Extern\glm\vec3.hpp" />
-    <ClInclude Include="Extern\glm\vec4.hpp" />
-    <ClInclude Include="Extern\glm\vector_relational.hpp" />
     <ClInclude Include="Intern\Core\Renderer\Buffers\IndexBuffer.h" />
     <ClInclude Include="Intern\Core\Renderer\Renderer.h" />
     <ClInclude Include="Intern\Core\Renderer\Shader.h" />
@@ -406,124 +280,18 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Shaders\depth.glsl" />
-    <None Include="Extern\glm\detail\func_common.inl" />
-    <None Include="Extern\glm\detail\func_exponential.inl" />
-    <None Include="Extern\glm\detail\func_geometric.inl" />
-    <None Include="Extern\glm\detail\func_integer.inl" />
-    <None Include="Extern\glm\detail\func_matrix.inl" />
-    <None Include="Extern\glm\detail\func_noise.inl" />
-    <None Include="Extern\glm\detail\func_packing.inl" />
-    <None Include="Extern\glm\detail\func_trigonometric.inl" />
-    <None Include="Extern\glm\detail\func_vector_relational.inl" />
-    <None Include="Extern\glm\detail\intrinsic_common.inl" />
-    <None Include="Extern\glm\detail\intrinsic_exponential.inl" />
-    <None Include="Extern\glm\detail\intrinsic_geometric.inl" />
-    <None Include="Extern\glm\detail\intrinsic_integer.inl" />
-    <None Include="Extern\glm\detail\intrinsic_matrix.inl" />
-    <None Include="Extern\glm\detail\intrinsic_trigonometric.inl" />
-    <None Include="Extern\glm\detail\intrinsic_vector_relational.inl" />
-    <None Include="Extern\glm\detail\type_gentype.inl" />
-    <None Include="Extern\glm\detail\type_half.inl" />
-    <None Include="Extern\glm\detail\type_mat.inl" />
-    <None Include="Extern\glm\detail\type_mat2x2.inl" />
-    <None Include="Extern\glm\detail\type_mat2x3.inl" />
-    <None Include="Extern\glm\detail\type_mat2x4.inl" />
-    <None Include="Extern\glm\detail\type_mat3x2.inl" />
-    <None Include="Extern\glm\detail\type_mat3x3.inl" />
-    <None Include="Extern\glm\detail\type_mat3x4.inl" />
-    <None Include="Extern\glm\detail\type_mat4x2.inl" />
-    <None Include="Extern\glm\detail\type_mat4x3.inl" />
-    <None Include="Extern\glm\detail\type_mat4x4.inl" />
-    <None Include="Extern\glm\detail\type_vec.inl" />
-    <None Include="Extern\glm\detail\type_vec1.inl" />
-    <None Include="Extern\glm\detail\type_vec2.inl" />
-    <None Include="Extern\glm\detail\type_vec3.inl" />
-    <None Include="Extern\glm\detail\type_vec4.inl" />
-    <None Include="Extern\glm\detail\type_vec4_avx.inl" />
-    <None Include="Extern\glm\detail\type_vec4_avx2.inl" />
-    <None Include="Extern\glm\detail\type_vec4_sse2.inl" />
-    <None Include="Extern\glm\gtc\bitfield.inl" />
-    <None Include="Extern\glm\gtc\constants.inl" />
-    <None Include="Extern\glm\gtc\epsilon.inl" />
-    <None Include="Extern\glm\gtc\integer.inl" />
-    <None Include="Extern\glm\gtc\matrix_access.inl" />
-    <None Include="Extern\glm\gtc\matrix_inverse.inl" />
-    <None Include="Extern\glm\gtc\matrix_transform.inl" />
-    <None Include="Extern\glm\gtc\noise.inl" />
-    <None Include="Extern\glm\gtc\packing.inl" />
-    <None Include="Extern\glm\gtc\quaternion.inl" />
-    <None Include="Extern\glm\gtc\random.inl" />
-    <None Include="Extern\glm\gtc\reciprocal.inl" />
-    <None Include="Extern\glm\gtc\round.inl" />
-    <None Include="Extern\glm\gtc\type_precision.inl" />
-    <None Include="Extern\glm\gtc\type_ptr.inl" />
-    <None Include="Extern\glm\gtc\ulp.inl" />
-    <None Include="Extern\glm\gtc\vec1.inl" />
-    <None Include="Extern\glm\gtx\associated_min_max.inl" />
-    <None Include="Extern\glm\gtx\bit.inl" />
-    <None Include="Extern\glm\gtx\closest_point.inl" />
-    <None Include="Extern\glm\gtx\color_space.inl" />
-    <None Include="Extern\glm\gtx\color_space_YCoCg.inl" />
-    <None Include="Extern\glm\gtx\common.inl" />
-    <None Include="Extern\glm\gtx\compatibility.inl" />
-    <None Include="Extern\glm\gtx\component_wise.inl" />
-    <None Include="Extern\glm\gtx\dual_quaternion.inl" />
-    <None Include="Extern\glm\gtx\euler_angles.inl" />
-    <None Include="Extern\glm\gtx\extend.inl" />
-    <None Include="Extern\glm\gtx\extented_min_max.inl" />
-    <None Include="Extern\glm\gtx\fast_exponential.inl" />
-    <None Include="Extern\glm\gtx\fast_square_root.inl" />
-    <None Include="Extern\glm\gtx\fast_trigonometry.inl" />
-    <None Include="Extern\glm\gtx\gradient_paint.inl" />
-    <None Include="Extern\glm\gtx\handed_coordinate_space.inl" />
-    <None Include="Extern\glm\gtx\integer.inl" />
-    <None Include="Extern\glm\gtx\intersect.inl" />
-    <None Include="Extern\glm\gtx\io.inl" />
-    <None Include="Extern\glm\gtx\log_base.inl" />
-    <None Include="Extern\glm\gtx\matrix_cross_product.inl" />
-    <None Include="Extern\glm\gtx\matrix_decompose.inl" />
-    <None Include="Extern\glm\gtx\matrix_interpolation.inl" />
-    <None Include="Extern\glm\gtx\matrix_major_storage.inl" />
-    <None Include="Extern\glm\gtx\matrix_operation.inl" />
-    <None Include="Extern\glm\gtx\matrix_query.inl" />
-    <None Include="Extern\glm\gtx\matrix_transform_2d.inl" />
-    <None Include="Extern\glm\gtx\mixed_product.inl" />
-    <None Include="Extern\glm\gtx\multiple.inl" />
-    <None Include="Extern\glm\gtx\norm.inl" />
-    <None Include="Extern\glm\gtx\normal.inl" />
-    <None Include="Extern\glm\gtx\normalize_dot.inl" />
-    <None Include="Extern\glm\gtx\number_precision.inl" />
-    <None Include="Extern\glm\gtx\optimum_pow.inl" />
-    <None Include="Extern\glm\gtx\orthonormalize.inl" />
-    <None Include="Extern\glm\gtx\perpendicular.inl" />
-    <None Include="Extern\glm\gtx\polar_coordinates.inl" />
-    <None Include="Extern\glm\gtx\projection.inl" />
-    <None Include="Extern\glm\gtx\quaternion.inl" />
-    <None Include="Extern\glm\gtx\raw_data.inl" />
-    <None Include="Extern\glm\gtx\rotate_normalized_axis.inl" />
-    <None Include="Extern\glm\gtx\rotate_vector.inl" />
-    <None Include="Extern\glm\gtx\scalar_relational.inl" />
-    <None Include="Extern\glm\gtx\simd_mat4.inl" />
-    <None Include="Extern\glm\gtx\simd_quat.inl" />
-    <None Include="Extern\glm\gtx\simd_vec4.inl" />
-    <None Include="Extern\glm\gtx\spline.inl" />
-    <None Include="Extern\glm\gtx\std_based_type.inl" />
-    <None Include="Extern\glm\gtx\string_cast.inl" />
-    <None Include="Extern\glm\gtx\transform.inl" />
-    <None Include="Extern\glm\gtx\transform2.inl" />
-    <None Include="Extern\glm\gtx\type_aligned.inl" />
-    <None Include="Extern\glm\gtx\vector_angle.inl" />
-    <None Include="Extern\glm\gtx\vector_query.inl" />
-    <None Include="Extern\glm\gtx\wrap.inl" />
+    <None Include="Assets\Shaders\envmap.glsl" />
+    <None Include="Assets\Shaders\helloWorldTest.glsl" />
+    <None Include="Assets\Shaders\selfieGirl.glsl" />
     <None Include="Assets\Shaders\default.glsl" />
     <None Include="Assets\Shaders\default.shader" />
     <None Include="Assets\Shaders\lighting.shader" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="Extern\glm\CMakeLists.txt" />
+    <Image Include="Intern\creepycreep.png" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="Intern\creepycreep.png" />
+    <ResourceCompile Include="OpenGL.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

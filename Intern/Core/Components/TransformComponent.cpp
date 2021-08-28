@@ -1,3 +1,4 @@
+#include <glpch.h>
 #include "TransformComponent.h"
 
 TransformComponent::TransformComponent(std::shared_ptr<Actor> p_actor)

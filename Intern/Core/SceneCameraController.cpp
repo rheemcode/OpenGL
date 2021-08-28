@@ -1,3 +1,4 @@
+#include <glpch.h>
 #include "SceneCameraController.h"
 #include "Events/Event.h"
 #include "Events/MouseEvent.h"
@@ -12,11 +13,17 @@ void SceneCameraController::OnEvent(const Event& event)
 	if (event.GetEventType() == EventType::MouseMoved)
 	{
 		auto& mm = (MouseMovedEvent&)event;
-		HandleMouseInput(*transform, mm.GetX(), mm.GetY());
+		HandleMouseInput(mm.GetX(), mm.GetY());
 	}
 }
 
-void SceneCameraController::HandleMouseInput(Transform& p_transform, float xPos, float yPos)
+void SceneCameraController::OnUpdate(float p_delta)
+{
+	HandleKeyboardInput(p_delta);
+	Update(p_delta);
+}
+
+void SceneCameraController::HandleMouseInput(float xPos, float yPos)
 {
 	inFreelook = true;
 	if (Input::GetMouseDown(Mouse::RIGHT))
@@ -24,7 +31,7 @@ void SceneCameraController::HandleMouseInput(Transform& p_transform, float xPos,
 		m_rotationVelocity.x = Input::GetAxisRaw(Input::AXIS_X) * m_mouseSensitivity * m_rotationSpeed;
 		m_rotationVelocity.y = Input::GetAxisRaw(Input::AXIS_Y) * m_mouseSensitivity * m_rotationSpeed;
 
-		Vector3 eulerAngles = Quaternion::EulerAngles(p_transform.GetLocalRotation());
+		Vector3 eulerAngles = Quaternion::EulerAngles(cameraTransform->GetLocalRotation());
 
 		if (eulerAngles.z >= 179.0f || eulerAngles.z <= -179.0f)
 		{
@@ -53,7 +60,7 @@ void SceneCameraController::HandleMouseInput(Transform& p_transform, float xPos,
 
 }
 
-void SceneCameraController::Update(Transform& p_transform, float p_delta)
+void SceneCameraController::Update(float p_delta)
 {
 	Controller oldController = controller;
 	controller = currentController;
@@ -81,7 +88,7 @@ void SceneCameraController::Update(Transform& p_transform, float p_delta)
 		if (Math::Abs(controller.yRot - currentController.yRot) < 0.1f)
 			controller.yRot = currentController.yRot;
 
-		Vector3 forward = p_transform.GetWorldForward();
+		Vector3 forward = cameraTransform->GetWorldForward();
 		controller.position = controller.position + forward * controller.distance;
 
 	}
@@ -125,30 +132,30 @@ void SceneCameraController::Update(Transform& p_transform, float p_delta)
 	//	ss << "Current Controller: X " << currentController.xRot << " " << "Y: " << currentController.yRot << "\n";
 	//	ss << "Old Controller: X " << oldController.xRot << " " << "Y: " << oldController.yRot << "\n";
 	////	Console::Log(ss.str());
-		p_transform.SetLocalRotation(Quaternion::FromEulerAngles({ controller.xRot, controller.yRot, 0.f }));
-		p_transform.SetLocalPosition(controller.position);
+		cameraTransform->SetLocalRotation(Quaternion::FromEulerAngles({ controller.xRot, controller.yRot, 0.f }));
+		cameraTransform->SetLocalPosition(controller.position);
 	}
 }
 
-void SceneCameraController::HandleKeyboardInput(Transform& p_transform, float p_delta)
+void SceneCameraController::HandleKeyboardInput(float p_delta)
 {
 	if (Input::GetMouseDown(Mouse::RIGHT))
 	{
 		m_velocity = Vector3();
 		if (Input::IsKeyPressed(Key::W))
-			m_velocity += p_transform.GetWorldForward();
+			m_velocity += cameraTransform->GetWorldForward();
 		if (Input::IsKeyPressed(Key::S))
-			m_velocity -= p_transform.GetWorldForward();
+			m_velocity -= cameraTransform->GetWorldForward();
 		if (Input::IsKeyPressed(Key::D))
-			m_velocity += p_transform.GetWorldRight();
+			m_velocity += cameraTransform->GetWorldRight();
 		if (Input::IsKeyPressed(Key::A))
-			m_velocity -= p_transform.GetWorldRight();
+			m_velocity -= cameraTransform->GetWorldRight();
 		if (Input::IsKeyPressed(Key::Q))
-			m_velocity += p_transform.GetWorldUp();
+			m_velocity += cameraTransform->GetWorldUp();
 		if (Input::IsKeyPressed(Key::E))
-			m_velocity -= p_transform.GetWorldUp();
+			m_velocity -= cameraTransform->GetWorldUp();
 
-		Vector3 position = p_transform.GetLocalPosition();
+		Vector3 position = cameraTransform->GetLocalPosition();
 		m_velocity = Vector3::Normalize(m_velocity) * (m_speed * 5);
 		Vector3 displacement = position + m_velocity;
 		currentController.position = displacement;

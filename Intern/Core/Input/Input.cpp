@@ -1,7 +1,8 @@
+#include <glpch.h>
 #include "Input.h"
 #include <Windows.h>
-#include "..\Window\Window.h"
-#include <cstdint>
+#include "Window/Window.h"
+
 
 Input* Input::s_Instance;
 Input* Input::GetSingleton() { return s_Instance; }

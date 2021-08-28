@@ -1,7 +1,5 @@
+#include <glpch.h>
 #include "Timestep.h"
-
-#include <malloc.h>
-
 
 ::Time* Time::s_Instance = nullptr;
 
@@ -40,11 +38,9 @@ uint64_t Time::GetTicks()
 	return time;
 }
 
-float Time::GetTicks2()
+float Time::GetElapsedTime()
 {
 	uint64_t ticks;
-
-
 	QueryPerformanceCounter((LARGE_INTEGER*)&ticks);
 	float val = (float) (ticks - ticksStart) / frequency;
 	return val;

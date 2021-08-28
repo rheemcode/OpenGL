@@ -70,7 +70,9 @@ layout(std140) uniform LightsUniform
     LightProperties Lights;
 };
 uniform sampler2D depthTexture;
-uniform sampler2D diffuseTexture[3];
+uniform sampler2D diffuseTexture;
+uniform sampler2D specularTexture;
+
 
 uniform MaterialProperties Material;
 
@@ -97,6 +99,10 @@ float ShadowCalculation(vec4 ShadowPos)
 
 void main()
 {
+    vec4 texCol = texture(diffuseTexture, TexCoord);
+    //if (texCol.a == 0)
+   //     discard;
+
     float attenuation;
     if (Lights.LightType == 1)
     {
@@ -123,8 +129,9 @@ void main()
     vec3 Light = Ambient + ((1.0 - shadow) * Diffuse);
     // Light = (Ambient) + (Diffuse);
 
-     //vec3 color = min(Light * vec3(texture(diffuseTexture[currentTex], TexCoord)), vec3(1.0));
-    vec3 color = min(Light, vec3(1.0));
-    FragColor = vec4(color, 1);
-    // FragColor = vec4(vec3(texture(diffuseTexture[currentTex], TexCoord)), 1);
+    vec3 color = min(Light * vec3(texCol), vec3(1.0));
+    //vec3 color = min(Light, vec3(1.0));
+    FragColor = vec4(color, texCol.a);
+
+//    FragColor = vec4(vec3(texCol), 1);
 };

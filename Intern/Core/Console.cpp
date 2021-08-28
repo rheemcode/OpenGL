@@ -1,6 +1,5 @@
+#include <glpch.h>
 #include "Console.h"
-#include <sstream>
-
 
 #define SET_CONSOLE_ATTRIB_DEBUG\
 	CONSOLE_SCREEN_BUFFER_INFO coninfo; \

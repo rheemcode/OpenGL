@@ -45,7 +45,7 @@ class ShadowBox
 		Vector3 nearTop = centerNear + (UP * nearHeight);
 		Vector3 nearBottom = centerNear + (-UP * nearHeight);
 
-		Vector4 points[8];
+		static Vector4 points[8];
 
 		points[0] = CalculateLightSpaceFrustumCorner(farTop, RIGHT, farWidth);
 		points[1] = CalculateLightSpaceFrustumCorner(farTop, -RIGHT, farWidth);

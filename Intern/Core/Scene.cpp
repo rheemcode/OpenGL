@@ -1,6 +1,8 @@
-#include <functional> 
+#include <glpch.h> 
 #include "Scene.h"
 #include "Actor.h"
+#include "Renderer/Renderer.h"
+#include "Buffers/FrameBuffer.h"
 #include "Window/Window.h"
 #include "Events/MouseEvent.h"
 #include "Components/TransformComponent.h"
@@ -9,19 +11,8 @@
 #include "Timestep.h"
 
 
-Scene* Scene::s_instance = nullptr;
-
-Scene::EnviromentLight Scene::m_EnviromentLight;
-
-std::unique_ptr<Shader> Scene::sceneShader;
-std::unique_ptr<Shader> Scene::shadowShader;
-
-std::array<std::unique_ptr<Light>, 10> Scene::m_lights;
-uint32_t Scene::lightCount;
-
-uint64_t Scene::lastTicks = 0;
-uint32_t Scene::frames = 0;
-uint32_t Scene::frame = 0;
+Scene* Scene::s_activeScene = nullptr;
+std::shared_ptr<Camera> Scene::sceneCamera;
 
 const Scene::EnviromentLight& Scene::GetEnviromentLight()
 {
@@ -33,15 +24,12 @@ const std::array<std::unique_ptr<Light>, 10>& Scene::GetLight()
 	return m_lights;
 }
 
-int Scene::GetLightCount()
-{
-	return 1;
-}
-
 using namespace std::literals::chrono_literals;
 
-void Scene::_Render()
+void Scene::Render()
 {
+	Renderer::Clear();
+	Renderer::BeginScene(GetSceneCamera());
 	culledMeshes.clear();
 	for (auto& actor : m_actors)
 	{
@@ -60,107 +48,39 @@ void Scene::_Render()
 		}
 	}
 	m_shadowBox.UpdateBounds();
-	Renderer::BeginScene(GetSceneCamera());
+#ifdef RENDER_TEST
+    //Renderer::RenderTest(culledMeshes);
+	//test->RenderTest(p_delta, 0);
+#endif
 	Renderer::Render(culledMeshes);
-}
-
-void Scene::ThreadRunLoop(float p_delta)
-{
-	//Renderer::SetClearColor(.4f, .4f, .4f, 1);
-	Renderer::Clear();
-	drawPending += 2;
-	ThreadUpdate(p_delta);
-	ThreadRender();
 	Renderer::EndScene();
-	Display::GetSingleton()->SwapBuffer();
 }
 
-void Scene::RunLoop(float p_delta)
-{
-	commandQueue.Push(this, &Scene::ThreadRunLoop, p_delta);
-}
 
-std::vector<Mesh>& Scene::GetCulledMeshes()
+const std::vector<Mesh>& Scene::GetCulledMeshes()
 {
 	return culledMeshes;
 }
 
-void Scene::_Update(float p_delta)
+void Scene::OnUpdate(float p_delta)
 {
 	sceneCamera->OnUpdate(p_delta);
-}
-
-void Scene::ThreadLoop()
-{
-	threadID = Thread::GetCallerID();
-
-	while (running)
+	for (auto& actor : m_actors)
 	{
-		commandQueue.WaitAndFlushOne();
+		actor->UpdateComponents(p_delta);
+		actor->OnUpdate(p_delta);
 	}
-
-	commandQueue.FlushAll();
 }
 
-void Scene::ThreadExit()
-{
-	running = false;
-	Renderer::ShutDown();
-}
-
-void Scene::ThreadFlush()
-{
-	drawPending-=2;
-}
-
-void Scene::Sync()
-{
-	drawPending++;
-	commandQueue.PushAndSync(this, &Scene::ThreadFlush);
-}
-
-void Scene::Render()
-{
-	//_Render();
-	//
-	drawPending++;
-	commandQueue.Push(this, &Scene::ThreadRender);
-}
-
-void Scene::ThreadRender()
-{
-	if (drawPending)
-		_Render();
-}
-
-void Scene::ThreadUpdate(float p_delta)
-{
-	if (drawPending)
-		_Update(p_delta);
-}
 
 void Scene::ThreadCallback(void* p_instance)
 {
 	Scene* scene = reinterpret_cast<Scene*>(p_instance);
 
-	scene->ThreadLoop();
+//	scene->ThreadLoop();
 }
 
 static float last = 0;
-
-void Scene::OnUpdate(float p_delta)
-{	
-	_Update(p_delta);
-
-	//drawPending++;
-	//commandQueue.Push(this, &Scene::ThreadUpdate, p_delta);
-	
-}
-
-void Scene::AddObject(std::unique_ptr<Primitive>& primitive)
-{
-	m_Primitives.push_back(std::move(primitive));
-}
 
 void Scene::AddActor(std::shared_ptr<Actor>& p_actor)
 {
@@ -172,25 +92,11 @@ void Scene::OnEvent(const Event& event)
 {
 	sceneCamera->OnEvent(event);
 
-	if (event.GetEventType() == EventType::KeyEvent)
-	{
-		std::stringstream ss;
-		const auto& ke = (KeyEvent&)event;
-	}
-
-
 }
 
-void Scene::Shutdown()
+Scene* Scene::GetActiveScene()
 {
-	commandQueue.Push(this, &Scene::ThreadFlush);
-	commandQueue.Push(this, &Scene::ThreadExit);
-	thread.WaitToFinish();
-}
-
-Scene* Scene::GetSingleton()
-{
-	return s_instance;
+	return s_activeScene;
 }
 
 struct LightData
@@ -203,6 +109,16 @@ struct LightData
 	float AmbientEnergy;
 	float Energy;
 };
+
+void Scene::BindFBO(FrameBufferName::Type name)
+{
+	m_shadowBuffer->Bind(name); 
+}
+
+void Scene::BindFBOTex(FrameBufferTexture::Type name) 
+{
+	m_shadowBuffer->BindTexture(name); 
+}
 
 void Scene::InitLightUniforms()
 {
@@ -247,35 +163,20 @@ void Scene::InitLightUniforms()
 	free(buffer);
 }
 
-void Scene::Init()
-{
-	if (!s_instance)
-	{
-		s_instance = new Scene();
-	}
-}
-
-
-
 void Scene::CreateActor()
 {
 
 }
 
-void Scene::ThreadCreateDefaultActor()
+void Scene::CreateDefaultActor()
 {
 	std::shared_ptr<Actor> actor = std::make_shared<Actor>();
 	std::shared_ptr<TransformComponent> tComponent = std::make_shared<TransformComponent>(actor);
-	std::shared_ptr<MeshRendererComponent> renderComponent = std::make_shared<MeshRendererComponent>(actor, "./Assets/test2.obj");
+	std::shared_ptr<MeshRendererComponent> renderComponent = std::make_shared<MeshRendererComponent>(actor, "./Assets/house.obj");
 	actor->AddComponent(tComponent);
 	actor->AddComponent(renderComponent);
 
 	AddActor(actor);
-}
-
-void Scene::CreateDefaultActor()
-{
-	commandQueue.Push(this, &Scene::ThreadCreateDefaultActor);
 }
 
 void Scene::InitSceneCamera()
@@ -289,9 +190,6 @@ void Scene::InitSceneCamera()
 	cameraSettings.winWidth = display->GetMainWindow()->GetWidth();
 	cameraSettings.winHeight = display->GetMainWindow()->GetHeight();
 	cameraSettings.ratio = cameraSettings.winWidth / cameraSettings.winHeight;
-
-
-	sceneCamera = std::make_unique<SceneCamera>(cameraSettings);
 	m_shadowBox = ShadowBox(Matrix4x4(), sceneCamera->GetTransform(), cameraSettings);
 }
 
@@ -316,36 +214,55 @@ void Scene::CreateSkyLight()
 	InitLightUniforms();
 }
 
-void Scene::ThreadBeginScene()
+
+void Scene::CreateBuffers()
 {
-	Display* display = Display::GetSingleton();
-	display->GetMainWindow()->Init();
-	display->GetMainWindow()->BindEventCallback(std::bind(&Scene::OnEvent, this, std::placeholders::_1));
-	display->GetMainWindow()->ReleaseCurrent();
-	display->GetMainWindow()->MakeCurrent();
-
-	Renderer::Init();
-	/*Renderer2D renderer2D;
-	renderer2D.Init();*/
-
-	InitSceneCamera();
-
-	sceneShader = std::make_unique<Shader>("Assets/Shaders/lighting.shader");
-	shadowShader = std::make_unique<Shader>("Assets/Shaders/depth.glsl");
 
 	m_shadowBuffer = std::make_unique<FrameBuffer>();
 	m_shadowBuffer->CreateTexture();
 	m_shadowBuffer->AttachDepthTexture();
+}
 
+
+void Scene::InitRenderer()
+{
+
+	Renderer::Init();
+	/*Renderer2D renderer2D;
+	renderer2D.Init();*/
+}
+
+void Scene::InitSceneShaders()
+{
+	sceneShader = std::make_unique<Shader>("Assets/Shaders/lighting.shader");
+	shadowShader = std::make_unique<Shader>("Assets/Shaders/depth.glsl");
+	testShader = std::make_unique<Shader>("Assets/Shaders/envmap.glsl");
+}
+
+void Scene::InitDisplay()
+{
+
+}
+
+void Scene::InitScene()
+{
+	InitDisplay();
+	InitRenderer();
+	InitSceneCamera();
+	InitSceneShaders();
+	CreateBuffers();
 	CreateSkyLight();
-
+	CreateTests();
 	SkyBox::Create();
 }
 
-void Scene::BeginScene()
+void Scene::CreateTests()
 {
-	commandQueue.Push(this, &Scene::ThreadBeginScene);
+	/*test = new ShaderTest();
+	test->InitTest();
+	test->CreateShader("./Assets/Shaders/helloWorldTest.glsl", 0);*/
 }
+
 
 Scene::Scene()
 	: commandQueue(true)

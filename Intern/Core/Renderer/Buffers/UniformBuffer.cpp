@@ -1,6 +1,7 @@
+#include <glpch.h>
 #include "UniformBuffer.h"
 #include "UniformBuffer.h"
-#include "../Debug.h"
+#include "Debug.h"
 
 
 UniformBuffer::UniformBuffer(uint32_t size, const void* data, uint32_t binding)

@@ -1,7 +1,6 @@
 #pragma once
 #include "Math/SimpleVec.h"
 #include "Renderer/Texture.h"
-#include <memory>
 
 struct Material
 {
@@ -19,6 +18,7 @@ struct Material
 
 	Material()
 		:Shininess(0), SpecularHighlights(0), SSAO(false){};
+
 	Material(const Material& p_mat)
 	{
 		Color = p_mat.Color;
@@ -29,4 +29,9 @@ struct Material
 		SSAO = p_mat.SSAO;
 
 	}
+};
+
+class ShaderMatrial
+{
+
 };

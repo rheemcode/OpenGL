@@ -1,3 +1,4 @@
+#include <glpch.h>
 #include "Mesh.h"
 #include "Components/MeshRendererComponent.h"
 

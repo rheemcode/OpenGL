@@ -1,9 +1,7 @@
-#include <dwmapi.h>
+#include <glpch.h>
 #include "OpenGLContext.h"
 
 #include <GL/wglew.h>
-#include <exception>
-#include <fstream>
 
 
 

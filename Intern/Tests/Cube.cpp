@@ -1,3 +1,4 @@
+#include <glpch.h>
 #include "Cube.h"
 #include <GLFW/include/GLFW/glfw3.h>
 #include <glm/gtc/type_ptr.hpp>

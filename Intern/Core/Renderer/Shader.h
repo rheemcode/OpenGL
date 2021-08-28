@@ -27,7 +27,7 @@ struct ShaderCache
 	}
 };
 
-struct Shader
+class Shader
 {
 	ShaderCache cache;
 	std::vector<std::string> uniformNames;
@@ -42,9 +42,10 @@ struct Shader
 	Type shaderType = Type::NONE;
 	unsigned int program;
 	unsigned int CompileShader(const std::string& src, unsigned int type);
-	void Bind() const;
 	void CreateShader();
 
+public:
+	void Bind() const;
 	void UploadUniformMat4(const std::string& name, const Matrix4x4& p_mat4) const ;
 	void UploadUniformVec4(const std::string& name, const SimpleVec4& p_vec4) const ;
 	void UploadUniformVec3(const std::string& name, const Vector3& p_vec3) const;
