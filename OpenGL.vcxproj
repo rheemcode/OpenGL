@@ -187,6 +187,7 @@
     <ClInclude Include="Intern\Core\GLCore.h" />
     <ClInclude Include="Intern\Core\GLMain.h" />
     <ClInclude Include="Intern\Core\Window\Display.h" />
+    <ClInclude Include="Intern\GLibEntry.h" />
     <ClInclude Include="Intern\glpch.h" />
     <ClInclude Include="Intern\Core\Renderer\Buffers\FrameBuffer.h" />
     <ClInclude Include="Intern\Core\CommandBuffer.h" />
@@ -269,21 +270,6 @@
     <ClInclude Include="Intern\Core\Renderer\VertexArray.h" />
     <ClInclude Include="Intern\Core\Renderer\Buffers\BufferLayout.h" />
     <ClInclude Include="Intern\Core\Window\Window.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Assets\Shaders\depth.glsl" />
-    <None Include="Assets\Shaders\envmap.glsl" />
-    <None Include="Assets\Shaders\helloWorldTest.glsl" />
-    <None Include="Assets\Shaders\selfieGirl.glsl" />
-    <None Include="Assets\Shaders\default.glsl" />
-    <None Include="Assets\Shaders\default.shader" />
-    <None Include="Assets\Shaders\lighting.shader" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="Intern\creepycreep.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="OpenGL.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

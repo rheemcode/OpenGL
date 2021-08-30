@@ -329,24 +329,8 @@
     <ClInclude Include="Intern\Core\GLCore.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Assets\Shaders\default.shader" />
-    <None Include="Assets\Shaders\lighting.shader" />
-    <None Include="Assets\Shaders\default.glsl" />
-    <None Include="Assets\Shaders\depth.glsl" />
-    <None Include="Assets\Shaders\envmap.glsl" />
-    <None Include="Assets\Shaders\helloWorldTest.glsl" />
-    <None Include="Assets\Shaders\selfieGirl.glsl" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="Intern\creepycreep.png">
-      <Filter>Resource Files</Filter>
-    </Image>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="OpenGL.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
+    <ClInclude Include="Intern\GLibEntry.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

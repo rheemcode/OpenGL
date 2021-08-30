@@ -241,7 +241,7 @@ void Scene::InitSceneShaders()
 {
 	sceneShader = std::make_unique<Shader>("Assets/Shaders/lighting.shader");
 	shadowShader = std::make_unique<Shader>("Assets/Shaders/depth.glsl");
-	//testShader = std::make_unique<Shader>("Assets/Shaders/envmap.glsl");
+	testShader = std::make_unique<Shader>("Assets/Shaders/envmap.glsl");
 }
 
 void Scene::InitScene()

@@ -1,4 +1,5 @@
-#include "GLib.h"
+#include <glpch.h>
+#include "GLibEntry.h"
 #include "GLSandbox.h"
 
 namespace GLib

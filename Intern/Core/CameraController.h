@@ -1,4 +1,5 @@
 #pragma once
+#include "GLCore.h"
 #include "Math/Vector2.h"
 #include "Math/Vector3.h"
 #include "Math/Matrix4x4.h"
@@ -7,7 +8,7 @@
 #include "Events/Event.h"
 
 
-class CameraController
+class GLIB_API CameraController
 {
 	friend class Camera;
 protected:

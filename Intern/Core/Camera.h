@@ -15,7 +15,7 @@ enum class CameraMode
 	ORTHOGRAPHIC
 };
 
-struct CameraSettings
+struct GLIB_API CameraSettings
 {
 	CameraMode mode;
 	float fovY, znear, zfar;
@@ -24,7 +24,7 @@ struct CameraSettings
 	float ratio;
 };
 
-class Camera
+class GLIB_API Camera
 {
 protected:
 
@@ -54,7 +54,7 @@ public:
 	virtual void OnEvent(const Event& event) {};
 
 
-	const CameraController* const GetController() const { cameraController; }
+	const CameraController* const GetController() const { cameraController.get(); }
 	void AttachController(CameraController* p_cameraController)
 	{
 		cameraController.reset(p_cameraController);

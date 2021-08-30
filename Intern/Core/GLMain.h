@@ -52,7 +52,10 @@ public:
 	int Start()
 	{
 		GLApplication* glApplication = GLApplication::GetSingleton();
+		
 		ERR_FAIL_COND_V_MSG(glApplication == nullptr, "Application not found", EXIT_FAILURE);
+
+		glApplication->OnStart();
 		glApplication->Run();
 		return EXIT_SUCCESS;
 	}

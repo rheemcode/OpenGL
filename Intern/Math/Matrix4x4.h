@@ -1,10 +1,11 @@
 #pragma once
+#include "GLCore.h"
 #include "Math/SimpleVec.h"
 #include "Vector3.h"
 #include "Matrix3x3.h"
 #include "Math/Matrix4x4.h"
 
-class Matrix4x4
+class GLIB_API Matrix4x4
 {
 	typedef SimpleVec4 colType;
 public:

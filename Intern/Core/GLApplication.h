@@ -6,10 +6,7 @@
 #define GL_APPLICATION(X)                                       \
 		X()														\
 		{                                                       \
-		    auto* scene = CreateScene(#X);                      \
-			applicationName = std::string(#X);					\
-			AttachScene(scene);									\
-			SetMainScene(#X);									\
+																\
 		}                                                       \
 		~X()                                                    \
 		{                                                       \
@@ -36,7 +33,7 @@ protected:
 
 public:
 	virtual const std::string& GetApplicationName() { return applicationName; }
-
+	virtual void OnStart() {};
 	void AttachScene(Scene* p_scene);
 	void SetMainScene(const std::string& sceneName);
 	Scene* CreateScene(const std::string& sceneName) { return new Scene(sceneName); }

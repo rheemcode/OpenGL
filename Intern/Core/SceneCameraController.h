@@ -1,7 +1,7 @@
 #pragma once
 #include "CameraController.h"
 
-class SceneCameraController : CameraController
+class GLIB_API SceneCameraController : public CameraController
 {
 	struct Controller
 	{

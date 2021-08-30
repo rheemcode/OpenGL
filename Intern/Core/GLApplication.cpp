@@ -11,8 +11,6 @@ void GLApplication::Init()
 	display->GetMainWindow()->Init();
 	display->GetMainWindow()->BindEventCallback(std::bind(&GLApplication::OnEvent, this, std::placeholders::_1));
 
-	ERR_FAIL_COND_MSG(mainScene == nullptr, "Please Attach A Main Scene")
-	mainScene->InitScene();
 }
 
 
@@ -57,6 +55,7 @@ void GLApplication::Run()
 void GLApplication::AttachScene(Scene* scene)
 {
 	scenes[scene->GetSceneName()] = scene;
+	scene->InitScene();
 }
 
 void GLApplication::SetMainScene(const std::string& sceneName)
