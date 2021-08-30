@@ -2,6 +2,7 @@
 #include "Input.h"
 #include <Windows.h>
 #include "Window/Window.h"
+#include "Window/Display.h"
 
 
 Input* Input::s_Instance;

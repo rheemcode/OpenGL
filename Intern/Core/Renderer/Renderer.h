@@ -3,12 +3,11 @@
 #include "Math/Vector3.h"
 #include "Camera.h"
 #include "Renderer/VertexArray.h"
-#include "Renderer/Buffers/UniformBuffer.h"
-#include <Tests/Sprite.h>
-#include <Tests/Cube.h>
-#include <Tests/Sphere.h>
+#include "Renderer/Buffers/UniformBuffer.h" 
+#include "Renderer/Shader.h"
+#include "Texture.h"
 
-struct RenderCommand
+struct GLIB_API RenderCommand
 {
 	static void Init();
 	static void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
@@ -19,14 +18,14 @@ struct RenderCommand
 	static void RenderLines(const VertexArray& vertexArray);
 };
 
-struct VertexAttribs
+struct GLIB_API VertexAttribs
 {
 	Vector3 Position;
 	Vector2 texCoord;
 	float texIndex = 0;
 };
 
-struct Renderer2DData {
+struct GLIB_API Renderer2DData {
 
 	static const uint32_t MaxQuads = 3;
 	static const uint32_t MaxVertices = MaxQuads * 4;
@@ -55,7 +54,7 @@ struct Renderer2DData {
 
 };
 
-struct RendererData
+struct GLIB_API RendererData
 {
 	std::unique_ptr<UniformBuffer> ubo;
 	std::unique_ptr<VertexArray> m_aabbVertexArray;
@@ -66,7 +65,7 @@ struct RendererData
 	Matrix4x4 proj;
 };
 
-struct ShadowData
+struct GLIB_API ShadowData
 {
 	Vector3 LightDir;
 	Matrix4x4 View;
@@ -100,7 +99,7 @@ struct ShadowData
 	}
 };
 
-class Renderer
+class GLIB_API Renderer
 {
 	static RendererData renderData;
 	static RendererData testRenderData;
@@ -130,12 +129,9 @@ public:
 	static void BeginShadow();
 	static void RenderSkybox();
 	static void RenderShadows();
-	static void Render(const Primitive& primitive);
 	static void Render(const AABB& p_aabb);
 
 	static void Render(const std::vector<Mesh>& p_meshes);
-
-	static void Render(const std::unique_ptr<Primitive>& primitive);
 	static void RenderShaderTest(const Shader& shader, const float& deltaTime);
 	static void RenderTest(const std::vector<Mesh>& p_meshes);
 	static void SetViewport(int x, int y, int width, int height);
@@ -144,7 +140,7 @@ public:
 };
 
 
-class Renderer2D
+class GLIB_API Renderer2D
 {
 	Renderer2DData m_Data;
 
@@ -155,9 +151,5 @@ public:
 	void BeginScene(const Camera& camera);
 	void StartBatch();
 	void EndScene();
-
-
 	void DrawQuad(const Matrix4x4& transform, const Texture& texture);
-	void DrawSprite(const Sprite& sprite);
-
 };

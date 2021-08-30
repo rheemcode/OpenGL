@@ -61,7 +61,7 @@ void Console::Init()
 }
 
 
-void Console::Log(const std::string& p_msg, LogMode p_logMode)
+void Console::Log(LogMode p_logMode, const std::string& p_msg)
 {
 	if (p_logMode == LogMode::DEBUG)
 	{
@@ -80,7 +80,7 @@ void Console::Log(const std::string& p_msg, LogMode p_logMode)
 }
 
 
-void Console::Log(const std::string& p_msg, LogMode p_logMode, const std::string& p_msg2)
+void Console::Log(LogMode p_logMode, const std::string& p_msg,const std::string& p_msg2)
 {
 	if (p_logMode == LogMode::DEBUG)
 	{
@@ -100,7 +100,47 @@ void Console::Log(const std::string& p_msg, LogMode p_logMode, const std::string
 	WriteConsoleA(GetStdHandle(STD_OUTPUT_HANDLE), ss.str().c_str(), p_msg.size(), nullptr, NULL);
 }
 
-void Console::Log(const std::string& p_msg, LogMode p_logMode, const std::string& p_msg2, const std::string& p_msg3)
+void Console::Log(LogMode p_logMode, const char* p_msg, const char* p_msg2)
+{
+	if (p_logMode == LogMode::DEBUG)
+	{
+		SET_CONSOLE_ATTRIB_DEBUG
+	}
+	else if (p_logMode == LogMode::SUCCESS)
+	{
+		SET_CONSOLE_ATTRIB_SUCCESS
+	}
+	else
+	{
+		SET_CONSOLE_ATTRIB_ERROR
+	}
+
+	std::stringstream ss;
+
+	ss << " " << p_msg << " " << p_msg2 << "\n";
+	WriteConsoleA(GetStdHandle(STD_OUTPUT_HANDLE), ss.str().c_str(), ss.str().size(), nullptr, NULL);
+}
+void Console::Log(LogMode p_logMode, const char* p_msg)
+{
+	if (p_logMode == LogMode::DEBUG)
+	{
+		SET_CONSOLE_ATTRIB_DEBUG
+	}
+	else if (p_logMode == LogMode::SUCCESS)
+	{
+		SET_CONSOLE_ATTRIB_SUCCESS
+	}
+	else
+	{
+		SET_CONSOLE_ATTRIB_ERROR
+	}
+
+	std::stringstream ss;
+	ss << " " << p_msg << "\n";
+	WriteConsoleA(GetStdHandle(STD_OUTPUT_HANDLE), ss.str().c_str(), ss.str().size(), nullptr, NULL);
+}
+
+void Console::Log(LogMode p_logMode, const std::string& p_msg,  const std::string& p_msg2, const std::string& p_msg3)
 {
 	if (p_logMode == LogMode::DEBUG)
 	{
@@ -121,7 +161,7 @@ void Console::Log(const std::string& p_msg, LogMode p_logMode, const std::string
 	WriteConsoleA(GetStdHandle(STD_OUTPUT_HANDLE), ss.str().c_str(), p_msg.size(), nullptr, NULL);
 }
 
-void Console::Log(const std::string& p_msg, LogMode p_logMode, const std::string& p_msg2, const std::string& p_msg3, const std::string& p_msg4)
+void Console::Log(LogMode p_logMode, const std::string& p_msg,const std::string& p_msg2, const std::string& p_msg3, const std::string& p_msg4)
 {
 	if (p_logMode == LogMode::DEBUG)
 	{
@@ -142,7 +182,7 @@ void Console::Log(const std::string& p_msg, LogMode p_logMode, const std::string
 	WriteConsoleA(GetStdHandle(STD_OUTPUT_HANDLE), ss.str().c_str(), p_msg.size(), nullptr, NULL);
 }
 
-void Console::Log(const std::string& p_msg, LogMode p_logMode, const std::string& p_msg2, const std::string& p_msg3, const std::string& p_msg4, const std::string& p_msg5)
+void Console::Log(LogMode p_logMode, const std::string& p_msg, const std::string& p_msg2, const std::string& p_msg3, const std::string& p_msg4, const std::string& p_msg5)
 {
 	if (p_logMode == LogMode::DEBUG)
 	{
@@ -159,14 +199,14 @@ void Console::Log(const std::string& p_msg, LogMode p_logMode, const std::string
 
 	std::stringstream ss;
 	ss << " " << p_msg << " " << p_msg2 << " " << p_msg3 << " " << p_msg4 << " " << p_msg5 << "\n";
-	WriteConsoleA(GetStdHandle(STD_OUTPUT_HANDLE), ss.str().c_str(), p_msg.size(), nullptr, NULL);
+	WriteConsoleA(GetStdHandle(STD_OUTPUT_HANDLE), ss.str().c_str(), ss.str().size(), nullptr, NULL);
 }
 
 
 template<typename... Args>
-void Console::Log(const std::string& p_msg, const Args&... args)
+void Console::Log(LogMode p_logMode, Args&... args)
 {
-	Console::Log(p_msg,  args...);
+	Console::Log(p_logMode, args...);
 }
 
 

@@ -185,10 +185,6 @@ void Renderer::RenderShadows()
 
 }
 
-void Renderer::Render(const Primitive& primitive)
-{
-}
-
 static int drawCalls = 0;
 
 void Renderer::Render(const AABB& p_aabb)
@@ -337,32 +333,6 @@ void Renderer::Render(const std::vector<Mesh>& p_meshes)
 	drawCalls = 0;
 #endif
 }
-
-void Renderer::Render(const std::unique_ptr<Primitive>& primitive)
-{
-	//const auto& envLight = Scene::GetEnviromentLight();
-	//const auto& lights = Scene::GetLight();
-	//const auto& material = primitive->GetMaterial();
-
-	//const auto& attribs = primitive->GetVertexAttribs();
-	//attribs.Bind();
-	//const auto& shader = *Scene::sceneShader;
-
-	//int i = 0;
-
-	//shader.UploadUniformVec4("Material.Color", material.Color);
-	//shader.UploadUniformFloat("Material.Shininess", material.Shininess);
-	//shader.UploadUniformFloat("Material.SpecularHighlights", material.SpecularHighlights);
-
-	//shader.UploadUniformMat4("model", primitive->GetTransform());
-	//shader.UploadUniformFloat("AmbientEnergy", envLight.Energy);
-	////material
-
-	//shader.UploadUniformVec4("ViewPosition", { renderData.view[3].x, renderData.view[3].y, renderData.view[3].z, 1.0f });
-
-	//RenderCommand::DrawIndexed(attribs);
-}
-
 void Renderer::SetViewport(int x, int y, int width, int height)
 {
 	glViewport(x, y, width, height);
@@ -490,9 +460,4 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Texture& texture)
 
 	m_Data.quadIndexCount += 6;
 
-}
-
-void Renderer2D::DrawSprite(const Sprite& sprite)
-{
-	DrawQuad(sprite.GetTransform(), sprite.GetTexture());
 }

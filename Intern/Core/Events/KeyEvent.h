@@ -2,10 +2,9 @@
 
 #include "Event.h"
 #include "../Input/KeyCode.h"
-#include <Windows.h>
 
 
-class KeyEvent : public Event
+class GLIB_API KeyEvent : public Event
 {
 public:
 	bool shift;
@@ -30,7 +29,7 @@ protected:
 	KeyCode m_KeyCode;
 };
 
-class KeyPressedEvent : public KeyEvent
+class GLIB_API  KeyPressedEvent : public KeyEvent
 {
 public:
 	KeyPressedEvent()
@@ -55,7 +54,7 @@ private:
 };
 
 
-class KeyReleasedEvent : public  KeyEvent
+class GLIB_API  KeyReleasedEvent : public  KeyEvent
 {
 public:
 	KeyReleasedEvent()

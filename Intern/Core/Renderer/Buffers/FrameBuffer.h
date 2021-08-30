@@ -1,6 +1,6 @@
 #pragma once
 #include "Debug.h"
-#include "Window\Window.h"
+#include "Window\Display.h"
 
 namespace FrameBufferName
 {
@@ -22,7 +22,7 @@ namespace FrameBufferTexture
 	};
 }
 
-class FrameBuffer
+class GLIB_API FrameBuffer
 {
 	uint32_t fboID[FrameBufferName::MAX];
 	uint32_t textures[FrameBufferTexture::MAX];
@@ -72,7 +72,9 @@ public:
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
 
 		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-			Console::Log("Framebuffer Setup Not Complete");
+		{
+			Console::Log(LogMode::DEBUG, "Framebuffer Setup Not Complete");
+		}
 		glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
 	}

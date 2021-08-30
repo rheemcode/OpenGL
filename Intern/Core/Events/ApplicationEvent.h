@@ -3,7 +3,7 @@
 #include "Event.h"
 
 
-class WindowResizeEvent : public Event
+class GLIB_API WindowResizeEvent : public Event
 {
 public: 
 	WindowResizeEvent(unsigned int width, unsigned int height)

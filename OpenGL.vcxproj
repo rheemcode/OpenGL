@@ -120,7 +120,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>GLEW_STATIC;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GLEW_STATIC;GLIB_BUILD_DLL;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)Extern;$(SolutionDir)Extern\GLEW\include\;$(SolutionDir)\Intern\Core;$(SolutionDir)\Intern;$(SolutionDir)\Intern\Core\Renderer</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -143,7 +143,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>GLEW_STATIC;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GLEW_STATIC;GLIB_BUILD_DLL;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)Extern;$(SolutionDir)Extern\GLEW\include\;$(SolutionDir)\Intern\Core;$(SolutionDir)\Intern;$(SolutionDir)\Intern\Core\Renderer</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -184,6 +184,7 @@
     <ClCompile Include="Intern\Core\SceneCamera.cpp" />
     <ClInclude Include="Intern\Core\CameraController.h" />
     <ClInclude Include="Intern\Core\GLApplication.h" />
+    <ClInclude Include="Intern\Core\GLCore.h" />
     <ClInclude Include="Intern\Core\GLMain.h" />
     <ClInclude Include="Intern\Core\Window\Display.h" />
     <ClInclude Include="Intern\glpch.h" />
@@ -201,10 +202,6 @@
     <ClInclude Include="Intern\GLib.h" />
     <ClInclude Include="Intern\Math\Transform.h" />
     <ClCompile Include="Intern\Math\Transform.cpp" />
-    <ClCompile Include="Intern\Tests\Cube.cpp" />
-    <ClCompile Include="Intern\Tests\Quad.cpp" />
-    <ClCompile Include="Intern\Tests\Sphere.cpp" />
-    <ClCompile Include="Intern\Tests\Sprite.cpp" />
     <ClCompile Include="Intern\Core\Camera.cpp" />
     <ClCompile Include="Intern\Core\Debug.cpp" />
     <ClCompile Include="Intern\Core\Input\Input.cpp" />
@@ -246,9 +243,6 @@
     <ClInclude Include="Intern\Math\AABB.h" />
     <ClInclude Include="Intern\Math\Frustum.h" />
     <ClInclude Include="Intern\Math\Plane.h" />
-    <ClInclude Include="Intern\Tests\Cube.h" />
-    <ClInclude Include="Intern\Tests\Sphere.h" />
-    <ClInclude Include="Intern\Tests\Sprite.h" />
     <ClInclude Include="Intern\Core\Camera.h" />
     <ClInclude Include="Intern\Core\Debug.h" />
     <ClInclude Include="Intern\Core\Events\ApplicationEvent.h" />
@@ -271,8 +265,6 @@
     <ClInclude Include="Intern\Core\Renderer\Buffers\IndexBuffer.h" />
     <ClInclude Include="Intern\Core\Renderer\Renderer.h" />
     <ClInclude Include="Intern\Core\Renderer\Shader.h" />
-    <ClInclude Include="Intern\Tests\Object.h" />
-    <ClInclude Include="Intern\Tests\Primitive.h" />
     <ClInclude Include="Intern\Core\Renderer\Buffers\VertexBuffer.h" />
     <ClInclude Include="Intern\Core\Renderer\VertexArray.h" />
     <ClInclude Include="Intern\Core\Renderer\Buffers\BufferLayout.h" />

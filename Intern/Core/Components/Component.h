@@ -1,9 +1,7 @@
 #pragma once
-#include <string>
-#include <memory>
 #include <Actor.h>
 #include "Events/Event.h"
-
+#include "GLCore.h"
 
 enum ComponentCategory
 {
@@ -11,7 +9,7 @@ enum ComponentCategory
 	Transformable,
 	Script
 };
-class Component
+class GLIB_API Component
 {
 	bool enabled;
 protected:

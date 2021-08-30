@@ -4,7 +4,7 @@
 #include <memory>
 #include "Math/Transform.h"
 
-class TransformComponent : public Component
+class GLIB_API TransformComponent : public Component
 {
 	std::shared_ptr<Transform> m_transform;
 protected:

@@ -1,7 +1,7 @@
 #pragma once
 #include "BufferLayout.h"
 
-class VertexBuffer
+class GLIB_API VertexBuffer
 {
 	unsigned int m_RendererID;
 	BufferLayout m_bufferLayout;

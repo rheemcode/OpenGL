@@ -145,7 +145,7 @@ unsigned int Shader::CompileShader(const std::string& src, unsigned int type)
 		//file.write("\n", 1);
 		GLCall(glGetShaderInfoLog(id, length, &length, message));
 		ss << message;
-		Console::Log(ss.str().c_str(), LogMode::ERROR);
+		Console::Log(LogMode::ERROR, ss.str().c_str());
 		return 0;
 	}
 	return id;

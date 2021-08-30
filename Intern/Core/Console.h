@@ -1,10 +1,9 @@
 #pragma once
-#include <string>
-#include <Windows.h>
-#include <cstdint>
+#include "GLCore.h"
+
 #undef ERROR
 
-enum LogMode
+enum class LogMode
 {
 	DEBUG,
 	SUCCESS,
@@ -12,20 +11,23 @@ enum LogMode
 };
 
 
-class Console
+class GLIB_API Console
 {
 	static Console* s_Instance;
 	void Init();
 
-	static void Log(const std::string& p_msg, LogMode p_logMode, const std::string& p_msg2);
-	static void Log(const std::string& p_msg, LogMode p_logMode, const std::string& p_msg2, const std::string& p_msg3);
-	static void Log(const std::string& p_msg, LogMode p_logMode, const std::string& p_msg2, const std::string& p_msg3, const std::string& p_msg4);
-	static void Log(const std::string& p_msg, LogMode p_logMode, const std::string& p_msg2, const std::string& p_msg3, const std::string& p_msg4, const std::string& p_msg5);
 	static void Error(const std::string& p_msg);
 public:
-	template<typename... Args>
-	static void Log(const std::string& p_msg, const Args&... args);
-	static void Log(const std::string& p_msg, LogMode p_logMode = LogMode::DEBUG);
-	static void Create();
 
+	static void Destroy() { delete s_Instance; }
+	static void Log(LogMode p_logMode, const std::string& p_msg);
+	static void Log(LogMode p_logMode, const std::string& p_msg, const std::string& p_msg2);
+	static void Log(LogMode p_logMode, const std::string& p_msg, const std::string& p_msg2, const std::string& p_msg3);
+	static void Log(LogMode p_logMode, const std::string& p_msg, const std::string& p_msg2, const std::string& p_msg3, const std::string& p_msg4);
+	static void Log(LogMode p_logMode, const std::string& p_msg, const std::string& p_msg2, const std::string& p_msg3, const std::string& p_msg4, const std::string& p_msg5);
+	static void Log(LogMode p_logMode, const char* p_msg);
+	static void Log(LogMode p_logMode, const char* p_msg, const char* p_msg2);
+	template<class... Args>
+	static void Log(LogMode p_logMode, Args&... args);
+	static void Create();
 };

@@ -49,11 +49,13 @@ enum WindowFlagsBit {
 	WINDOW_FLAG_NO_FOCUS_BIT = (1 << WINDOW_FLAG_NO_FOCUS)
 };
 
+class GLMain;
+class Input;
 
-class Display
+class GLIB_API Display
 {
-	friend class Input;
-
+	friend Input;
+	friend GLMain;
 	HINSTANCE hInstance;
 	MSG m_msg = { 0 };
 	HCURSOR cursors[CursorShape::CURSOR_MAX] = { nullptr };
@@ -80,11 +82,11 @@ class Display
 	std::array<Window*, 3> m_Windows;
 
 private:
-	static void Create(HINSTANCE p_hInstance, WindowFlags p_flags, WindowMode p_mainWindowMode, Size2 p_windowSize);
-	Display(HINSTANCE p_hInstance, WindowFlags p_flags, WindowMode p_mainWindowMode, Size2 p_windowSize);
+	static void Create(HINSTANCE p_hInstance, WindowFlags p_flags, LPCWSTR windowName, WindowMode p_mainWindowMode, Size2 p_windowSize);
+	Display(HINSTANCE p_hInstance, WindowFlags p_flags, LPCWSTR windowName, WindowMode p_mainWindowMode, Size2 p_windowSize);
 
 	void GetWindowStyles(bool p_main_window, bool p_fullscreen, bool p_borderless, bool p_resizable, bool p_maximized, bool p_no_activate_focus, DWORD& r_style, DWORD& r_style_ex);
-	int CreateWindowDisplay(WindowMode mode, const LPCWSTR& windowName, uint32_t p_flags, const RECT& p_rect);
+	int CreateWindowDisplay(WindowMode mode, LPCWSTR windowName, uint32_t p_flags, const RECT& p_rect);
 	void SetWindowFlags(WindowFlags p_flags, bool p_enabled, WindowID windowID);
 	void DestroyWindowDisplay(WindowID windowID);
 	void UpdateWindowStyle(WindowID windowID, bool p_repaint);
@@ -142,5 +144,5 @@ public:
 	static Display* GetSingleton();
 	void ProcessEvents();
 
-	~Display() {}
+	~Display();
 };

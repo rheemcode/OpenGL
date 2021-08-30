@@ -1,8 +1,7 @@
 #pragma once
-#include <vector>
+#include "GLCore.h"
 
-
-class IndexBuffer
+class GLIB_API IndexBuffer
 {
 	unsigned int m_RendererID;
 	int m_Count;
@@ -18,6 +17,7 @@ public:
 	{
 		m_RendererID = ib.m_RendererID;
 		m_Count = ib.m_Count;
+		return *this;
 	}
 
 	IndexBuffer();

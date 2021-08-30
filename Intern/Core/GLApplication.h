@@ -1,20 +1,49 @@
 #pragma once
-#include "GLib.h"
+
+#include "GLCore.h"
 #include "Scene.h"
 
-class GLApplication
+#define GL_APPLICATION(X)                                       \
+		X()														\
+		{                                                       \
+		    auto* scene = CreateScene(#X);                      \
+			applicationName = std::string(#X);					\
+			AttachScene(scene);									\
+			SetMainScene(#X);									\
+		}                                                       \
+		~X()                                                    \
+		{                                                       \
+			for (auto scene : scenes) {delete scene.second;}   \
+			delete s_instance; \
+		}
+
+class GLMain;
+
+class GLIB_API GLApplication
 {
-	static GLApplication* application;
+protected:
+	friend GLMain;
+
+	static GLApplication* s_instance;
+	std::unordered_map<std::string, Scene*> scenes;
 	static Scene* mainScene;
-	void InitDisplay();
+
+	void Init();
+	void OnEvent(const Event& p_event);
+	void Run();
+
+	std::string applicationName;
 
 public:
-	void AttachScene();
-	void OnUpdate(float p_deltaTime);
-	void OnEvent();
+	virtual const std::string& GetApplicationName() { return applicationName; }
+
+	void AttachScene(Scene* p_scene);
+	void SetMainScene(const std::string& sceneName);
+	Scene* CreateScene(const std::string& sceneName) { return new Scene(sceneName); }
+	static GLApplication* GetSingleton() { return s_instance; }
 };
 
-static GLApplication* CreateApplication()
+namespace GLib
 {
-	return nullptr;
+	GLApplication* CreateApplication();
 }

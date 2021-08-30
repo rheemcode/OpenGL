@@ -24,7 +24,7 @@ struct VertexBufferElement
 	}
 };
 
-class BufferLayout
+class GLIB_API BufferLayout
 {
 private:
 	std::vector<VertexBufferElement> m_Element;

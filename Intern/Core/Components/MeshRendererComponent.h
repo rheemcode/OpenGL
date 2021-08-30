@@ -3,7 +3,7 @@
 #include "Model.h"
 #include "Component.h"
 
-class MeshRendererComponent : public Component
+class GLIB_API MeshRendererComponent : public Component
 {
 protected:
 	std::shared_ptr<Model> m_model;

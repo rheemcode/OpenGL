@@ -75,13 +75,7 @@
     <ClCompile Include="Intern\Core\Renderer\Texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Intern\Tests\Sprite.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Intern\Core\Scene.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Intern\Tests\Quad.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Intern\Core\Renderer\Buffers\UniformBuffer.cpp">
@@ -135,12 +129,6 @@
     <ClCompile Include="Intern\Core\CommandBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Intern\Tests\Cube.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Intern\Tests\Sphere.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Intern\Core\Components\StaticMeshRendererComponent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -185,13 +173,7 @@
     <ClInclude Include="Intern\Core\Renderer\Buffers\BufferLayout.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Intern\Tests\Primitive.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Intern\Core\Window\Window.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Intern\Tests\Object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Intern\Core\Camera.h">
@@ -249,9 +231,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Intern\Core\Renderer\Texture.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Intern\Tests\Sprite.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Intern\Core\Scene.h">
@@ -314,12 +293,6 @@
     <ClInclude Include="Intern\Core\CommandBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Intern\Tests\Cube.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Intern\Tests\Sphere.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Intern\Core\Components\StaticMeshRendererComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -351,6 +324,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Intern\Core\Window\Display.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Intern\Core\GLCore.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -81,7 +81,6 @@ LRESULT Display::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam)
 		{
 			ReleaseCapture();
 			EnableCursor();
-
 		}
 
 		return 0;
@@ -734,7 +733,7 @@ int Display::GetCurrentScreen(WindowID windowID)
 {
 	EnumScreenData data = { 0, 0, MonitorFromWindow(m_Windows[windowID]->GetNativeWindow(), MONITOR_DEFAULTTONEAREST) };
 	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcScreen, (LPARAM)&data);
-	return data.screen;return 0;
+	return data.screen;
 }
 
 void Display::SetCurrentScreen(int p_screen, WindowID windowID)
@@ -1220,7 +1219,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam)
 }
 
 
-int Display::CreateWindowDisplay(WindowMode p_mode, const LPCWSTR& windowName, uint32_t p_flags, const RECT& p_rect)
+int Display::CreateWindowDisplay(WindowMode p_mode, LPCWSTR windowName, uint32_t p_flags, const RECT& p_rect)
 {
 	DWORD dwExStyle;
 	DWORD dwStyle;
@@ -1279,10 +1278,11 @@ int Display::CreateWindowDisplay(WindowMode p_mode, const LPCWSTR& windowName, u
 	DragAcceptFiles(windowData.hwnd, true);
 
 	//window->Init();
-	m_Windows[m_windowCount++] = window;
+	uint32_t count = m_windowCount;
+	m_Windows[m_windowCount] = window;
 	windowData.windowID = m_windowCount;
-
-	return m_windowCount;
+	m_windowCount++;
+	return count;
 }
 
 void Display::SetWindowFlags(WindowFlags p_flag, bool p_enabled, WindowID windowID)
@@ -1313,14 +1313,14 @@ void Display::SetWindowFlags(WindowFlags p_flag, bool p_enabled, WindowID window
 }
 
 
-void Display::Create(HINSTANCE p_hInstance, WindowFlags p_flags, WindowMode p_mainWindowMode, Size2 p_windowSize)
+void Display::Create(HINSTANCE p_hInstance, WindowFlags p_flags, LPCWSTR windowName, WindowMode p_mainWindowMode, Size2 p_windowSize)
 {
 	if (s_Instance)
 		return;
-	s_Instance = new Display(p_hInstance, p_flags, p_mainWindowMode, p_windowSize);
+	s_Instance = new Display(p_hInstance, p_flags, windowName, p_mainWindowMode, p_windowSize);
 }
 
-Display::Display(HINSTANCE p_hInstance, WindowFlags p_flags, WindowMode p_mainWindowMode, Size2 p_windowSize)
+Display::Display(HINSTANCE p_hInstance, WindowFlags p_flags, LPCWSTR windowName, WindowMode p_mainWindowMode, Size2 p_windowSize)
 {
 	Console::Create();
 	focusedWindow = -1;
@@ -1367,7 +1367,7 @@ Display::Display(HINSTANCE p_hInstance, WindowFlags p_flags, WindowMode p_mainWi
 	winrect.top = LONG(mainWinPos.y);
 	winrect.right = LONG(p_windowSize.x);
 	winrect.bottom = LONG(p_windowSize.y);
-	Window* window = m_Windows[CreateWindowDisplay(p_mainWindowMode, L"GL Renderer", p_flags, winrect)];
+	Window* window = m_Windows[CreateWindowDisplay(p_mainWindowMode, windowName, p_flags, winrect)];
 
 	window->GetWindowData().isBorderless = p_flags & WINDOW_FLAG_BORDERLESS_BIT;
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
@@ -1379,4 +1379,10 @@ Display::Display(HINSTANCE p_hInstance, WindowFlags p_flags, WindowMode p_mainWi
 
 	ShowWindow(0);
 
+}
+
+Display::~Display()
+{
+	Console::Destroy();
+	delete s_Instance;
 }

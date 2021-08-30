@@ -1,9 +1,20 @@
 #pragma once
 
 
+#include "Actor.h"
+#include "Scene.h"
+#include "GLApplication.h"
+#include "Console.h"
+#include "Events/Event.h"
+#include "Events/KeyEvent.h"
+#include "Events/MouseEvent.h"
+#include "Window/Display.h"
 
-#ifdef GLIB_BUILD_DLL
-	#define GLIB_API _declspec(dllexport)
-#else 
-	#define GLIB_API _declspec(dllimport)
-#endif
+#include "GLMain.h"
+
+int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PWSTR pCmdLine, int nCmdShow)
+{
+	GLMain main;
+	main.Init(hInstance, prevInstance, pCmdLine, nCmdShow);
+	return main.Start();
+}

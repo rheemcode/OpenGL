@@ -9,6 +9,7 @@
 #include "Components/MeshRendererComponent.h"
 #include "Components/StaticMeshRendererComponent.h"
 #include "Timestep.h"
+#include "SceneCamera.h"
 
 
 Scene* Scene::s_activeScene = nullptr;
@@ -190,6 +191,10 @@ void Scene::InitSceneCamera()
 	cameraSettings.winWidth = display->GetMainWindow()->GetWidth();
 	cameraSettings.winHeight = display->GetMainWindow()->GetHeight();
 	cameraSettings.ratio = cameraSettings.winWidth / cameraSettings.winHeight;
+	if (sceneCamera == nullptr)
+	{
+		sceneCamera = std::make_unique<SceneCamera>(cameraSettings);
+	}
 	m_shadowBox = ShadowBox(Matrix4x4(), sceneCamera->GetTransform(), cameraSettings);
 }
 
@@ -236,17 +241,11 @@ void Scene::InitSceneShaders()
 {
 	sceneShader = std::make_unique<Shader>("Assets/Shaders/lighting.shader");
 	shadowShader = std::make_unique<Shader>("Assets/Shaders/depth.glsl");
-	testShader = std::make_unique<Shader>("Assets/Shaders/envmap.glsl");
-}
-
-void Scene::InitDisplay()
-{
-
+	//testShader = std::make_unique<Shader>("Assets/Shaders/envmap.glsl");
 }
 
 void Scene::InitScene()
 {
-	InitDisplay();
 	InitRenderer();
 	InitSceneCamera();
 	InitSceneShaders();
@@ -264,8 +263,8 @@ void Scene::CreateTests()
 }
 
 
-Scene::Scene()
-	: commandQueue(true)
+Scene::Scene(const std::string& p_sceneName)
+	: commandQueue(true), sceneName(p_sceneName)
 {
 	thread.Start(ThreadCallback, this);
 }

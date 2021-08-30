@@ -1,12 +1,10 @@
 #pragma once
 
-
 #include "Buffers/BufferLayout.h"
 #include "Buffers/VertexBuffer.h"
 #include <Renderer/Buffers/IndexBuffer.h>
-#include <memory>
 
-class VertexArray
+class GLIB_API VertexArray
 {
 	std::unique_ptr<IndexBuffer> m_Ib;
 	uint32_t m_RendererID;

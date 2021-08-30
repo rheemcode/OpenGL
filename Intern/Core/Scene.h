@@ -11,7 +11,7 @@
 #include "ShadowBox.h"
 #include "Timestep.h"
 
-struct Light
+struct GLIB_API Light
 {
 	friend class Scene;
 
@@ -75,23 +75,27 @@ struct Timer
 	{
 		auto end = std::chrono::high_resolution_clock().now();
 		duration = end - start;
-		Console::Log("function took:");
-		Console::Log(std::to_string(duration.count() * 1000.f));
-		Console::Log("ms\n");
-		Console::Log(std::to_string(duration.count()));
-		Console::Log("s\n");
+		Console::Log(LogMode::DEBUG, "function took:");
+		Console::Log(LogMode::DEBUG, std::to_string(duration.count() * 1000.f));
+		Console::Log(LogMode::DEBUG, "ms\n");
+		Console::Log(LogMode::DEBUG, std::to_string(duration.count()));
+		Console::Log(LogMode::DEBUG, "s\n");
 	}
 };
 
 struct ShaderTest;
 class Renderer;
 class FrameBuffer;
+class GLApplication;
 
-class Scene
+class GLIB_API Scene
 {
 	friend Renderer;
+	friend GLApplication;
 	static Scene* s_activeScene;
 	static std::shared_ptr<Camera> sceneCamera;
+
+	std::string sceneName;
 
 	enum DrawMode
 	{
@@ -154,20 +158,17 @@ private:
 	void CreateSkyLight();
 
 	void InitSceneShaders();
-	void InitDisplay();
 	void InitRenderer();
 	void InitSceneCamera();
 	void InitLightUniforms();
 	void CreateBuffers();
 	void CreateTests();
-	void Sync();
 	void InitScene();
 
 public:
 
-	static void Init();
 	static Scene* GetActiveScene();
-
+	const std::string& GetSceneName() const { return sceneName; }
 	void CreateDefaultActor();
 
 	const std::vector<Mesh>& GetCulledMeshes();
@@ -180,7 +181,7 @@ public:
 
 	void AddActor(std::shared_ptr<class Actor>& p_actor);
 
-	Scene();
+	Scene(const std::string& p_name);
 	~Scene();
 };
 

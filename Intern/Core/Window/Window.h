@@ -4,10 +4,10 @@
 #include "Math/SimpleVec.h"
 #include "Math/Vector2.h"
 #include "Events/KeyEvent.h"
-
+#include "GLCore.h"
 
 typedef int WindowID;
-constexpr WindowID MAIN_WINDOW_ID = 1;
+constexpr WindowID MAIN_WINDOW_ID = 0;
 
 
 /* Bad Bad API but we'll work with it*/
@@ -46,7 +46,7 @@ struct WindowData
 
 using EventCallback = std::function<void(const Event&)>;
 
-class Window
+class GLIB_API Window
 {
 	WindowData windowData;	
 	EventCallback callback;

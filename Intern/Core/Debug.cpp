@@ -39,7 +39,7 @@ bool GLLogCall(const char* function, const char* file, int line)
             break;
         }
         ss << "[OPEN GL Error] {" << error << "}" << "[" << errorName << "]" << function << file << line << std::endl;
-        Console::Log(ss.str().c_str(), LogMode::ERROR);
+        Console::Log(LogMode::ERROR, ss.str().c_str());
         return false;
     }
 

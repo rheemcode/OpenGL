@@ -1,8 +1,7 @@
 #pragma once
-#include <Windows.h>
-#include <cstdint>
+#include "GLCore.h"
 
-struct Time
+struct GLIB_API Time
 {
 	uint64_t ticksStart;
 	uint64_t frequency;

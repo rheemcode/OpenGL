@@ -210,7 +210,7 @@ void Texture::AddCubeMapImage(const std::array<std::string, 6>& p_files)
 Texture::Texture(uint32_t count)
 	: m_Width(1920), m_Height(1080), m_Components(4), m_DataFormat(RGBA), m_InternalFormat(RGBA8), xOffset(0), yOffset(0)
 {
-	glGenTextures(count, m_ID);
+	GLCall(glGenTextures(count, m_ID));
 }
 
 Texture::Texture(uint32_t width, uint32_t height)

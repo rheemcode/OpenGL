@@ -1,12 +1,7 @@
 #pragma once
-#include <fstream>
-#include <string>
-#include <sstream>
-#include <vector>
 #include "Math/Vector2.h"
 #include <Math/Matrix4x4.h>
-#include <unordered_map>
-
+#include "GLCore.h"
 struct ShaderCache
 {
 	std::unordered_map<std::string, int> uniformNamesLocation;
@@ -27,7 +22,7 @@ struct ShaderCache
 	}
 };
 
-class Shader
+class GLIB_API  Shader
 {
 	ShaderCache cache;
 	std::vector<std::string> uniformNames;

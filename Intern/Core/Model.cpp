@@ -20,12 +20,12 @@ bool ModelLoader::LoadModel(MODEL_FORMAT modelFormat, const std::string& p_fileP
 		if (!reader.ParseFromFile(p_filePath.data(), readerConfig))
 		{
 			if (!reader.Error().empty())
-				Console::Log(reader.Error());
+				Console::Log(LogMode::ERROR, reader.Error());
 			return false;
 		}
 
 		if (!reader.Warning().empty())
-			Console::Log(reader.Warning());
+			Console::Log(LogMode::ERROR, reader.Warning());
 
 		auto& attribs = reader.GetAttrib();
 		auto& shapes = reader.GetShapes();
@@ -192,12 +192,12 @@ bool ModelLoader::LoadAsStaticModel(MODEL_FORMAT modelFormat, const std::string&
 		if (!reader.ParseFromFile(p_filePath.data(), readerConfig))
 		{
 			if (!reader.Error().empty())
-				Console::Log(reader.Error());
+				Console::Log(LogMode::ERROR, reader.Error());
 			return false;
 		}
 
 		if (!reader.Warning().empty())
-			Console::Log(reader.Warning());
+			Console::Log(LogMode::ERROR, reader.Warning());
 
 		auto& attribs = reader.GetAttrib();
 		auto& shapes = reader.GetShapes();
