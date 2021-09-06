@@ -2,7 +2,7 @@
 #include "Matrix3x3.h"
 #include "Matrix4x4.h"
 
-struct Quaternion
+struct GLIB_API Quaternion
 {
 	union
 	{

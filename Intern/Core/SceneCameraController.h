@@ -6,7 +6,7 @@ class GLIB_API SceneCameraController : public CameraController
 	struct Controller
 	{
 		Vector3 position;
-		float xRot = 0.5f, yRot = -0.5f, distance;
+		float xRot = 0.5f, yRot = -0.5f, distance= 1;
 		float rotationSpeed;
 
 	};

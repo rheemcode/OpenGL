@@ -62,38 +62,62 @@ struct LightUniformBuffer
 
 using namespace FrameBufferName;
 
-struct Timer
-{
-	std::chrono::steady_clock::time_point start;
-	std::chrono::duration<float> duration;
-	Timer()
-	{
-		start = std::chrono::high_resolution_clock().now();
-	}
-
-	~Timer()
-	{
-		auto end = std::chrono::high_resolution_clock().now();
-		duration = end - start;
-		Console::Log(LogMode::DEBUG, "function took:");
-		Console::Log(LogMode::DEBUG, std::to_string(duration.count() * 1000.f));
-		Console::Log(LogMode::DEBUG, "ms\n");
-		Console::Log(LogMode::DEBUG, std::to_string(duration.count()));
-		Console::Log(LogMode::DEBUG, "s\n");
-	}
-};
 
 struct ShaderTest;
 class Renderer;
 class FrameBuffer;
 class GLApplication;
 
+
+struct GLIB_API ShadowData
+{
+	ShadowBox shadowBounds;
+	Vector2 ShadowSize;
+	Vector3 LightDir;
+	Matrix4x4 View;
+	Matrix4x4 Proj;
+	Matrix4x4 Bias;
+	Matrix4x4 ProjView;
+
+	void UpdateView(Vector3 direction)
+	{
+		direction = Vector3::Normalize(direction);
+		const auto& center = -shadowBounds.GetCenter();
+		View = Matrix4x4();
+
+		float pitch = Math::ACos(Vector2::Length(Vector2(direction.x, direction.z)));
+
+		View = Matrix4x4::Rotate(View, Vector3(1, 0, 0), pitch);
+		float yaw = Math::Rad2deg((Math::ATan(direction.x / direction.z)));
+		yaw = direction.z > 0 ? yaw - 180 : yaw;
+		View = Matrix4x4::Rotate(View, Vector3(0, 1, 0), -Math::Deg2Rad(yaw));
+
+		View = Matrix4x4::Translate(View, center);
+	}
+
+	void UpdateProjection()
+	{
+		float width = shadowBounds.GetWidth(), height = shadowBounds.GetHeight(), length = shadowBounds.GetLength();
+		Proj = Matrix4x4();
+
+		Proj[0][0] = 2.f / width;
+		Proj[1][1] = 2.f / height;
+		Proj[2][2] = -2.f / length;
+		Proj[3][3] = 1.f;
+		//auto alt = Matrix4x4::CreateOrtho()
+	}
+};
+
+
 class GLIB_API Scene
 {
 	friend Renderer;
 	friend GLApplication;
 	static Scene* s_activeScene;
+
 	static std::shared_ptr<Camera> sceneCamera;
+	std::shared_ptr<CameraData> cameraData;
+	std::shared_ptr<ShadowData> shadowData;
 
 	std::string sceneName;
 
@@ -120,19 +144,16 @@ class GLIB_API Scene
 	std::vector<std::shared_ptr<class Actor>> m_actors;
 	std::vector<class Mesh> culledMeshes;
 	std::vector<class Mesh> meshes;
+	bool meshDirty = false;
 
 	using ShadowBuffer = FrameBuffer;
 	std::unique_ptr<ShadowBuffer> m_shadowBuffer;
 	std::unique_ptr<class UniformBuffer> m_LightsBuffer;
 
 	/* Scene Shaders */
-	std::unique_ptr<class Shader> sceneShader;
-	std::unique_ptr<class Shader> shadowShader;
-	std::unique_ptr<class Shader> testShader;
-
-	
-	ShadowBox m_shadowBox;
-
+	std::shared_ptr<class Shader> sceneShader;
+	std::shared_ptr<class Shader> shadowShader;
+	std::shared_ptr<class Shader> testShader;
 
 	/* Threading */
 	Thread::ID threadID;
@@ -149,6 +170,8 @@ private:
 	
 	void BindFBO(FrameBufferName::Type name);
 	void BindFBOTex(FrameBufferTexture::Type name);
+
+	void PrepareMeshes();
 
 	void Render();
 	void OnUpdate(float p_delta);
@@ -168,13 +191,13 @@ private:
 public:
 
 	static Scene* GetActiveScene();
+
+	void SetMainCamera(std::shared_ptr<Camera> p_camera) { sceneCamera = p_camera; }
 	const std::string& GetSceneName() const { return sceneName; }
 	void CreateDefaultActor();
-
 	const std::vector<Mesh>& GetCulledMeshes();
 	const Camera& GetSceneCamera() const { return *sceneCamera; }
-
-	const ShadowBox& GetShadowBox() const { return m_shadowBox; }
+	
 	Vector3 GetSkyLightDirection() const { return m_lights[0]->Direction; }
 	const EnviromentLight& GetEnviromentLight();
 	const std::array<std::unique_ptr<Light>, 10>& GetLight();
@@ -209,7 +232,7 @@ struct ShaderTest
 
 	void InitTest()
 	{
-		float vAttrib[] = 
+		/*float vAttrib[] = 
 		{
 		   -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
 			0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
@@ -229,7 +252,7 @@ struct ShaderTest
 		frameBuffer = std::make_unique<FrameBuffer>();
 		frameBuffer->CreateTexture();
 		frameBuffer->AttachColorTexture();
-		frameBuffer->AttachRenderBuffer();
+		frameBuffer->AttachRenderBuffer();*/
 
 	//	fboShader = std::make_unique<Shader>("./Assets/Shaders/fboTest.glsl");
 	}

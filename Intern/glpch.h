@@ -23,6 +23,7 @@
 #include <malloc.h>
 #include <cassert>
 #include <chrono>
+#include <immintrin.h>
 
 #if defined(near) || defined(far)
 	#undef far

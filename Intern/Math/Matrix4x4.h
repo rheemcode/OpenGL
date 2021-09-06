@@ -33,8 +33,8 @@ public:
 		return &p_mat[0].x;
 	}
 
-	friend Vector4 operator*(const Matrix4x4& p_mat, const Vector4& p_vec);
-	friend Matrix4x4 operator*(const Matrix4x4& p_left, const Matrix4x4& p_right);
+	 friend Vector4 GLIB_API operator*(const Matrix4x4& p_mat, const Vector4& p_vec);
+	friend Matrix4x4 GLIB_API  operator*(const Matrix4x4& p_left, const Matrix4x4& p_right);
 	Matrix4x4& operator*(const float& p_s);
 	Matrix4x4& operator*=(const Matrix4x4& p_matrix);
 	const SimpleVec4& operator[](const int& p_index) const;

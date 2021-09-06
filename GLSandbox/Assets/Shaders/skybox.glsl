@@ -40,6 +40,7 @@ vec4 color;
  void main()  
  {  
      color = texture(cubeMap, TexCoord);
+     
   //  color = vec4(brightnessContrast(color.xyz, 1.15f, 1.15f), color.w);
   //  color = vec4(gamma(color.xyz, 4.8f),color.w);
 	FragColor = color;

@@ -27,7 +27,7 @@ struct GLIB_API CameraSettings
 class GLIB_API Camera
 {
 protected:
-
+	friend class Scene;
 	Transform transform;
 	std::shared_ptr<CameraController> cameraController;
 	CameraSettings m_cameraSettings;
@@ -54,10 +54,11 @@ public:
 	virtual void OnEvent(const Event& event) {};
 
 
-	const CameraController* const GetController() const { cameraController.get(); }
+	const CameraController* const GetController() const { return cameraController.get(); }
 	void AttachController(CameraController* p_cameraController)
 	{
 		cameraController.reset(p_cameraController);
+		cameraController->cameraTransform = &transform;
 	}
 
 	Camera();

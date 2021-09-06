@@ -27,17 +27,23 @@ class GLIB_API  Shader
 	ShaderCache cache;
 	std::vector<std::string> uniformNames;
 
-	enum class Type
+	enum class  Type
 	{
 		NONE = -1,
 		VERTEX,
-		FRAGMENT
+		FRAGMENT,
+		GEOMETRY,
+		TESSELATION,
+		COMPUTE,
+		MAX
 	};
 
 	Type shaderType = Type::NONE;
 	unsigned int program;
 	unsigned int CompileShader(const std::string& src, unsigned int type);
 	void CreateShader();
+
+	void CheckLinkErrors();
 
 public:
 	void Bind() const;
@@ -59,7 +65,7 @@ public:
 	void SetFloat(const std::string& name, float p_val);
 	void SetIntArray(const std::string& name, int* p_val, uint32_t count);
 	
-	std::string vertexSource, fragmentSource;
+	std::string vertexSource, fragmentSource, geometrySource, tesselationSource, computeSource;
 	void ParseShader(const std::string& filepath);
 	unsigned int GetProgram() const { return program; };
 

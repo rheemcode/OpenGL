@@ -132,7 +132,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glew32s.lib;opengl32.lib;user32.lib;gdi32.lib;shell32.lib;dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32s.lib;opengl32.lib;dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Extern\GLFW\lib-vc2019;$(SolutionDir)Extern\GLEW\lib\Release\x64</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
@@ -157,7 +157,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glew32s.lib;opengl32.lib;user32.lib;gdi32.lib;shell32.lib;dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32s.lib;opengl32.lib;dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)Extern\GLFW\lib-vc2019;$(SolutionDir)Extern\GLEW\lib\Release\x64</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
@@ -165,6 +165,7 @@
   <ItemGroup>
     <ClCompile Include="Intern\Core\CameraController.cpp" />
     <ClCompile Include="Intern\Core\GLApplication.cpp" />
+    <ClCompile Include="Intern\Core\Profiler.cpp" />
     <ClCompile Include="Intern\Core\Renderer\Buffers\FrameBuffer.cpp" />
     <ClCompile Include="Intern\Core\CommandBuffer.cpp" />
     <ClCompile Include="Intern\Core\Components\Component.cpp" />
@@ -182,10 +183,12 @@
     <ClCompile Include="Intern\Core\Thread.cpp" />
     <ClCompile Include="Intern\Core\Components\StaticMeshRendererComponent.cpp" />
     <ClCompile Include="Intern\Core\SceneCamera.cpp" />
+    <ClCompile Include="Intern\Core\Renderer\RenderAPI.cpp" />
     <ClInclude Include="Intern\Core\CameraController.h" />
     <ClInclude Include="Intern\Core\GLApplication.h" />
     <ClInclude Include="Intern\Core\GLCore.h" />
     <ClInclude Include="Intern\Core\GLMain.h" />
+    <ClInclude Include="Intern\Core\Profiler.h" />
     <ClInclude Include="Intern\Core\Window\Display.h" />
     <ClInclude Include="Intern\GLibEntry.h" />
     <ClInclude Include="Intern\glpch.h" />
@@ -226,6 +229,7 @@
     <ClInclude Include="Intern\Core\Renderer\SkyBox.h" />
     <ClInclude Include="Intern\Core\Thread.h" />
     <ClInclude Include="Intern\Core\Components\StaticMeshRendererComponent.h" />
+    <ClInclude Include="Intern\Core\Renderer\RenderAPI.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Intern\Core\SceneCamera.h" />
   </ItemGroup>

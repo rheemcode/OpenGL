@@ -26,7 +26,7 @@
 		Console::Log( LogMode::ERROR, __FUNCTION__, __FILE__, std::to_string(__LINE__), "Condition \"" #m_cond "\" is true. Returning: " #val,  m_msg);    \
 		return val;																													\
 }
-
+#define GL_DEBUG
 #ifdef GL_DEBUG
 
 #define GLCall(x) GLClearError();\

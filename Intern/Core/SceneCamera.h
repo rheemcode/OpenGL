@@ -1,7 +1,7 @@
 #pragma once
 #include "Camera.h"
 
-class SceneCamera : public Camera
+class GLIB_API SceneCamera : public Camera
 {
 
 public:

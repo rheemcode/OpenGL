@@ -1,13 +1,14 @@
 #pragma once
 
 #define NO_FDECL
+#include "GLCore.h"
 #include "Math/Math.h"
 #include "Vector2.h"
 #include "SimpleVec.h"
 #include <functional>
 
 
-struct Vector3
+struct GLIB_API Vector3
 {
 	Vector3() : x(0), y(0), z(0) {}
 	Vector3(float p_x, float p_y, float p_z) 

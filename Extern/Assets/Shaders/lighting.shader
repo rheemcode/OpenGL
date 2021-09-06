@@ -129,9 +129,9 @@ void main()
     vec3 Light = Ambient + ((1.0 - shadow) * Diffuse);
     // Light = (Ambient) + (Diffuse);
 
-    vec3 color = min(Light * vec3(texCol), vec3(1.0));
-    //vec3 color = min(Light, vec3(1.0));
+   // vec3 color = min(Light * vec3(texCol), vec3(1.0));
+    vec3 color = min(Light, vec3(1.0));
     FragColor = vec4(color, texCol.a);
-
+    FragColor = vec4(1.0)
 //    FragColor = vec4(vec3(texCol), 1);
 };

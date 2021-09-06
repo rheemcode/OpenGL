@@ -15,7 +15,9 @@ int OpenGLContext::Init(HWND p_Hwnd)
 	pfd.nVersion = 1;
 	pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
 	pfd.iPixelType = PFD_TYPE_RGBA;
-	pfd.cColorBits = 24;
+	//pfd.cColorBits = 8;
+	//pfd.cDepthBits = 16;
+	
 
 
 	hDC = GetDC(hwnd);
@@ -51,13 +53,38 @@ int OpenGLContext::Init(HWND p_Hwnd)
 	}
 	
 	int attribs[] = {
-	WGL_CONTEXT_MAJOR_VERSION_ARB, 4, //we want a 3.3 context
+	WGL_CONTEXT_MAJOR_VERSION_ARB, 4, //we want a 4.1 context
 	WGL_CONTEXT_MINOR_VERSION_ARB, 1,
+
 	//and it shall be forward compatible so that we can only use up to date functionality
 	WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
 	WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB /*| _WGL_CONTEXT_DEBUG_BIT_ARB*/,
-	0
+	0, 0
 	}; //zero indicates the end of the array
+
+	/*int nPixelFormat2;
+
+	BOOL bValidPixFormat;
+	UINT nMaxFormats = 1;
+	UINT nNumFormats;
+	float pfAttribFList[] = { 0, 0 };
+	int piAttribIList[] = {
+		WGL_COLOR_BITS_ARB, 32,
+		WGL_DEPTH_BITS_ARB, 16,
+		WGL_SAMPLES_ARB, 16,
+		0, 0 };
+
+	bValidPixFormat = wglChoosePixelFormatARB(hDC, piAttribIList, pfAttribFList, nMaxFormats, &nPixelFormat2, &nNumFormats);
+
+	if (!bValidPixFormat)
+	{
+		MessageBoxA(NULL, "Invalid Pixel Format", "Error! (SetupWGLPixelFormat)", MB_OK);
+	}
+
+	SetPixelFormat(hDC, nPixelFormat2, &pfd);*/
+
+
+
 
 	if (wglewIsSupported("WGL_ARB_create_context") == 1)
 	{

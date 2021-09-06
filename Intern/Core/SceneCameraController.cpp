@@ -89,7 +89,7 @@ void SceneCameraController::Update(float p_delta)
 			controller.yRot = currentController.yRot;
 
 		Vector3 forward = cameraTransform->GetWorldForward();
-		controller.position = controller.position + forward * controller.distance;
+		controller.position = controller.position;
 
 	}
 	else

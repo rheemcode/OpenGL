@@ -4,16 +4,16 @@
 
 class ShadowBox
 {
-	const float offset = 30;
-	const float shadowDistance = 100;
+	const float offset = 10;
+	const float shadowDistance = 15;
 
 	float minX, maxX;
 	float minY, maxY;
 	float minZ, maxZ;
 
-	Matrix4x4 lightViewMatrix;
 	CameraSettings cameraSettings;
-	Transform cameraTransform;
+	const Matrix4x4* lightViewMatrix;
+	const Transform* cameraTransform;
 
 	float farHeight, farWidth, nearWidth, nearHeight;
 
@@ -23,22 +23,22 @@ class ShadowBox
 		nearWidth = cameraSettings.znear * Math::Tan(Math::Deg2Rad(cameraSettings.fovY));
 
 		farHeight = farWidth / cameraSettings.ratio;
-		nearWidth = nearWidth / cameraSettings.ratio;
+		nearHeight = nearWidth / cameraSettings.ratio;
 	}
 
 
 	Vector4* CalculateFrustumVertices()
 	{
-		Vector3 UP = cameraTransform.GetLocalUp();
-		Vector3 RIGHT = cameraTransform.GetLocalRight();
-		Vector3 FORWARD = cameraTransform.GetLocalForward();
+		Vector3 UP = cameraTransform->GetLocalUp();
+		Vector3 RIGHT = cameraTransform->GetLocalRight();
+		Vector3 FORWARD = cameraTransform->GetLocalForward();
 
 
 		Vector3 toFar = FORWARD * shadowDistance;
 		Vector3 toNear = FORWARD * cameraSettings.znear;
 
-		Vector3 centerNear = toNear + cameraTransform.GetLocalPosition();
-		Vector3 centerFar = toFar + cameraTransform.GetLocalPosition();
+		Vector3 centerNear = toNear + cameraTransform->GetLocalPosition();
+		Vector3 centerFar = toFar + cameraTransform->GetLocalPosition();
 
 		Vector3 farTop = centerFar + (UP * farHeight);
 		Vector3 farBottom = centerFar + (-UP * farHeight);
@@ -64,7 +64,7 @@ class ShadowBox
 		Vector4 point = startPoint + (direction * width);
 		point.w = 1.f;
 
-		return lightViewMatrix * point;
+		return *lightViewMatrix * point;
 	}
 
 
@@ -118,7 +118,7 @@ public:
 		float y = (minY + maxY) * 0.5f;
 		float z = (minZ + maxZ) * 0.5f;
 		Vector4 center = Vector4(x, y, z, 1.f);
-		Matrix4x4 invertedMat = Matrix4x4::Inverse(lightViewMatrix);
+		Matrix4x4 invertedMat = Matrix4x4::Inverse(*lightViewMatrix);
 		Vector4 res = invertedMat * center;
 		return Vector3(res.x, res.y, res.z);
 	}
@@ -139,9 +139,9 @@ public:
 
 	void operator=(ShadowBox&& p_box) noexcept
 	{
-		lightViewMatrix = std::move(p_box.lightViewMatrix);
+		lightViewMatrix = p_box.lightViewMatrix;
+		cameraTransform = p_box.cameraTransform;
 		cameraSettings = std::move(p_box.cameraSettings);
-		cameraTransform = std::move(p_box.cameraTransform);
 
 		CalculateBounds();
 	}
@@ -158,17 +158,17 @@ public:
 
 	ShadowBox(ShadowBox&& p_box) noexcept
 	{
-		lightViewMatrix = std::move(p_box.lightViewMatrix);
+		lightViewMatrix = p_box.lightViewMatrix;
+		cameraTransform = p_box.cameraTransform;
 		cameraSettings = std::move(p_box.cameraSettings);
-		cameraTransform = std::move(p_box.cameraTransform);
 
 		CalculateBounds();
 	}
 
 	ShadowBox(const Matrix4x4& p_lightViewMatrix, const Transform& p_cameraTransform, const CameraSettings& p_cameraSettings)
 	{
-		lightViewMatrix = p_lightViewMatrix;
-		cameraTransform = p_cameraTransform;
+		lightViewMatrix = &p_lightViewMatrix;
+		cameraTransform = &p_cameraTransform;
 		cameraSettings = p_cameraSettings;
 
 		CalculateBounds();

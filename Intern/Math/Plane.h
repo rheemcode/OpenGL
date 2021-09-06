@@ -2,7 +2,7 @@
 
 #include "Vector3.h"
 
-class Plane
+class GLIB_API Plane
 {
 public:
 	Vector3 normal;
