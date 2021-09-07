@@ -54,7 +54,7 @@ public:
 
 class SceneCamera : public Camera
 {
-
+	friend class Scene;
 	Transform transform;
 	SceneCameraController cameraController;
 

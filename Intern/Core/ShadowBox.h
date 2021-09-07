@@ -4,16 +4,16 @@
 
 class ShadowBox
 {
-	const float offset = 30;
-	const float shadowDistance = 100;
+	const float offset = 1;
+	const float shadowDistance = 15;
 
 	float minX, maxX;
 	float minY, maxY;
 	float minZ, maxZ;
 
-	Matrix4x4 lightViewMatrix;
+	Matrix4x4* lightViewMatrix;
 	CameraSettings cameraSettings;
-	Transform cameraTransform;
+	Transform* cameraTransform;
 
 	float farHeight, farWidth, nearWidth, nearHeight;
 
@@ -29,16 +29,16 @@ class ShadowBox
 
 	Vector4* CalculateFrustumVertices()
 	{
-		Vector3 UP = cameraTransform.GetLocalUp();
-		Vector3 RIGHT = cameraTransform.GetLocalRight();
-		Vector3 FORWARD = cameraTransform.GetLocalForward();
+		Vector3 UP = cameraTransform->GetLocalUp();
+		Vector3 RIGHT = cameraTransform->GetLocalRight();
+		Vector3 FORWARD = cameraTransform->GetLocalForward();
 
 
 		Vector3 toFar = FORWARD * shadowDistance;
 		Vector3 toNear = FORWARD * cameraSettings.znear;
 
-		Vector3 centerNear = toNear + cameraTransform.GetLocalPosition();
-		Vector3 centerFar = toFar + cameraTransform.GetLocalPosition();
+		Vector3 centerNear = toNear + cameraTransform->GetLocalPosition();
+		Vector3 centerFar = toFar + cameraTransform->GetLocalPosition();
 
 		Vector3 farTop = centerFar + (UP * farHeight);
 		Vector3 farBottom = centerFar + (-UP * farHeight);
@@ -64,7 +64,7 @@ class ShadowBox
 		Vector4 point = startPoint + (direction * width);
 		point.w = 1.f;
 
-		return lightViewMatrix * point;
+		return *lightViewMatrix * point;
 	}
 
 
@@ -118,7 +118,7 @@ public:
 		float y = (minY + maxY) * 0.5f;
 		float z = (minZ + maxZ) * 0.5f;
 		Vector4 center = Vector4(x, y, z, 1.f);
-		Matrix4x4 invertedMat = Matrix4x4::Inverse(lightViewMatrix);
+		Matrix4x4 invertedMat = Matrix4x4::Inverse(*lightViewMatrix);
 		Vector4 res = invertedMat * center;
 		return Vector3(res.x, res.y, res.z);
 	}
@@ -165,10 +165,10 @@ public:
 		CalculateBounds();
 	}
 
-	ShadowBox(const Matrix4x4& p_lightViewMatrix, const Transform& p_cameraTransform, const CameraSettings& p_cameraSettings)
+	ShadowBox(Matrix4x4& p_lightViewMatrix, Transform& p_cameraTransform, const CameraSettings& p_cameraSettings)
 	{
-		lightViewMatrix = p_lightViewMatrix;
-		cameraTransform = p_cameraTransform;
+		lightViewMatrix = &p_lightViewMatrix;
+		cameraTransform = &p_cameraTransform;
 		cameraSettings = p_cameraSettings;
 
 		CalculateBounds();

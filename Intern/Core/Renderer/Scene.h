@@ -85,6 +85,42 @@ struct Timer
 	}
 };
 
+
+struct ShadowData
+{
+	Vector3 LightDir;
+	Matrix4x4 View;
+	Matrix4x4 Proj;
+	Matrix4x4 Bias;
+
+	void UpdateView(Vector3 direction, Vector3 center)
+	{
+		direction = Vector3::Normalize(direction);
+		center = -center;
+		View = Matrix4x4();
+
+		float pitch = Math::ACos(Vector2::Length(Vector2(direction.x, direction.z)));
+
+		View = Matrix4x4::Rotate(View, Vector3(1, 0, 0), pitch);
+		float yaw = Math::Rad2deg((Math::ATan(direction.x / direction.z)));
+		yaw = direction.z > 0 ? yaw - 180 : yaw;
+		View = Matrix4x4::Rotate(View, Vector3(0, 1, 0), -Math::Deg2Rad(yaw));
+
+		View = Matrix4x4::Translate(View, center);
+	}
+
+	void UpdateProjection(float width, float height, float length)
+	{
+		Proj = Matrix4x4();
+
+		Proj[0][0] = 2.f / width;
+		Proj[1][1] = 2.f / height;
+		Proj[2][2] = -2.f / length;
+		Proj[3][3] = 1.f;
+	}
+};
+
+
 class Scene
 {
 	enum DrawMode
@@ -117,7 +153,7 @@ class Scene
 	using ShadowBuffer = FrameBuffer;
 	std::unique_ptr<ShadowBuffer> m_shadowBuffer;
 	ShadowBox m_shadowBox;
-
+	ShadowData shadowData;
 
 	std::unique_ptr<UniformBuffer> m_LightsBuffer;
 	std::unique_ptr<SceneCamera> sceneCamera;

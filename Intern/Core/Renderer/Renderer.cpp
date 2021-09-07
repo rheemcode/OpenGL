@@ -65,7 +65,7 @@ void RenderCommand::RenderLines(const VertexArray& vertexArray)
 
 RendererData Renderer::renderData;
 RendererData Renderer::testRenderData;
-ShadowData Renderer::shadowData;
+//ShadowData Renderer::shadowData;
 
 static Vector3 temp_aabbVertices[] =
 {
@@ -157,6 +157,7 @@ void Renderer::BeginShadow()
 	Scene* scene = Scene::GetSingleton();
 
 	const auto& shadowBox = scene->GetShadowBox();
+	auto& shadowData = scene->shadowData;
 	shadowData.UpdateView(scene->GetSkyLightDirection(), shadowBox.GetCenter());
 	shadowData.UpdateProjection(shadowBox.GetWidth(), shadowBox.GetHeight(), shadowBox.GetLength());
 
@@ -221,7 +222,7 @@ void Renderer::Render(const std::vector<Mesh>& p_meshes)
 	}
 	//	glEnableVertexAttribArray(1);
 	//	glEnableVertexAttribArray(2);
-#ifdef DRAW_QUAD
+#ifndef DRAW_QUAD
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, 1200, 700);
