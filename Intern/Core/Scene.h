@@ -97,13 +97,13 @@ struct GLIB_API ShadowData
 
 	void UpdateProjection()
 	{
-		float width = shadowBounds.GetWidth(), height = shadowBounds.GetHeight(), length = shadowBounds.GetLength();
-		Proj = Matrix4x4();
-
-		Proj[0][0] = 2.f / width;
-		Proj[1][1] = 2.f / height;
-		Proj[2][2] = -2.f / length;
-		Proj[3][3] = 1.f;
+		//float width = shadowBounds.GetWidth(), height = shadowBounds.GetHeight(), length = shadowBounds.GetLength();
+		//Proj = Matrix4x4();
+		Proj = Matrix4x4::CreateOrtho(shadowBounds.minX, shadowBounds.maxX, shadowBounds.minY, shadowBounds.maxY, shadowBounds.minZ, shadowBounds.maxZ);
+		//Proj[0][0] = 2.f / width;
+		//Proj[1][1] = 2.f / height;
+		//Proj[2][2] = -2.f / length;
+		//Proj[3][3] = 1.f;
 		//auto alt = Matrix4x4::CreateOrtho()
 	}
 };

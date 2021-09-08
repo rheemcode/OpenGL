@@ -5,11 +5,7 @@
 class ShadowBox
 {
 	const float offset = 10;
-	const float shadowDistance = 15;
-
-	float minX, maxX;
-	float minY, maxY;
-	float minZ, maxZ;
+	const float shadowDistance = 8;
 
 	CameraSettings cameraSettings;
 	const Matrix4x4* lightViewMatrix;
@@ -70,6 +66,10 @@ class ShadowBox
 
 public:
 
+
+	float minX, maxX;
+	float minY, maxY;
+	float minZ, maxZ;
 
 	void UpdateBounds()
 	{

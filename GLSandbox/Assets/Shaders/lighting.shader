@@ -25,6 +25,7 @@ uniform mat4 shadowSpaceMatrix;
 
 void main()
 {
+
     vs_out.ShadowCoord = shadowSpaceMatrix * (model * vec4(vPos, 1.0));
     vs_out.Normal = transpose(inverse(mat3(model))) * normal;
     vs_out.TexCoord = texCoord;
@@ -92,29 +93,41 @@ out vec4 FragColor;
 vec3 lightDir;
 float attenuation;
 
+const int pcfCount = 2;
+const float totalTexels = (pcfCount * 2.0 + 1.0) * (pcfCount * 2.0 + 1.0);
+const float mapSize = 2048.0 * 2.0;
+const float texelSize = 1.0 / mapSize;
+
+#define VEC3 vec3(0, 0, 0)
+#define VEC3_1 vec3(1, 1, 1)
+#define ZERO 0
+#define ONE 1.0
+
 float ShadowCalculation(vec4 ShadowPos)
 {
 
     vec3 projCoords = ShadowPos.xyz / ShadowPos.w;
-    float closestDepth = texture(depthTexture, projCoords.xy).r;
-    float currentDepth = projCoords.z;
-    //float shadow = currentDepth > closestDepth ? 1.0 : 0.0;
-    float bias = max(0.01 * (1.0 - dot(vs_out.Normal, lightDir)), 0.001);
-    float shadow = 0.0;
-    shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
-    if (projCoords.z > 1.0)
+    //projCoords = clamp(projCoords, VEC3, VEC3_1);
+    if (projCoords.z > ONE || projCoords.z < ZERO || projCoords.x < ZERO || projCoords.x > ONE || projCoords.y < ZERO)
         return 0;
 
-    /*vec2 texelSize = 1.0 / textureSize(depthTexture, 0);
-    for (int x = -1; x <= 1; ++x)
+    float currentDepth = projCoords.z;
+   // float bias = max(0.01 * (ONE - dot(vs_out.Normal, lightDir)), 0.001);
+    float shadow = 0.0;
+
+    vec2 offset;
+    for (int x = -pcfCount; x <= pcfCount; ++x)
     {
-        for (int y = -1; y <= 1; ++y)
+        for (int y = -pcfCount; y <= pcfCount; ++y)
         {
-            float pcfDepth = texture(depthTexture, projCoords.xy + vec2(x, y) * texelSize).r;
-            shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+            offset.x = x; offset.y = y;
+            float pcfDepth = texture(depthTexture, projCoords.xy + offset * texelSize).x;
+            if (currentDepth  > pcfDepth + 0.002)
+                shadow += ONE;
+            //shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
         }
     }
-    shadow /= 9.0;*/
+    shadow /= totalTexels;
     return shadow;
 }
 
@@ -127,66 +140,32 @@ void main()
     float attenuation;
     if (Lights.LightType == 1)
     {
-        attenuation = 1;
+        attenuation = ONE;
     }
 
 
 
     lightDir = vec3(-Lights.Direction);
 
-    float NdotL = max(dot(vs_out.NormalInterp, lightDir), 0.0);
+    float NdotL = max(dot(vs_out.NormalInterp, lightDir),ZERO);
     vec3 halfVec = normalize(lightDir + normalize(-vs_out.FragPos));
-    float eyeLight = max(dot(vs_out.NormalInterp, halfVec), 0.0);
+    float eyeLight = max(dot(vs_out.NormalInterp, halfVec), ZERO);
     float Specular;
-    if (NdotL > 0.0)
-        Specular = 1 * pow(eyeLight, 2);
+    if (NdotL > ZERO)
+        Specular = ONE * pow(eyeLight, 2);
     else
-        Specular = 0;
+        Specular = ZERO;
 
     vec3 Ambient = vec3(Lights.Ambient) * Lights.AmbientEnergy * attenuation;
     vec3 Diffuse = vec3(Lights.Color) * NdotL * Lights.Energy * attenuation;
 
     float shadow = ShadowCalculation(vs_out.ShadowCoord);
-    vec3 Light = Ambient + ((1.0 - shadow) * Diffuse);
+    vec3 Light = Ambient + ((ONE - (shadow * vs_out.ShadowCoord.w)) * Diffuse);
     // Light = (Ambient) + (Diffuse);
 
-  // vec3 color = min(Light * vec3(texCol), vec3(1.0));
-    vec3 color = min(Light, vec3(1.0));
+    vec3 color = min(Light * vec3(texCol), VEC3_1);
+    //vec3 color = min(Light, VEC3_1);
     FragColor = vec4(color, texCol.a);
 
 //    FragColor = vec4(vec3(texCol), 1);
 };
-
-//#shader[geometry]
-//#version 430 core
-//layout(triangles) in;
-//layout(line_strip, max_vertices = 6) out;
-//
-//in VS_OUT
-//{
-//    vec2 TexCoord;
-//    vec3 FragPos;
-//    vec3 NormalInterp;
-//    vec4 ShadowCoord;
-//    vec3 Normal;
-//} gs_in[];
-//
-//const float MAGNITUDE = 0.4;
-//
-//
-//void GenerateLine(int index)
-//{
-//    //gl_Position = projection * gl_in[index].gl_Position;
-//    //EmitVertex();
-//    //gl_Position = projection * (gl_in[index].gl_Position +
-//    //    vec4(gs_in[index].Normal, 0.0) * MAGNITUDE);
-//    EmitVertex();
-//    EndPrimitive();
-//}
-//
-//void main()
-//{
-//    GenerateLine(0); // first vertex normal
-//    GenerateLine(1); // second vertex normal
-//    GenerateLine(2); // third vertex normal
-//}

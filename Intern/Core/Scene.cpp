@@ -27,11 +27,11 @@ const std::array<std::unique_ptr<Light>, 10>& Scene::GetLight()
 
 using namespace std::literals::chrono_literals;
 
-void Scene::Render()
+void Scene::PrepareMeshes()
 {
-	Renderer::Clear();
-	Renderer::BeginScene(GetSceneCamera());
 	culledMeshes.clear();
+	if (meshDirty)
+		meshes.clear();
 	for (auto& actor : m_actors)
 	{
 
@@ -41,6 +41,10 @@ void Scene::Render()
 			meshRenderer->UpdateTransform();
 			for (const auto& mesh : meshRenderer->GetMeshes())
 			{
+				if (meshDirty)
+				{
+					meshes.push_back(mesh);
+				}
 				if (mesh.GetInstanceBound().InFrustum(sceneCamera->GetFrustum()))
 				{
 					culledMeshes.push_back(mesh);
@@ -48,13 +52,54 @@ void Scene::Render()
 			}
 		}
 	}
-	m_shadowBox.UpdateBounds();
-#ifdef RENDER_TEST
-    //Renderer::RenderTest(culledMeshes);
-	//test->RenderTest(p_delta, 0);
-#endif
-	Renderer::Render(culledMeshes);
-	Renderer::EndScene();
+
+	meshDirty = false;
+}
+
+void Scene::Render()
+{
+	PrepareMeshes();
+	shadowData->shadowBounds.UpdateBounds();
+	shadowData->UpdateView(GetSkyLightDirection());
+	shadowData->UpdateProjection();
+	shadowData->ProjView = shadowData->Proj * shadowData->View;
+
+	
+	{
+		// Depth Pass
+		RenderPass depthPass;
+		depthPass.Pass = RenderPass::DEPTH_PASS;
+		auto& renderData = depthPass.renderData;
+		renderData.cameraData = cameraData;
+		renderData.meshes = meshes;
+		renderData.shader = shadowShader;
+		renderData.shadowData = shadowData;
+		Renderer::PushPass(std::move(depthPass));
+	}
+
+	{
+		// Color Pass
+		RenderPass colorPass;
+		colorPass.Pass = RenderPass::COLOR_PASS;
+		auto& renderData = colorPass.renderData;
+		renderData.cameraData = cameraData;
+		renderData.meshes = culledMeshes;
+		renderData.shader = sceneShader;
+		renderData.shadowData = shadowData;
+		Renderer::PushPass(std::move(colorPass));
+	}
+
+
+	{
+		// Skybox Pass
+		RenderPass skyboxPass;
+		skyboxPass.Pass = RenderPass::SKYBOX;
+		auto& renderData = skyboxPass.renderData;
+		renderData.cameraData = cameraData;
+		Renderer::PushPass(std::move(skyboxPass));
+	}
+
+	Renderer::FlushRenderQueue();
 }
 
 
@@ -176,26 +221,34 @@ void Scene::CreateDefaultActor()
 	std::shared_ptr<MeshRendererComponent> renderComponent = std::make_shared<MeshRendererComponent>(actor, "./Assets/house.obj");
 	actor->AddComponent(tComponent);
 	actor->AddComponent(renderComponent);
-
+	meshDirty = true;
 	AddActor(actor);
 }
 
 void Scene::InitSceneCamera()
 {
-	Display* display = Display::GetSingleton();
-	CameraSettings cameraSettings;
-	cameraSettings.mode = CameraMode::PERSPECTIVE;
-	cameraSettings.fovY = 70.f;
-	cameraSettings.znear = 0.1f;
-	cameraSettings.zfar = 1000.f;
-	cameraSettings.winWidth = display->GetMainWindow()->GetWidth();
-	cameraSettings.winHeight = display->GetMainWindow()->GetHeight();
-	cameraSettings.ratio = cameraSettings.winWidth / cameraSettings.winHeight;
+
 	if (sceneCamera == nullptr)
 	{
+		Display* display = Display::GetSingleton();
+		CameraSettings cameraSettings;
+		cameraSettings.mode = CameraMode::PERSPECTIVE;
+		cameraSettings.fovY = 70.f;
+		cameraSettings.znear = 0.1f;
+		cameraSettings.zfar = 1000.f;
+		cameraSettings.winWidth = display->GetMainWindow()->GetWidth();
+		cameraSettings.winHeight = display->GetMainWindow()->GetHeight();
+		cameraSettings.ratio = cameraSettings.winWidth / cameraSettings.winHeight;
 		sceneCamera = std::make_unique<SceneCamera>(cameraSettings);
 	}
-	m_shadowBox = ShadowBox(Matrix4x4(), sceneCamera->GetTransform(), cameraSettings);
+	cameraData = std::make_shared<CameraData>();
+	cameraData->proj.reset(&sceneCamera->m_ProjectionMatrix);
+	cameraData->view.reset(&sceneCamera->m_ViewMatrix);
+	shadowData = std::make_shared<ShadowData>();
+	shadowData->shadowBounds = ShadowBox(shadowData->View, sceneCamera->transform, sceneCamera->m_cameraSettings);
+	auto Bias = Matrix4x4::CreateTranslation({ 0.5f, 0.5f, 0.5f });
+	Bias = Matrix4x4::Scale(Bias, { 0.5f, 0.5f, 0.5f });
+	shadowData->Bias = Bias;
 }
 
 void Scene::CreateSkyLight()
@@ -225,7 +278,7 @@ void Scene::CreateBuffers()
 
 	m_shadowBuffer = std::make_unique<FrameBuffer>();
 	m_shadowBuffer->CreateTexture();
-	m_shadowBuffer->AttachDepthTexture();
+	m_shadowBuffer->AttachDepthTexture(4096, 4096);
 }
 
 

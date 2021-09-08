@@ -94,14 +94,14 @@ float attenuation;
 
 float ShadowCalculation(vec4 ShadowPos)
 {
-
+    
     vec3 projCoords = ShadowPos.xyz / ShadowPos.w;
     float closestDepth = texture(depthTexture, projCoords.xy).r;
     float currentDepth = projCoords.z;
     //float shadow = currentDepth > closestDepth ? 1.0 : 0.0;
     float bias = max(0.01 * (1.0 - dot(vs_out.Normal, lightDir)), 0.001);
     float shadow = 0.0;
-    //shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+    shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
     if (projCoords.z > 1.0)
         return 0;
 

@@ -13,7 +13,7 @@ void GLSandboxApplication::OnStart()
 	CameraSettings cameraSettings;
 	cameraSettings.mode = CameraMode::PERSPECTIVE;
 	cameraSettings.fovY = 70.f;
-	cameraSettings.znear = 0.1f;
+	cameraSettings.znear = 0.01f;
 	cameraSettings.zfar = 1000.f;
 	cameraSettings.winWidth = display->GetMainWindow()->GetWidth();
 	cameraSettings.winHeight = display->GetMainWindow()->GetHeight();
