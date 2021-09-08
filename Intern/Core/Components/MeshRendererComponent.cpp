@@ -1,3 +1,4 @@
+#include <glpch.h>
 #include "MeshRendererComponent.h"
 
 void MeshRendererComponent::AddModel(const std::string& p_modelFilePath)

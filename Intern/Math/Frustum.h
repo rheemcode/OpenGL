@@ -16,7 +16,7 @@ enum FrustumPlane
 	Bottom,
 };
 
-struct PlaneSign
+struct GLIB_API PlaneSign
 {
 	uint32_t signs[3];
 	PlaneSign() {}
@@ -40,7 +40,7 @@ struct PlaneSign
 	}
 };
 
-struct Frustum
+struct GLIB_API Frustum
 {
 	std::array<Plane, 6> planes;
 	std::array<PlaneSign, 6> planeSigns;

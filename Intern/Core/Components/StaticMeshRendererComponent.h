@@ -1,6 +1,6 @@
 #pragma once
 #include "MeshRendererComponent.h"
-class StaticMeshRendererComponent : public MeshRendererComponent
+class GLIB_API StaticMeshRendererComponent : public MeshRendererComponent
 {
 protected:
 	//ComponentCategory GetComponentCategoryImpl() const override { return ComponentCategory::Renderable;  };

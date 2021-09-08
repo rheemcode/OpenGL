@@ -1,11 +1,11 @@
 #include "Texture.h"
-
+#include <glpch.h>
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_WINDOWS_UTF8
 
 #include <stb_image.h>
-#include <Renderer/Debug.h>
-#include <array>
+#include <Debug.h>
+
 
 #define TEXTURE_INIT_2D GLCall(glTexStorage2D(GL_TEXTURE_2D, 1, m_InternalFormat, m_Width, m_Height)); \
 			GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)); \
@@ -46,7 +46,7 @@ void Texture::ActiveTexture(uint32_t count)
 
 void Texture::Bind(uint32_t p_val)
 {
-	GLCall(glBindTexture(GL_TEXTURE_2D, m_ID[p_val - 1]));
+	GLCall(glBindTexture(GL_TEXTURE_2D, m_ID[p_val]));
 }
 
 void Texture::BindAll()
@@ -95,13 +95,20 @@ void Texture::BufferData(unsigned char* data, int width, int height, DataFormat 
 	if (data)
 	{
 		GLCall(glTexImage2D(GL_TEXTURE_2D, 0, m_InternalFormat, m_Width, m_Height, 0, m_DataFormat, GL_UNSIGNED_BYTE, data));
-		glGenerateMipmap(GL_TEXTURE_2D);
+	//	glGenerateMipmap(GL_TEXTURE_2D);
 	}
+}
+
+void Texture::Screenshot()
+{
+	//glReadBuffer(GL_BACK);
+	//void* imgData = (void*) malloc(1200 * 700);
+	//GLCall(glReadPixels(0, 0, 1200, 700, GL_DEPTH, GL_UNSIGNED_BYTE, imgData));
 }
 
 uint32_t Texture::AddImage(const std::string& filepath)
 {
-
+	stbi_set_flip_vertically_on_load(1);
 	const unsigned char* imgData = stbi_load(filepath.c_str(), &m_Width, &m_Height, &m_Components, 0);
 
 	if (m_Components == 3)
@@ -120,12 +127,12 @@ uint32_t Texture::AddImage(const std::string& filepath)
 	{
 		++textureCount;
 		ActiveTexture(textureCount);
-		Bind(textureCount);
-		stbi_set_flip_vertically_on_load(1);
+		Bind(0);
+
 
 		TEXTURE_PARAM_2D
-			GLCall(glTexImage2D(GL_TEXTURE_2D, 0, m_InternalFormat, m_Width, m_Height, 0, m_DataFormat, GL_UNSIGNED_BYTE, imgData));
-		GLCall(glGenerateMipmap(GL_TEXTURE_2D));
+		GLCall(glTexImage2D(GL_TEXTURE_2D, 0, m_InternalFormat, m_Width, m_Height, 0, m_DataFormat, GL_UNSIGNED_BYTE, imgData));
+	//	GLCall(glGenerateMipmap(GL_TEXTURE_2D));
 		levels += 1;
 	}
 
@@ -203,7 +210,7 @@ void Texture::AddCubeMapImage(const std::array<std::string, 6>& p_files)
 Texture::Texture(uint32_t count)
 	: m_Width(1920), m_Height(1080), m_Components(4), m_DataFormat(RGBA), m_InternalFormat(RGBA8), xOffset(0), yOffset(0)
 {
-	glGenTextures(count, m_ID);
+	GLCall(glGenTextures(count, m_ID));
 }
 
 Texture::Texture(uint32_t width, uint32_t height)

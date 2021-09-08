@@ -1,12 +1,7 @@
 #pragma once
-#include <fstream>
-#include <string>
-#include <sstream>
-#include <vector>
 #include "Math/Vector2.h"
 #include <Math/Matrix4x4.h>
-#include <unordered_map>
-
+#include "GLCore.h"
 struct ShaderCache
 {
 	std::unordered_map<std::string, int> uniformNamesLocation;
@@ -27,24 +22,31 @@ struct ShaderCache
 	}
 };
 
-struct Shader
+class GLIB_API  Shader
 {
 	ShaderCache cache;
 	std::vector<std::string> uniformNames;
 
-	enum class Type
+	enum class  Type
 	{
 		NONE = -1,
 		VERTEX,
-		FRAGMENT
+		FRAGMENT,
+		GEOMETRY,
+		TESSELATION,
+		COMPUTE,
+		MAX
 	};
 
 	Type shaderType = Type::NONE;
 	unsigned int program;
 	unsigned int CompileShader(const std::string& src, unsigned int type);
-	void Bind() const;
 	void CreateShader();
 
+	void CheckLinkErrors();
+
+public:
+	void Bind() const;
 	void UploadUniformMat4(const std::string& name, const Matrix4x4& p_mat4) const ;
 	void UploadUniformVec4(const std::string& name, const SimpleVec4& p_vec4) const ;
 	void UploadUniformVec3(const std::string& name, const Vector3& p_vec3) const;
@@ -63,7 +65,7 @@ public:
 	void SetFloat(const std::string& name, float p_val);
 	void SetIntArray(const std::string& name, int* p_val, uint32_t count);
 	
-	std::string vertexSource, fragmentSource;
+	std::string vertexSource, fragmentSource, geometrySource, tesselationSource, computeSource;
 	void ParseShader(const std::string& filepath);
 	unsigned int GetProgram() const { return program; };
 

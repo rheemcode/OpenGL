@@ -1,44 +1,62 @@
 #pragma once
-#include <vector>
-#include "../Debug.h"
+#include "Debug.h"
+
+enum class AttribDataType : uint32_t
+{
+	T_FLOAT =  GL_FLOAT,
+	T_INT   =  GL_INT,
+	T_UINT  =  GL_UNSIGNED_INT,
+	T_BYTE  =  GL_UNSIGNED_BYTE
+};
+
+enum class Attrib : uint32_t
+{
+	VERTEXPOSITION,
+	NORMAL,
+	UV,
+	TANGENT,
+};
+
+enum class AttribCount : uint32_t
+{
+	VEC1 = 1,
+	VEC2,
+	VEC3,
+	VEC4
+};
 
 struct VertexBufferElement
 {
-	unsigned int type;
-	unsigned int id;
-	unsigned int count;
-	unsigned char normalized;
+	AttribDataType type;
+	Attrib id;
+	AttribCount count;
+	bool normalized;
 
-	VertexBufferElement(uint32_t p_type, uint32_t p_id, uint32_t p_count, uint8_t p_normalized = 0)
+	VertexBufferElement(AttribDataType p_type, Attrib p_id, AttribCount p_count, bool p_normalized = 0)
 		: type(p_type), id(p_id), count(p_count), normalized(p_normalized) {}
 
-	static uint32_t GetSizeOfType(unsigned int type)
+	static uint32_t GetSizeOfType(AttribDataType type)
 	{
 		switch (type)
 		{
-			case GL_FLOAT: return sizeof(float);
-			case GL_INT: return sizeof(int);
-			case GL_UNSIGNED_INT: return sizeof(unsigned int); 
-			case GL_UNSIGNED_BYTE: return sizeof(unsigned char);
+		    case AttribDataType::T_FLOAT: return sizeof(float);
+			case AttribDataType::T_INT: return sizeof(int);
+			case AttribDataType::T_UINT: return sizeof(unsigned int);
+			case AttribDataType::T_BYTE: return sizeof(unsigned char);
 		}
 		return 0;
 	}
 };
 
-class BufferLayout
+
+
+class GLIB_API BufferLayout
 {
 private:
 	std::vector<VertexBufferElement> m_Element;
 	unsigned int m_Stride;
 
 public:
-	enum ElementSize : uint32_t
-	{
-		Float = 1,
-		VEC2,
-		VEC3,
-		VEC4
-	};
 
 	BufferLayout()
 		: m_Stride{ 0 }
@@ -54,30 +72,30 @@ public:
 
 
 	template<typename T>
-	void Push(ElementSize count, unsigned int id)
+	void Push(AttribCount count, Attrib id)
 	{
 		static_assert(false);
 	}
 
 	template<>
-	void Push<float>(ElementSize count, unsigned int id)
+	void Push<float>(AttribCount count, Attrib id)
 	{
-		m_Element.push_back({ GL_FLOAT, id, (uint32_t)count, GL_FALSE });
-		m_Stride += sizeof(float) * count;
+		m_Element.push_back({ AttribDataType::T_FLOAT, id, count, false});
+		m_Stride += sizeof(float) * static_cast<uint32_t>(count);
 	}
 	
 	template<>
-	void Push<unsigned int>(ElementSize count, unsigned int id)
+	void Push<unsigned int>(AttribCount count, Attrib id)
 	{
-		m_Element.push_back({ GL_UNSIGNED_INT, id, (uint32_t)count, GL_FALSE });
-		m_Stride +=	sizeof(unsigned int) * count;
+		m_Element.push_back({ AttribDataType::T_UINT, id, count, false });
+		m_Stride +=	sizeof(unsigned int) * static_cast<uint32_t>(count);
 	}
 
 	template<>
-	void Push<unsigned char>(ElementSize count, unsigned int id)
+	void Push<unsigned char>(AttribCount count, Attrib id)
 	{
-		m_Element.push_back({GL_UNSIGNED_BYTE, id, (uint32_t )count, GL_TRUE });
-		m_Stride += sizeof(char) * count;
+		m_Element.push_back({AttribDataType::T_BYTE, id, count, false });
+		m_Stride += sizeof(char) *  static_cast<uint32_t>(count);
 	}
 
 	void CalculateStride()
@@ -85,7 +103,7 @@ public:
 		m_Stride = 0;
 		for (auto& element : m_Element)
 		{
-			m_Stride += element.count * VertexBufferElement::GetSizeOfType(element.type);
+			m_Stride += static_cast<uint32_t>(element.count) * VertexBufferElement::GetSizeOfType(element.type);
 		}
 	}
 

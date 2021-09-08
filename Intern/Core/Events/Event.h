@@ -1,8 +1,7 @@
 #pragma once
-
-#include <sstream>
 #include <string>
-
+#include <sstream>
+#include "GLCore.h"
 #define BIT(x) 1 << x
 
 enum class EventType
@@ -31,7 +30,7 @@ enum EventCategory
 
 #define EVENT_CLASS_CATEGORY(category) virtual int GetCategoryFlags() const override { return category; }
 
-class Event
+class GLIB_API Event
 {
 public:
 	virtual ~Event() = default;

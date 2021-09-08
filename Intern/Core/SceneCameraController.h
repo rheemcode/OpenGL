@@ -1,20 +1,12 @@
 #pragma once
-#include "Math/Vector2.h"
-#include "Math/Vector3.h"
-#include "Math/Matrix4x4.h"
-#include "Tests/Object.h"
-#include "Math/Quaternion.h"
-#include "Math/Transform.h"
-#include "Events/Event.h"
+#include "CameraController.h"
 
-class SceneCameraController
+class GLIB_API SceneCameraController : public CameraController
 {
-	friend class SceneCamera;
-	Transform* transform;
 	struct Controller
 	{
 		Vector3 position;
-		float xRot = 0.5f, yRot = -0.5f, distance;
+		float xRot = 0.5f, yRot = -0.5f, distance= 1;
 		float rotationSpeed;
 
 	};
@@ -43,10 +35,12 @@ class SceneCameraController
 	Vector2 m_oldMousePos;
 
 public:
-	void OnEvent(const Event& event);
-	void HandleMouseInput(Transform& p_transform, float xPos, float yPos);
-	void Update(Transform& p_transform, float p_delta);
-	void HandleKeyboardInput(Transform& p_transform, float p_delta);
+	virtual void OnEvent(const Event& event) override;
+	virtual void OnUpdate(float p_delta) override;
+
+	void HandleMouseInput(float xPos, float yPos);
+	void Update(float p_delta);
+	void HandleKeyboardInput(float p_delta);
 	void UpdateZoom();
 
 	SceneCameraController()

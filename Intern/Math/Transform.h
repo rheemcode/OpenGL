@@ -1,10 +1,11 @@
 #pragma once
+#include "GLCore.h"
 #include "Vector3.h"
 #include "Math/Matrix3x3.h"
 #include "Matrix4x4.h"
 #include "Quaternion.h"
 
-class Transform
+class GLIB_API Transform
 {
 	Vector3 m_localPosition;
 	Vector3 m_localScale;

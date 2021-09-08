@@ -1,7 +1,6 @@
-#include "Shader.h"	
+#include <glpch.h>
 #include <GL/glew.h>
-#include <iostream>
-#include <sstream>
+#include "Shader.h"	
 #include "Debug.h"
 #include "Math/Vector2.h"
 #include "Core/Console.h"
@@ -17,7 +16,7 @@ void Shader::ParseShader(const std::string& filePath)
 	std::ifstream stream(filePath);
 
 	std::string line;
-	std::stringstream ss[2];
+	std::stringstream ss[static_cast<int>(Type::MAX)];
 
 	const char* shaderVar = "#shader";
 	if (!stream)
@@ -28,12 +27,20 @@ void Shader::ParseShader(const std::string& filePath)
 
 		if (line.find(shaderVar) != std::string::npos && line.find("//", 0, 2) == std::string::npos)
 		{
-
 			if (line.find("vertex") != std::string::npos)
 				shaderType = Type::VERTEX;
 
 			else if (line.find("fragment") != std::string::npos)
 				shaderType = Type::FRAGMENT;
+
+			else if (line.find("geometry") != std::string::npos)
+				shaderType = Type::GEOMETRY;
+
+			else if (line.find("tesselation") != std::string::npos)
+				shaderType = Type::TESSELATION;
+
+			else if (line.find("compute"))
+				shaderType = Type::COMPUTE;
 		}
 
 		else
@@ -85,16 +92,30 @@ void Shader::ParseShader(const std::string& filePath)
 
 	}
 
-	vertexSource = ss[0].str();
-	fragmentSource = ss[1].str();
+	
+	vertexSource = ss[static_cast<int>(Type::VERTEX)].str();
+	fragmentSource = ss[static_cast<int>(Type::FRAGMENT)].str();
+	geometrySource = ss[static_cast<int>(Type::GEOMETRY)].str();
+	tesselationSource = ss[static_cast<int>(Type::TESSELATION)].str();
+	computeSource = ss[static_cast<int>(Type::COMPUTE)].str();
 	CreateShader();
 }
 
 void Shader::CreateShader()
 {
+	glUseProgram(0);
     program = glCreateProgram();
 	uint32_t vs;
 	uint32_t fs;
+	uint32_t ts;
+	uint32_t gs;
+	uint32_t cs;
+
+	if (geometrySource.size() != 0)
+	{
+		gs = CompileShader(geometrySource, GL_GEOMETRY_SHADER);
+		GLCall(glAttachShader(program, gs));
+	}
 
 	if (vertexSource.size() != 0)
 	{
@@ -109,15 +130,35 @@ void Shader::CreateShader()
 	}
 	
 
+	//if (tesselationSource.size() != 0)
+	//{
+	//	ts = CompileShader(tesselationSource, GL_TESSELLATION_SHADER);
+	//	GLCall(glAttachShader(program, ts));
+	//}
+	//
+	if (computeSource.size() != 0)
+	{
+		cs = CompileShader(fragmentSource, GL_COMPUTE_SHADER);
+		GLCall(glAttachShader(program, cs));
+	}
+	
+
 	GLCall(glLinkProgram(program));
 	GLCall(glValidateProgram(program));
+	CheckLinkErrors();
 
 	if (vertexSource.size() != 0)
 		glDeleteShader(vs);
 	if (fragmentSource.size() != 0)
 		glDeleteShader(fs);
+	if (geometrySource.size() != 0)
+		glDeleteShader(gs);
+	//if (tesselationSource.size() != 0)
+		//glDeleteShader(ts);	
+	if (computeSource.size() != 0)
+		glDeleteShader(cs);
 
-	glUseProgram(program);
+	GLCall(glUseProgram(program));
 	
 	for (const auto& name : uniformNames)
 	{
@@ -125,6 +166,23 @@ void Shader::CreateShader()
 	}
 
 	uniformNames.clear();
+}
+
+void Shader::CheckLinkErrors()
+{
+	std::stringstream ss;
+	int success;
+	glGetProgramiv(program, GL_LINK_STATUS, &success);
+	if (!success)
+	{
+		int length;
+
+		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
+		char* message = (char*)_malloca(length * sizeof(char));
+		glGetProgramInfoLog(program, length, &length, message);
+		ss << "ERROR::PROGRAM_LINKING_ERROR of type: " << message << "\n";
+		Console::Log(LogMode::ERROR, ss.str().c_str());
+	}
 }
 
 unsigned int Shader::CompileShader(const std::string& src, unsigned int type)
@@ -146,7 +204,7 @@ unsigned int Shader::CompileShader(const std::string& src, unsigned int type)
 		//file.write("\n", 1);
 		GLCall(glGetShaderInfoLog(id, length, &length, message));
 		ss << message;
-		Console::Log(ss.str().c_str(), LogMode::ERROR);
+		Console::Log(LogMode::ERROR, ss.str().c_str());
 		return 0;
 	}
 	return id;

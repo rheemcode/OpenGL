@@ -15,7 +15,7 @@ enum class CameraMode
 	ORTHOGRAPHIC
 };
 
-struct CameraSettings
+struct GLIB_API CameraSettings
 {
 	CameraMode mode;
 	float fovY, znear, zfar;
@@ -24,9 +24,12 @@ struct CameraSettings
 	float ratio;
 };
 
-class Camera
+class GLIB_API Camera
 {
 protected:
+	friend class Scene;
+	Transform transform;
+	std::shared_ptr<CameraController> cameraController;
 	CameraSettings m_cameraSettings;
 
 	Matrix4x4 m_ProjectionMatrix;
@@ -43,48 +46,23 @@ public:
 	const Matrix4x4& GetViewMatrix() const;
 	const Matrix4x4& GetProjectionMatrix() const;
 	const Matrix4x4& GetViewProjectionMatrix() const;
+	const CameraSettings GetCameraSettings() const { return m_cameraSettings; }
+	const Transform& GetTransform() const { return transform; }
 
 	virtual Frustum& GetFrustum() { return m_Frustum; };
+	virtual void OnUpdate(float p_delta) {};
+	virtual void OnEvent(const Event& event) {};
+
+
+	const CameraController* const GetController() const { return cameraController.get(); }
+	void AttachController(CameraController* p_cameraController)
+	{
+		cameraController.reset(p_cameraController);
+		cameraController->cameraTransform = &transform;
+	}
 
 	Camera();
 	Camera(const CameraMode& mode);
 	Camera(const CameraSettings& setting);
-
-};
-
-class SceneCamera : public Camera
-{
-
-	Transform transform;
-	SceneCameraController cameraController;
-
-public:
-	const CameraSettings GetCameraSettings() const { return m_cameraSettings; }
-	const Transform& GetTransform() const { return transform; }
-
-	void OnEvent(const Event& event);
-	void OnUpdate(float p_delta)
-	{
-		cameraController.HandleKeyboardInput(transform, p_delta);
-		cameraController.Update(transform, p_delta);
-		UpdateView();
-	}
-
-	virtual Frustum& GetFrustum()
-	{
-		UpdateView();
-		m_Frustum.SetFrustum(m_ProjectionMatrix * m_ViewMatrix);
-		return m_Frustum;
-	}
-
-	void UpdateView()
-	{
-		m_ViewMatrix = Matrix4x4::Inverse(transform.GetWorldMatrix());
-	}
-
-	SceneCamera(const CameraSettings& p_cameraSetting)
-		: Camera(p_cameraSetting) {
-		cameraController.transform = &transform;
-	}
 
 };

@@ -1,8 +1,7 @@
 #pragma once
-#include <string>
-#include <memory>
 #include <Actor.h>
-
+#include "Events/Event.h"
+#include "GLCore.h"
 
 enum ComponentCategory
 {
@@ -10,7 +9,7 @@ enum ComponentCategory
 	Transformable,
 	Script
 };
-class Component
+class GLIB_API Component
 {
 	bool enabled;
 protected:
@@ -25,8 +24,8 @@ public:
 	std::string GetComponentName() const { return GetComponentNameImpl(); }
 	ComponentCategory GetComponentCategory() const { return GetComponentCategoryImpl(); }
 
-	virtual void OnUpdate() {}
-	virtual void OnEvent() {}
+	virtual void OnUpdate(float p_delta) {}
+	virtual void OnEvent(const Event& event) {}
 
 	Component(std::shared_ptr<Actor> p_actor);
 };

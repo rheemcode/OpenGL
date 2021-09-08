@@ -190,9 +190,9 @@ namespace Math
 		if (a == b)
 			return true;
 
-		float tolerance = EPSILON * Abs(a);
+		float tolerance = static_cast<float>(EPSILON * Abs(a));
 		if (tolerance < EPSILON)
-			tolerance = EPSILON;
+			tolerance = static_cast<float>(EPSILON);
 		return Abs(a - b) < tolerance;
 	}
 

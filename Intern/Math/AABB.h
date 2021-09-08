@@ -4,7 +4,7 @@
 #include "Plane.h"
 
 
-class AABB
+class GLIB_API AABB
 {
 
 public:

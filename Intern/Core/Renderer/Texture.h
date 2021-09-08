@@ -30,7 +30,7 @@ class Texture
 public:
 	void Bind();
 	void Bind(uint32_t p_val);
-	void ActiveTexture(uint32_t count);
+	void ActiveTexture(uint32_t count= 0);
 	void BindAll();
 	void BindCubeMap();
 	void UnBind();
@@ -39,6 +39,7 @@ public:
 	int GetHeight() { return m_Height; }
 	void BufferData(unsigned char* data, int width, int height, DataFormat format);
 
+	static void Screenshot();
 	//static void Init();
 
 	bool operator==(const Texture& p_other)

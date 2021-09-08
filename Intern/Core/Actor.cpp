@@ -1,14 +1,24 @@
+#include <glpch.h>
 #include "Components/Component.h"
 #include "Actor.h"
+#include "Events/Event.h"
 
-void Actor::OnUpdate()
+void Actor::UpdateComponents(float p_delta)
 {
 	for (auto& component : m_components)
 	{
-		component.second->OnUpdate();
+		component.second->OnUpdate(p_delta);
 	}
 }
 
+
+void Actor::DispatchEventToComponents(const Event& p_event)
+{
+	for (auto& component : m_components)
+	{
+		component.second->OnEvent(p_event);
+	}
+}
 
 std::weak_ptr<Component> Actor::GetComponent(const std::string& componentName)
 {

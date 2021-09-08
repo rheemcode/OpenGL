@@ -1,3 +1,4 @@
+#include <glpch.h>
 #include "SkyBox.h"
 #include <array>
 
@@ -52,7 +53,7 @@ void SkyBox::Init()
 
     m_vao = std::make_unique<VertexArray>();
     m_vb = std::make_unique<VertexBuffer>(vertexCoords, 24 * sizeof(Vector3));
-    m_vb->SetLayout({ {GL_FLOAT, 0, 3, 0 } }); 
+    m_vb->SetLayout({ {AttribDataType::T_FLOAT, Attrib::VERTEXPOSITION, AttribCount::VEC3, false } }); 
     m_vao->SetIndices(indices, 36);
     m_vao->AddBuffer(*m_vb);
 
@@ -67,6 +68,11 @@ void SkyBox::Init()
         "./Assets/Textures/db.png", // left
         "./Assets/Textures/dm.png",  //top
         "./Assets/Textures/dm.png", }); //bottom
+}
+
+void SkyBox::BindTexture()
+{
+    m_texture->BindCubeMap();
 }
 
 void SkyBox::Create()

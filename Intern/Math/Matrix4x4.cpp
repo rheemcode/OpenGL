@@ -1,5 +1,4 @@
-
-#include <cmath>
+#include <glpch.h>
 #include "Math/Math.h"
 #include "Math/Vector3.h"
 #include "Matrix4x4.h"
