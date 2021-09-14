@@ -2,6 +2,7 @@
 #include <GL/glew.h>
 #include <string>
 
+#define TEXTURE_MAX_SIZE 0x1000
 #define MAX_TEXTURES 32
 
 class Texture

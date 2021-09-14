@@ -266,7 +266,6 @@ Matrix4x4 Matrix4x4::CreateFrustum(const float& left, const float& right, const 
 Matrix4x4 Matrix4x4::CreatePerspective(const float& p_fovy, const float& p_aspectRatio, const float& p_zNear, const float& p_zFar)
 {
 	
-	std::cout << Math::Abs(p_aspectRatio - static_cast<float>(EPSILON));
    assert(Math::Abs(p_aspectRatio - static_cast<float>(EPSILON)) > 0.f);
 
 	const float tanHalfFovy = tan(p_fovy / 2.f);

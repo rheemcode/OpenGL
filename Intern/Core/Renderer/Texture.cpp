@@ -95,7 +95,7 @@ void Texture::BufferData(unsigned char* data, int width, int height, DataFormat 
 	if (data)
 	{
 		GLCall(glTexImage2D(GL_TEXTURE_2D, 0, m_InternalFormat, m_Width, m_Height, 0, m_DataFormat, GL_UNSIGNED_BYTE, data));
-	//	glGenerateMipmap(GL_TEXTURE_2D);
+		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 }
 
@@ -132,7 +132,7 @@ uint32_t Texture::AddImage(const std::string& filepath)
 
 		TEXTURE_PARAM_2D
 		GLCall(glTexImage2D(GL_TEXTURE_2D, 0, m_InternalFormat, m_Width, m_Height, 0, m_DataFormat, GL_UNSIGNED_BYTE, imgData));
-	//	GLCall(glGenerateMipmap(GL_TEXTURE_2D));
+		GLCall(glGenerateMipmap(GL_TEXTURE_2D));
 		levels += 1;
 	}
 
@@ -159,6 +159,7 @@ uint32_t Texture::AddImage(const std::string& filepath, uint32_t id)
 		m_DataFormat = RGBA;
 		m_InternalFormat = RGBA8;
 	}
+
 	if (imgData)
 	{
 		glTexSubImage2D(GL_TEXTURE_2D, 1, xOffset, yOffset, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, imgData);

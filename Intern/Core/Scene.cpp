@@ -196,9 +196,9 @@ void Scene::InitLightUniforms()
 	lightData.Direction = { 0, -0.3f, -1.f, 1.f };
 	lightData.AmbientEnergy = 1.f;
 	lightData.Energy = .69;
-	if (1 and 2)
-		auto i = 2;
+
 	auto* buffer = malloc(uboSize);
+	
 	memcpy((char*)buffer + offset[0], &lightData.LightType, 4);
 	memcpy((char*)buffer + offset[1], &lightData.Ambient, 16);
 	memcpy((char*)buffer + offset[2], &lightData.Color, 16);
@@ -218,7 +218,7 @@ void Scene::CreateDefaultActor()
 {
 	std::shared_ptr<Actor> actor = std::make_shared<Actor>();
 	std::shared_ptr<TransformComponent> tComponent = std::make_shared<TransformComponent>(actor);
-	std::shared_ptr<MeshRendererComponent> renderComponent = std::make_shared<MeshRendererComponent>(actor, "./Assets/house.obj");
+	std::shared_ptr<MeshRendererComponent> renderComponent = std::make_shared<MeshRendererComponent>(actor, "./Assets/test2.obj");
 	actor->AddComponent(tComponent);
 	actor->AddComponent(renderComponent);
 	meshDirty = true;
@@ -278,7 +278,8 @@ void Scene::CreateBuffers()
 
 	m_shadowBuffer = std::make_unique<FrameBuffer>();
 	m_shadowBuffer->CreateTexture();
-	m_shadowBuffer->AttachDepthTexture(4096, 4096);
+	m_shadowBuffer->AttachDepthTexture(TEXTURE_MAX_SIZE, TEXTURE_MAX_SIZE);
+	shadowData->ShadowSize = Vector2((float)TEXTURE_MAX_SIZE, (float)TEXTURE_MAX_SIZE);
 }
 
 

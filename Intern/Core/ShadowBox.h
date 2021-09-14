@@ -4,34 +4,41 @@
 
 class ShadowBox
 {
-	const float offset = 10;
-	const float shadowDistance = 8;
+	friend struct ShadowData;
 
-	CameraSettings cameraSettings;
+	const float offset = 10;
+	const float shadowDistance = 10;
+
+	float minX = 0, maxX = 0;
+	float minY = 0, maxY = 0;
+	float minZ = 0, maxZ = 0;
+	float farHeight = 0, farWidth = 0, nearWidth = 0, nearHeight = 0;
+
+	uint32_t splitCount = 0;
+
+	CameraSettings* cameraSettings;
 	const Matrix4x4* lightViewMatrix;
 	const Transform* cameraTransform;
 
-	float farHeight, farWidth, nearWidth, nearHeight;
-
 	void CalculateBounds()
 	{
-		farWidth = shadowDistance * Math::Tan(Math::Deg2Rad(cameraSettings.fovY));
-		nearWidth = cameraSettings.znear * Math::Tan(Math::Deg2Rad(cameraSettings.fovY));
+		farWidth = shadowDistance * Math::Tan(Math::Deg2Rad(cameraSettings->fovY));
+		nearWidth = cameraSettings->znear * Math::Tan(Math::Deg2Rad(cameraSettings->fovY));
 
-		farHeight = farWidth / cameraSettings.ratio;
-		nearHeight = nearWidth / cameraSettings.ratio;
+		farHeight = farWidth / cameraSettings->ratio;
+		nearHeight = nearWidth / cameraSettings->ratio;
 	}
 
 
 	Vector4* CalculateFrustumVertices()
 	{
-		Vector3 UP = cameraTransform->GetLocalUp();
-		Vector3 RIGHT = cameraTransform->GetLocalRight();
-		Vector3 FORWARD = cameraTransform->GetLocalForward();
+		const Vector3& UP = cameraTransform->GetLocalUp();
+		const Vector3& RIGHT = cameraTransform->GetLocalRight();
+		const Vector3& FORWARD = cameraTransform->GetLocalForward();
 
 
 		Vector3 toFar = FORWARD * shadowDistance;
-		Vector3 toNear = FORWARD * cameraSettings.znear;
+		Vector3 toNear = FORWARD * cameraSettings->znear;
 
 		Vector3 centerNear = toNear + cameraTransform->GetLocalPosition();
 		Vector3 centerFar = toFar + cameraTransform->GetLocalPosition();
@@ -55,7 +62,7 @@ class ShadowBox
 	}
 
 
-	Vector4 CalculateLightSpaceFrustumCorner(Vector3 startPoint, Vector3 direction, float width)
+	Vector4 CalculateLightSpaceFrustumCorner(const Vector3& startPoint, const Vector3& direction, const float& width)
 	{
 		Vector4 point = startPoint + (direction * width);
 		point.w = 1.f;
@@ -66,11 +73,6 @@ class ShadowBox
 
 public:
 
-
-	float minX, maxX;
-	float minY, maxY;
-	float minZ, maxZ;
-
 	void UpdateBounds()
 	{
 		Vector4* points = CalculateFrustumVertices();
@@ -78,7 +80,7 @@ public:
 		bool first = true;
 		for (int i = 0; i < 8; i++) 
 		{
-			Vector4 point = points[i];
+			const Vector4& point = points[i];
 			if (first) 
 			{
 				minX = point.x;
@@ -165,11 +167,11 @@ public:
 		CalculateBounds();
 	}
 
-	ShadowBox(const Matrix4x4& p_lightViewMatrix, const Transform& p_cameraTransform, const CameraSettings& p_cameraSettings)
+	ShadowBox(const Matrix4x4& p_lightViewMatrix, const Transform& p_cameraTransform, CameraSettings& const p_cameraSettings)
 	{
 		lightViewMatrix = &p_lightViewMatrix;
 		cameraTransform = &p_cameraTransform;
-		cameraSettings = p_cameraSettings;
+		cameraSettings = &p_cameraSettings;
 
 		CalculateBounds();
 	}

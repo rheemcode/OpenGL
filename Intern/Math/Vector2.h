@@ -159,7 +159,7 @@ float Vector2::AngleBetween(const Vector2& p_vecA, const Vector2& p_vecB)
 
 Vector2 Vector2::AngleToDir(float p_angleRad)
 {
-	return Vector2(Math::Cos(p_angleRad), Math::Cos(p_angleRad));
+	return Vector2(Math::Cos(p_angleRad), Math::Sin(p_angleRad));
 }
 
 float Vector2::DirToAngle(const Vector2& p_vec)

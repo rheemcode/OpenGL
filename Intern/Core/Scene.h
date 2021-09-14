@@ -11,6 +11,7 @@
 #include "ShadowBox.h"
 #include "Timestep.h"
 
+
 struct GLIB_API Light
 {
 	friend class Scene;
@@ -71,13 +72,17 @@ class GLApplication;
 
 struct GLIB_API ShadowData
 {
-	ShadowBox shadowBounds;
+	uint32_t splitCount;
 	Vector2 ShadowSize;
 	Vector3 LightDir;
+	Vector4 farBound;
 	Matrix4x4 View;
 	Matrix4x4 Proj;
 	Matrix4x4 Bias;
 	Matrix4x4 ProjView;
+
+	ShadowBox shadowBounds;
+
 
 	void UpdateView(Vector3 direction)
 	{
@@ -92,19 +97,14 @@ struct GLIB_API ShadowData
 		yaw = direction.z > 0 ? yaw - 180 : yaw;
 		View = Matrix4x4::Rotate(View, Vector3(0, 1, 0), -Math::Deg2Rad(yaw));
 
-		View = Matrix4x4::Translate(View, center);
+		View = Matrix4x4::Translate(View, center);  
 	}
 
 	void UpdateProjection()
 	{
-		//float width = shadowBounds.GetWidth(), height = shadowBounds.GetHeight(), length = shadowBounds.GetLength();
-		//Proj = Matrix4x4();
+		const CameraSettings& camSettings = *shadowBounds.cameraSettings;
+		//Proj = Matrix4x4::CreatePerspective(camSettings.fovY, camSettings.ratio, 0.1f, 20.f);
 		Proj = Matrix4x4::CreateOrtho(shadowBounds.minX, shadowBounds.maxX, shadowBounds.minY, shadowBounds.maxY, shadowBounds.minZ, shadowBounds.maxZ);
-		//Proj[0][0] = 2.f / width;
-		//Proj[1][1] = 2.f / height;
-		//Proj[2][2] = -2.f / length;
-		//Proj[3][3] = 1.f;
-		//auto alt = Matrix4x4::CreateOrtho()
 	}
 };
 

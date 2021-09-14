@@ -8,7 +8,7 @@
 #include "Input/Input.h"
 #include "Thread.h"
 #include "Buffers/FrameBuffer.h"
-
+#include "stb_image_write.h"
 #include "Profiler.h"
 
 void RenderCommand::Init()
@@ -111,7 +111,7 @@ void Renderer::RenderSkybox(const RenderData& renderData)
 	Matrix4x4 viewMat = Matrix4x4(*renderData.cameraData->view);
 	viewMat[3] = { 0, 0, 0, 1.f };
 
-	skybox->BeginRender(*renderData.cameraData->proj * viewMat);
+	skybox->BeginRender(*renderData.cameraData->proj, viewMat);
 	RenderCommand::DrawIndexed(skybox->GetIndices());
 	RenderAPI::EnableCullFace();
 }
@@ -119,49 +119,23 @@ void Renderer::RenderSkybox(const RenderData& renderData)
 void Renderer::BeginScene(const RenderData& renderData)
 {
 }
-//
-//void Renderer::BeginShadow()
-//{
-//	Scene* scene = Scene::GetActiveScene();
-//
-//	const auto& shadowBox = scene->GetShadowBox();
-//	auto& shadowData = scene->shadowData;
-//	shadowData.UpdateView(scene->GetSkyLightDirection(), shadowBox.GetCenter());
-//	shadowData.UpdateProjection(shadowBox.GetWidth(), shadowBox.GetHeight(), shadowBox.GetLength());
-//
-//	Matrix4x4 offset = Matrix4x4::CreateTranslation({ 0.5f, 0.5f, 0.5f });
-//	offset = Matrix4x4::Scale(offset, { 0.5f, 0.5f, 0.5f });
-//	Matrix4x4 bias = Matrix4x4(1.f);
-//	bias[3][3] = 1.f;
-//	scene->shadowShader->Bind();
-//	scene->shadowShader->UploadUniformMat4("lightSpaceMatrix", (shadowData.Proj * shadowData.View));
-//	scene->sceneShader->Bind();
-//	scene->sceneShader->UploadUniformMat4("projView", renderData.proj * renderData.view);
-//	scene->sceneShader->UploadUniformMat4("shadowSpaceMatrix", (offset * (shadowData.Proj * shadowData.View)));
-//
-//	glUseProgram(0);
-//}
+
 
 void Renderer::RenderShadows(const RenderData& renderData)
 {
-
-	
-
 	Scene* scene = Scene::GetActiveScene();
 	const auto& shader = scene->shadowShader;
 	std::shared_ptr<ShadowData> shadowData = renderData.shadowData;
 	const auto& shadowBox = shadowData->shadowBounds;
-	////
-
+	
 	shader->Bind();
 	shader->UploadUniformMat4("lightSpaceMatrix", shadowData->ProjView);
 
 	scene->BindFBO(FrameBufferName::DEPTH);
-	RenderAPI::SetViewport(0, 0, 4096, 4096);
 	const Vector2& shadowMapWidth = shadowData->ShadowSize;
-
+	RenderAPI::SetViewport(0, 0, shadowMapWidth.x, shadowMapWidth.y);
 	RenderAPI::ClearDepthBuffer();
-	RenderAPI::CullFrontFace();
+	//RenderAPI::CullFrontFace();
 
 	const std::vector<Mesh>& meshes = renderData.meshes;
 	for (const auto& mesh : meshes)
@@ -171,9 +145,11 @@ void Renderer::RenderShadows(const RenderData& renderData)
 		const auto& material = mesh.GetMaterial();
 		scene->shadowShader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
 		RenderCommand::DrawIndexed(attribs);
+	//	RenderCommand::DrawIndexed(attribs);
+	//	RenderCommand::DrawIndexed(attribs);
 	}
 
-	RenderAPI::CullBackFace();
+	//RenderAPI::CullBackFace();
 }
 
 void Renderer::RenderAABB(const RenderData& renderData)

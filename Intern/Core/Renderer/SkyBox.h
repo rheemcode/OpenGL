@@ -26,13 +26,15 @@ class SkyBox
 public:
 	void BindTexture();
 
-	void BeginRender(const Matrix4x4& p_projview)
+	void BeginRender(const Matrix4x4& p_proj, const Matrix4x4& p_view)
 	{
 		m_shader->Bind();
 		m_vao->Bind();
 		BindTexture();
 
-		m_shader->UploadUniformMat4("projView", p_projview);
+		m_shader->UploadUniformMat4("projView", p_proj * p_view);
+		m_shader->UploadUniformMat4("Proj", p_proj);
+		m_shader->UploadUniformMat4("View", p_view);
 	}
 	
 	uint32_t GetIndices() const { return m_vao->GetIndicies(); }

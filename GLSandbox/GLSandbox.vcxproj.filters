@@ -32,5 +32,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Shaders\depth.glsl" />
+    <None Include="Assets\Shaders\skybox-procedural.glsl" />
+    <None Include="Assets\Shaders\skybox-procedural2.glsl" />
   </ItemGroup>
 </Project>

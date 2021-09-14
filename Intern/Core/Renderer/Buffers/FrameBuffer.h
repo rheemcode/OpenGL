@@ -27,6 +27,7 @@ class GLIB_API FrameBuffer
 {
 	uint32_t textureWidth, textureHeight;
 	uint32_t fboID[FrameBufferName::MAX];
+	uint32_t levels;
 	uint32_t textures[FrameBufferTexture::MAX];
 
 	bool isDepthOnly = true;
@@ -41,6 +42,25 @@ public:
 	int GetTextureWidth() const { return textureWidth; }
 	int GetTextureHeight() const { return textureHeight; }
 	Vector2 GetTextureSize() const { return Vector2(textureWidth, textureHeight); }
+
+	void AttachArrayTexture(int width = 2048, int height = 2048, uint32_t p_levels = 3)
+	{
+		glActiveTexture(GL_TEXTURE0);
+		BindArrayTexture(FrameBufferTexture::SHADOWMAP);
+		levels = p_levels;
+		glTexImage3D(GL_TEXTURE_2D_ARRAY, GLint(0), GL_DEPTH_COMPONENT24, width, height, levels, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY_EXT, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY_EXT, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY_EXT, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY_EXT, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY_EXT, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+		glBindTexture(GL_TEXTURE_2D_ARRAY, GL_NONE);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, fboID[FrameBufferName::DEPTH]);
+		glReadBuffer(GL_NONE);
+		glDrawBuffer(GL_NONE);
+		glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
+	}
 
 	void AttachDepthTexture(int width = 2048, int height = 2048)
 	{
@@ -129,6 +149,17 @@ public:
 	{
 		glActiveTexture(GL_TEXTURE0);
 		GLCall(glBindTexture(GL_TEXTURE_2D, textures[name]));
+	}
+
+	void TextureLayer(FrameBufferTexture::Type name, uint32_t layer)  const
+	{
+		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, textures[name], 0, layer);
+	}
+	
+	void BindArrayTexture(FrameBufferTexture::Type name) const
+	{
+		glActiveTexture(GL_TEXTURE0);
+		GLCall(glBindTexture(GL_TEXTURE_2D_ARRAY, textures[name]));
 	}
 
 	FrameBuffer()

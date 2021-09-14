@@ -201,9 +201,18 @@ unsigned int Shader::CompileShader(const std::string& src, unsigned int type)
 		int length;
 		GLCall(glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length));
 		char* message = (char*)_malloca(length * sizeof(char));
-		//file.write("\n", 1);
 		GLCall(glGetShaderInfoLog(id, length, &length, message));
-		ss << message;
+		
+		const char* _type = "";
+		switch (type)
+		{
+		case(GL_FRAGMENT_SHADER): _type = "[FRAGMENT SHADER] :: "; break;
+		case(GL_VERTEX_SHADER): _type = "[VERTEX SHADER] :: "; break;
+		case(GL_GEOMETRY_SHADER): _type = "[GEOMETRY SHADER] :: "; break;
+		default: break;
+		}
+
+		ss << _type << message;
 		Console::Log(LogMode::ERROR, ss.str().c_str());
 		return 0;
 	}

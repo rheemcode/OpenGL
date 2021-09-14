@@ -25,20 +25,26 @@ uniform mat4 shadowSpaceMatrix;
 
 void main()
 {
-
-    vs_out.ShadowCoord = shadowSpaceMatrix * (model * vec4(vPos, 1.0));
+    vec4 FragPos = model * vec4(vPos, 1.0);
+    vs_out.FragPos = vec3(FragPos);
+    vs_out.ShadowCoord = shadowSpaceMatrix * FragPos;
     vs_out.Normal = transpose(inverse(mat3(model))) * normal;
     vs_out.TexCoord = texCoord;
     vs_out.NormalInterp = normalize((model * vec4(normal, 0.0)).xyz);
-    vs_out.FragPos = vec3(model * vec4(vPos, 1.0));
     
-    gl_Position = projView * model * vec4(vPos, 1.0);
+    gl_Position = projView * FragPos;
 };
 
 
 
 #shader[fragment]
 #version 430 core
+
+
+#define DIRECTIONAL_LIGHT 1
+#define SPOT_LIGHT 2
+#define POINT_LIGHT 3
+
 
 in VS_OUT
 {
@@ -51,20 +57,18 @@ in VS_OUT
 
 
 //*** [Lighting] ***//
-uniform vec4  ViewPosition;
-uniform float SpecularStrength;
-uniform float Shininess;
-uniform float AmbientEnergy;
 uniform int currentTex;
 
 struct LightProperties
 {
     int LightType;
-    vec4 Ambient;
-    vec4 Color;
-    vec4 Direction;
+    vec3 Ambient;
+    vec3 Color;
+    vec3 Direction;
     float AmbientEnergy;
     float Energy;
+    //vec3 Position;
+
 };
 
 struct MaterialProperties
@@ -80,6 +84,7 @@ layout(std140) uniform LightsUniform
 {
     LightProperties Lights;
 };
+
 uniform sampler2D depthTexture;
 uniform sampler2D diffuseTexture;
 uniform sampler2D specularTexture;
@@ -93,7 +98,7 @@ out vec4 FragColor;
 vec3 lightDir;
 float attenuation;
 
-const int pcfCount = 2;
+const int pcfCount = 1;
 const float totalTexels = (pcfCount * 2.0 + 1.0) * (pcfCount * 2.0 + 1.0);
 const float mapSize = 2048.0 * 2.0;
 const float texelSize = 1.0 / mapSize;
@@ -103,6 +108,30 @@ const float texelSize = 1.0 / mapSize;
 #define ZERO 0
 #define ONE 1.0
 
+const vec2 poissonDisk[16] = vec2[](
+    vec2(-0.94201624, -0.39906216),
+    vec2(0.94558609, -0.76890725),
+    vec2(-0.094184101, -0.92938870),
+    vec2(0.34495938, 0.29387760),
+    vec2(-0.91588581, 0.45771432),
+    vec2(-0.81544232, -0.87912464),
+    vec2(-0.38277543, 0.27676845),
+    vec2(0.97484398, 0.75648379),
+    vec2(0.44323325, -0.97511554),
+    vec2(0.53742981, -0.47373420),
+    vec2(-0.26496911, -0.41893023),
+    vec2(0.79197514, 0.19090188),
+    vec2(-0.24188840, 0.99706507),
+    vec2(-0.81409955, 0.91437590),
+    vec2(0.19984126, 0.78641367),
+    vec2(0.14383161, -0.14100790)
+    );
+
+float random(vec3 seed, int i) {
+    vec4 seed4 = vec4(seed, i);
+    float dot_product = dot(seed4, vec4(12.9898, 78.233, 45.164, 94.673));
+    return fract(sin(dot_product) * 43758.5453);
+}
 float ShadowCalculation(vec4 ShadowPos)
 {
 
@@ -112,30 +141,34 @@ float ShadowCalculation(vec4 ShadowPos)
         return 0;
 
     float currentDepth = projCoords.z;
-   // float bias = max(0.01 * (ONE - dot(vs_out.Normal, lightDir)), 0.001);
+    float bias = max(0.002 * (ONE - dot(vs_out.Normal, lightDir)), 0.002);
     float shadow = 0.0;
-
-    vec2 offset;
+  //  vec2 offset;
     for (int x = -pcfCount; x <= pcfCount; ++x)
     {
         for (int y = -pcfCount; y <= pcfCount; ++y)
         {
-            offset.x = x; offset.y = y;
-            float pcfDepth = texture(depthTexture, projCoords.xy + offset * texelSize).x;
-            if (currentDepth  > pcfDepth + 0.002)
+        //    int index = int(16.0 * random(floor(vs_out.FragPos.xyz * 1000.0), x + y * 4)) % 16;
+
+        //    offset.x = x; offset.y = y;
+            float pcfDepth = texture(depthTexture, projCoords.xy + poissonDisk[x + y * 2] / 4000.0).x;
+            if (currentDepth  > pcfDepth + bias)
                 shadow += ONE;
             //shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
         }
     }
+
     shadow /= totalTexels;
     return shadow;
 }
 
+
+
 void main()
 {
     vec4 texCol = texture(diffuseTexture, vs_out.TexCoord);
-    //if (texCol.a == 0)
-     //   discard;
+ //   if (texCol.a == 0)
+   //     discard;
 
     float attenuation;
     if (Lights.LightType == 1)
@@ -163,8 +196,8 @@ void main()
     vec3 Light = Ambient + ((ONE - (shadow * vs_out.ShadowCoord.w)) * Diffuse);
     // Light = (Ambient) + (Diffuse);
 
-    vec3 color = min(Light * vec3(texCol), VEC3_1);
-    //vec3 color = min(Light, VEC3_1);
+   // vec3 color = min(Light * vec3(texCol), VEC3_1);
+    vec3 color = min(Light, VEC3_1);
     FragColor = vec4(color, texCol.a);
 
 //    FragColor = vec4(vec3(texCol), 1);
