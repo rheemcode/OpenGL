@@ -168,27 +168,11 @@ void Scene::BindFBOTex(FrameBufferTexture::Type name)
 
 void Scene::InitLightUniforms()
 {
-	const uint32_t NumUniforms = 6;
-	GLuint indices[NumUniforms];
-	GLint offset[NumUniforms];
 
-	const char* names[NumUniforms] = {
-	"Lights.LightType",
-	 "Lights.Ambient",
-	 "Lights.Color",
-	 "Lights.Direction",
-	 "Lights.AmbientEnergy",
-	 "Lights.Energy",
-	};
-	uint32_t uboIndex = glGetUniformBlockIndex(sceneShader->GetProgram(), "LightsUniform");
-	int32_t uboSize = sizeof(GLboolean);;
-	m_LightsBuffer = std::make_unique<UniformBuffer>(80, uboIndex);
-	glGetActiveUniformBlockiv(sceneShader->GetProgram(), uboIndex,
-		GL_UNIFORM_BLOCK_DATA_SIZE, &uboSize);
+	// retrieves the index not binding
+	m_LightsBuffer = std::make_unique<UniformBuffer>();
+	m_LightsBuffer->InitData(sceneShader.get(), "LightsUniform");
 	
-	glGetUniformIndices(sceneShader->GetProgram(), NumUniforms, names, indices);
-	glGetActiveUniformsiv(sceneShader->GetProgram(), NumUniforms, indices, GL_UNIFORM_OFFSET, offset);
-
 	LightData lightData;
 	lightData.LightType = 1;
 	lightData.Ambient = Vector4(.4f, .4f, .4f, 1.f);
@@ -197,17 +181,13 @@ void Scene::InitLightUniforms()
 	lightData.AmbientEnergy = 1.f;
 	lightData.Energy = .69;
 
-	//void* buffer = new char[]
-	auto* buffer = new uint8_t[80];
-	
-	memcpy((char*)buffer + offset[0], &lightData.LightType, 4);
-	memcpy((char*)buffer + offset[1], &lightData.Ambient, 16);
-	memcpy((char*)buffer + offset[2], &lightData.Color, 16);
-	memcpy((char*)buffer + offset[3], &lightData.Direction, 16);
-	memcpy((char*)buffer + offset[4], &lightData.AmbientEnergy, 4);
-	memcpy((char*)buffer + offset[5], &lightData.Energy, 4);
-	m_LightsBuffer->SetData(80, buffer, 0);
-	delete[] buffer;
+	m_LightsBuffer->UploadData(lightData.LightType, 0);
+	m_LightsBuffer->UploadData(lightData.AmbientEnergy, 4);
+	m_LightsBuffer->UploadData(lightData.Energy, 8);
+	m_LightsBuffer->UploadData(lightData.Ambient, 16);
+	m_LightsBuffer->UploadData(lightData.Color, 32);
+	m_LightsBuffer->UploadData(lightData.Direction, 48);
+	m_LightsBuffer->FlushBuffer();
 }
 
 void Scene::CreateActor()

@@ -25,6 +25,7 @@ class ShadowBox
 	void UpdateBounds()
 	{
 		constexpr float lambda = 0.75f;
+		//hardcoded should change later
 		const float far = cameraSettings->zfar / 5.f;
 		const float ratio = far / 1.f;
 		nearDistance[0] = 1.f;
@@ -243,9 +244,12 @@ struct GLIB_API ShadowData
 
 	}
 
-	void UpdateFarBounds(const int index)
+	void UpdateFarBounds(const Matrix4x4& p_Proj)
 	{
-		farBound[index] = 0.5f * (-shadowBounds.farDistance[index] * Proj[index][2][1] + Proj[index][3][1]) / shadowBounds.farDistance[index] + 0.5f;
+		for (int i = 0; i < splitCount; i++)
+		{
+			farBound[i] = 0.5f * (-shadowBounds.farDistance[i] * p_Proj[2][1] + p_Proj[3][1]) / shadowBounds.farDistance[i] + 0.5f;
+		}
 	}
 
 	void UpdateProjection()
@@ -254,7 +258,6 @@ struct GLIB_API ShadowData
 		for (int i = 0; i < splitCount; i++)
 		{
 			Proj[i] = Matrix4x4::CreateOrtho(shadowBounds.minX[i], shadowBounds.maxX[i], shadowBounds.minY[i], shadowBounds.maxY[i], shadowBounds.minZ[i], shadowBounds.maxZ[i]);
-			UpdateFarBounds(i);
 		}
 		//Proj = Matrix4x4::CreatePerspective(camSettings.fovY, camSettings.ratio, 0.1f, 20.f);
 	}

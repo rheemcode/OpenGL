@@ -61,15 +61,23 @@ uniform int currentTex;
 
 struct LightProperties
 {
-    int LightType;
-    vec3 Ambient;
-    vec3 Color;
-    vec3 Direction;
-    float AmbientEnergy;
-    float Energy;
+    int LightType; // 0
+    float AmbientEnergy; // 4
+    float Energy; // 8
+    vec3 Ambient; // 16
+    vec3 Color; // 32
+    vec3 Direction; // 48
     //vec3 Position;
-
 };
+
+//int LightType; // 0
+//float AmbientEnergy; // 0 + 4 -> 4
+//float Energy; // 4 + 4 -> 8
+//vec3 Ambient; // 8 + 4 -> 16
+//vec3 Color; // 16 + 16 -> 32
+//vec3 Direction; // 32 + 16 -> 58
+////vec3 Position;
+//
 
 struct MaterialProperties
 {

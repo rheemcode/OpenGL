@@ -234,7 +234,6 @@ void Renderer::RenderMeshes(const RenderData& renderData)
 
 
 	shader->UploadUniformInt("depthTexture", 0);
-	//Scene::GetActiveScene()->BindFBOTex(FrameBufferTexture::SHADOWMAP);
 	renderData.framebuffer->BindArrayTexture(FrameBufferTexture::SHADOWMAP);
 	const std::vector<Mesh>& meshes = renderData.meshes;
 
