@@ -85,7 +85,7 @@ layout(std140) uniform LightsUniform
     LightProperties Lights;
 };
 
-uniform sampler2D depthTexture;
+uniform sampler2DArray depthTexture;
 uniform sampler2D diffuseTexture;
 uniform sampler2D specularTexture;
 
@@ -151,7 +151,7 @@ float ShadowCalculation(vec4 ShadowPos)
         //    int index = int(16.0 * random(floor(vs_out.FragPos.xyz * 1000.0), x + y * 4)) % 16;
 
         //    offset.x = x; offset.y = y;
-            float pcfDepth = texture(depthTexture, projCoords.xy + poissonDisk[x + y * 2] / 4000.0).x;
+            float pcfDepth = texture(depthTexture, vec3(projCoords.xy + poissonDisk[x + y * 2] / 4000.0, 0)).x;
             if (currentDepth  > pcfDepth + bias)
                 shadow += ONE;
             //shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;

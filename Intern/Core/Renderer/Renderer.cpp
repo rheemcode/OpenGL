@@ -123,30 +123,48 @@ void Renderer::BeginScene(const RenderData& renderData)
 
 void Renderer::RenderShadows(const RenderData& renderData)
 {
-	Scene* scene = Scene::GetActiveScene();
-	const auto& shader = scene->shadowShader;
+	const auto& shader = renderData.shader;
 	std::shared_ptr<ShadowData> shadowData = renderData.shadowData;
 	const auto& shadowBox = shadowData->shadowBounds;
 	
 	shader->Bind();
-	shader->UploadUniformMat4("lightSpaceMatrix", shadowData->ProjView);
+	//shader->UploadUniformMat4("lightSpaceMatrix", shadowData->ProjView);
 
-	scene->BindFBO(FrameBufferName::DEPTH);
+	renderData.framebuffer->Bind(FrameBufferName::DEPTH);
 	const Vector2& shadowMapWidth = shadowData->ShadowSize;
 	RenderAPI::SetViewport(0, 0, shadowMapWidth.x, shadowMapWidth.y);
-	RenderAPI::ClearDepthBuffer();
 	//RenderAPI::CullFrontFace();
 
 	const std::vector<Mesh>& meshes = renderData.meshes;
-	for (const auto& mesh : meshes)
+	//for (const auto& mesh : meshes)
+	//{
+	//	const auto& attribs = mesh.GetVertexAttribs();
+	//	attribs.Bind();
+	//	const auto& material = mesh.GetMaterial();
+	//	shader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
+	//	
+	//	for (int i = 0; i < shadowData->splitCount; i++)
+	//	{
+	//		shader->UploadUniformMat4("lightSpaceMatrix", shadowData->Proj[i] * shadowData->View[i]);
+	//		renderData.framebuffer->TextureLayer(FrameBufferTexture::SHADOWMAP, i);
+	//		RenderCommand::DrawIndexed(attribs);
+	//	}
+	//}	
+	//
+
+	for (int i = 0; i < shadowData->splitCount; i++)
 	{
-		const auto& attribs = mesh.GetVertexAttribs();
-		attribs.Bind();
-		const auto& material = mesh.GetMaterial();
-		scene->shadowShader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
-		RenderCommand::DrawIndexed(attribs);
-	//	RenderCommand::DrawIndexed(attribs);
-	//	RenderCommand::DrawIndexed(attribs);
+		shader->UploadUniformMat4("lightSpaceMatrix", shadowData->Proj[i] * shadowData->View[i]);
+		renderData.framebuffer->TextureLayer(FrameBufferTexture::SHADOWMAP, i);
+		RenderAPI::ClearDepthBuffer();
+		for (const auto& mesh : meshes)
+		{
+			const auto& attribs = mesh.GetVertexAttribs();
+			attribs.Bind();
+			const auto& material = mesh.GetMaterial();
+			shader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
+			RenderCommand::DrawIndexed(attribs);
+		}
 	}
 
 	//RenderAPI::CullBackFace();
@@ -198,7 +216,7 @@ void Renderer::RenderMeshes(const RenderData& renderData)
 	const auto& shader = renderData.shader;
 	shader->Bind();
 	shader->UploadUniformMat4("projView", *renderData.cameraData->proj * *renderData.cameraData->view);
-	shader->UploadUniformMat4("shadowSpaceMatrix", renderData.shadowData->Bias * renderData.shadowData->ProjView);
+	shader->UploadUniformMat4("shadowSpaceMatrix", renderData.shadowData->Bias * renderData.shadowData->Proj[0] * renderData.shadowData->View[0]);
 
 
 #ifdef DRAW_DEPTH_MAP
@@ -207,7 +225,7 @@ void Renderer::RenderMeshes(const RenderData& renderData)
 	testRenderData.shader->SetInt("depthMap", 0);
 	testRenderData.m_VertexArray->Bind();
 	RenderAPI::EnableVertexAttribArray(Attrib::UV);
-	Scene::GetActiveScene()->BindFBOTex(FrameBufferTexture::SHADOWMAP);
+	renderData.framebuffer->BindArrayTexture(FrameBufferTexture::SHADOWMAP);
 	//glActiveTexture(GL_TEXTURE0);
 	RenderCommand::DrawIndexed(*testRenderData.m_VertexArray);
 
@@ -216,7 +234,8 @@ void Renderer::RenderMeshes(const RenderData& renderData)
 
 
 	shader->UploadUniformInt("depthTexture", 0);
-	Scene::GetActiveScene()->BindFBOTex(FrameBufferTexture::SHADOWMAP);
+	//Scene::GetActiveScene()->BindFBOTex(FrameBufferTexture::SHADOWMAP);
+	renderData.framebuffer->BindArrayTexture(FrameBufferTexture::SHADOWMAP);
 	const std::vector<Mesh>& meshes = renderData.meshes;
 
 	for (const auto& mesh : meshes)
@@ -248,7 +267,7 @@ void Renderer::FlushRenderQueue()
 		{
 		case RenderPass::SKYBOX:
 		{
-			Renderer::RenderSkybox(renderPass.renderData);
+			//Renderer::RenderSkybox(renderPass.renderData);
 			break;
 		}
 		case RenderPass::DEPTH_PASS:

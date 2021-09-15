@@ -59,11 +59,9 @@ void Scene::PrepareMeshes()
 void Scene::Render()
 {
 	PrepareMeshes();
-	shadowData->shadowBounds.UpdateBounds();
+	shadowData->shadowBounds.Update();
 	shadowData->UpdateView(GetSkyLightDirection());
 	shadowData->UpdateProjection();
-	shadowData->ProjView = shadowData->Proj * shadowData->View;
-
 	
 	{
 		// Depth Pass
@@ -74,6 +72,7 @@ void Scene::Render()
 		renderData.meshes = meshes;
 		renderData.shader = shadowShader;
 		renderData.shadowData = shadowData;
+		renderData.framebuffer = m_shadowBuffer;
 		Renderer::PushPass(std::move(depthPass));
 	}
 
@@ -86,6 +85,7 @@ void Scene::Render()
 		renderData.meshes = culledMeshes;
 		renderData.shader = sceneShader;
 		renderData.shadowData = shadowData;
+		renderData.framebuffer = m_shadowBuffer;
 		Renderer::PushPass(std::move(colorPass));
 	}
 
@@ -197,7 +197,8 @@ void Scene::InitLightUniforms()
 	lightData.AmbientEnergy = 1.f;
 	lightData.Energy = .69;
 
-	auto* buffer = malloc(uboSize);
+	//void* buffer = new char[]
+	auto* buffer = new uint8_t[80];
 	
 	memcpy((char*)buffer + offset[0], &lightData.LightType, 4);
 	memcpy((char*)buffer + offset[1], &lightData.Ambient, 16);
@@ -206,7 +207,7 @@ void Scene::InitLightUniforms()
 	memcpy((char*)buffer + offset[4], &lightData.AmbientEnergy, 4);
 	memcpy((char*)buffer + offset[5], &lightData.Energy, 4);
 	m_LightsBuffer->SetData(80, buffer, 0);
-	free(buffer);
+	delete[] buffer;
 }
 
 void Scene::CreateActor()
@@ -275,10 +276,9 @@ void Scene::CreateSkyLight()
 
 void Scene::CreateBuffers()
 {
-
-	m_shadowBuffer = std::make_unique<FrameBuffer>();
+	m_shadowBuffer = std::make_shared<FrameBuffer>();
 	m_shadowBuffer->CreateTexture();
-	m_shadowBuffer->AttachDepthTexture(TEXTURE_MAX_SIZE, TEXTURE_MAX_SIZE);
+	m_shadowBuffer->AttachArrayTexture(TEXTURE_MAX_SIZE, TEXTURE_MAX_SIZE, 4);
 	shadowData->ShadowSize = Vector2((float)TEXTURE_MAX_SIZE, (float)TEXTURE_MAX_SIZE);
 }
 

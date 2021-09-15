@@ -14,5 +14,6 @@ struct GLIB_API Time
 	float GetElapsedTime();
 	static void Create();
 	static Time* GetSingleton() { return s_Instance; }
+	~Time() { delete s_Instance; }
 };
 

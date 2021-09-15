@@ -66,6 +66,7 @@ struct RenderData
 	std::shared_ptr<Shader> shader;
 	std::shared_ptr<CameraData> cameraData;
 	std::shared_ptr<struct ShadowData> shadowData;
+	std::shared_ptr<class FrameBuffer> framebuffer;
 };
 
 

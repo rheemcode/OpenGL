@@ -70,44 +70,6 @@ class FrameBuffer;
 class GLApplication;
 
 
-struct GLIB_API ShadowData
-{
-	uint32_t splitCount;
-	Vector2 ShadowSize;
-	Vector3 LightDir;
-	Vector4 farBound;
-	Matrix4x4 View;
-	Matrix4x4 Proj;
-	Matrix4x4 Bias;
-	Matrix4x4 ProjView;
-
-	ShadowBox shadowBounds;
-
-
-	void UpdateView(Vector3 direction)
-	{
-		direction = Vector3::Normalize(direction);
-		const auto& center = -shadowBounds.GetCenter();
-		View = Matrix4x4();
-
-		float pitch = Math::ACos(Vector2::Length(Vector2(direction.x, direction.z)));
-
-		View = Matrix4x4::Rotate(View, Vector3(1, 0, 0), pitch);
-		float yaw = Math::Rad2deg((Math::ATan(direction.x / direction.z)));
-		yaw = direction.z > 0 ? yaw - 180 : yaw;
-		View = Matrix4x4::Rotate(View, Vector3(0, 1, 0), -Math::Deg2Rad(yaw));
-
-		View = Matrix4x4::Translate(View, center);  
-	}
-
-	void UpdateProjection()
-	{
-		const CameraSettings& camSettings = *shadowBounds.cameraSettings;
-		//Proj = Matrix4x4::CreatePerspective(camSettings.fovY, camSettings.ratio, 0.1f, 20.f);
-		Proj = Matrix4x4::CreateOrtho(shadowBounds.minX, shadowBounds.maxX, shadowBounds.minY, shadowBounds.maxY, shadowBounds.minZ, shadowBounds.maxZ);
-	}
-};
-
 
 class GLIB_API Scene
 {
@@ -117,7 +79,7 @@ class GLIB_API Scene
 
 	static std::shared_ptr<Camera> sceneCamera;
 	std::shared_ptr<CameraData> cameraData;
-	std::shared_ptr<ShadowData> shadowData;
+	std::shared_ptr<struct ShadowData> shadowData;
 
 	std::string sceneName;
 
@@ -147,7 +109,7 @@ class GLIB_API Scene
 	bool meshDirty = false;
 
 	using ShadowBuffer = FrameBuffer;
-	std::unique_ptr<ShadowBuffer> m_shadowBuffer;
+	std::shared_ptr<ShadowBuffer> m_shadowBuffer;
 	std::unique_ptr<class UniformBuffer> m_LightsBuffer;
 
 	/* Scene Shaders */

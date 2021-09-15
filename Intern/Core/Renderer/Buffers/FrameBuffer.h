@@ -43,7 +43,7 @@ public:
 	int GetTextureHeight() const { return textureHeight; }
 	Vector2 GetTextureSize() const { return Vector2(textureWidth, textureHeight); }
 
-	void AttachArrayTexture(int width = 2048, int height = 2048, uint32_t p_levels = 3)
+	void AttachArrayTexture(int width = 2048, int height = 2048, uint32_t p_levels = 4)
 	{
 		glActiveTexture(GL_TEXTURE0);
 		BindArrayTexture(FrameBufferTexture::SHADOWMAP);
@@ -153,7 +153,11 @@ public:
 
 	void TextureLayer(FrameBufferTexture::Type name, uint32_t layer)  const
 	{
-		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, textures[name], 0, layer);
+		GLCall(glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, textures[name], 0, layer));
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		{
+			Console::Log(LogMode::DEBUG, "Framebuffer Setup Not Complete");
+		}
 	}
 	
 	void BindArrayTexture(FrameBufferTexture::Type name) const
