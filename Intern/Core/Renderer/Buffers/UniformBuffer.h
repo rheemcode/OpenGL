@@ -15,7 +15,7 @@ public:
 	template<typename T>
 	void UploadData(const T& data, const int& offset);
 
-	void InitData(class Shader* shader, const char* name);
+	void InitData(class Shader* shader, const std::string& name);
 	void FlushBuffer();
 	void SetData(uint32_t size, const void* data, uint32_t offset);
 	void Bind();

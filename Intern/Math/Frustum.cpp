@@ -35,6 +35,7 @@ void Frustum::SetFrustum(const Vector3& lNear, const Vector3& lFar, const Matrix
 
 void Frustum::SetFrustum(const Matrix4x4& p_projMatrix)
 {
+#ifdef USE_INTRIN
 	__m256 a = _mm256_set_ps(p_projMatrix[0][3], p_projMatrix[1][3], p_projMatrix[2][3], p_projMatrix[3][3], p_projMatrix[0][3], p_projMatrix[1][3], p_projMatrix[2][3], p_projMatrix[3][3]);
 	__m256 b = _mm256_set_ps(p_projMatrix[0][0], p_projMatrix[1][0], p_projMatrix[2][0], p_projMatrix[3][0], p_projMatrix[0][1], p_projMatrix[1][1], p_projMatrix[2][1], p_projMatrix[3][1]);
 	__m256 c = _mm256_set_ps(p_projMatrix[0][2], p_projMatrix[1][2], p_projMatrix[2][2], p_projMatrix[3][2], 0, 0, 0, 0);
@@ -50,7 +51,7 @@ void Frustum::SetFrustum(const Matrix4x4& p_projMatrix)
 	float* top_f = b_add.m256_f32;
 	float* bottom_f = b_sub.m256_f32;
 
-#ifndef USE_INTRIN
+
 	planes[FrustumPlane::Left].normal.x = left_f[7];
 	planes[FrustumPlane::Left].normal.y = left_f[6];
 	planes[FrustumPlane::Left].normal.z = left_f[5];

@@ -211,7 +211,7 @@ struct GLIB_API ShadowData
 
 	uint32_t splitCount = MAX_SPLIT;
 	
-	float farBound[MAX_SPLIT];
+	Vector4 farBound;
 	Vector2 ShadowSize;
 	Vector3 LightDir;
 
@@ -248,8 +248,9 @@ struct GLIB_API ShadowData
 	{
 		for (int i = 0; i < splitCount; i++)
 		{
-			farBound[i] = 0.5f * (-shadowBounds.farDistance[i] * p_Proj[2][1] + p_Proj[3][1]) / shadowBounds.farDistance[i] + 0.5f;
+			farBound[i] = 0.5f * (-shadowBounds.farDistance[i] * p_Proj[2][2] + p_Proj[3][2]) / shadowBounds.farDistance[i] + 0.5f;
 		}
+
 	}
 
 	void UpdateProjection()

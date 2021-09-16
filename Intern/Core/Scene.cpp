@@ -86,6 +86,7 @@ void Scene::Render()
 		renderData.shader = sceneShader;
 		renderData.shadowData = shadowData;
 		renderData.framebuffer = m_shadowBuffer;
+		renderData.uniformBuffer = m_MatrixBuffer;
 		Renderer::PushPass(std::move(colorPass));
 	}
 
@@ -166,11 +167,10 @@ void Scene::BindFBOTex(FrameBufferTexture::Type name)
 	m_shadowBuffer->BindTexture(name); 
 }
 
-void Scene::InitLightUniforms()
+void Scene::InitLightBuffer()
 {
 
 	// retrieves the index not binding
-	m_LightsBuffer = std::make_unique<UniformBuffer>();
 	m_LightsBuffer->InitData(sceneShader.get(), "LightsUniform");
 	
 	LightData lightData;
@@ -250,7 +250,7 @@ void Scene::CreateSkyLight()
 
 	pLight->Use = true;
 	m_lights[0] = std::move(pLight);
-	InitLightUniforms();
+	InitLightBuffer();
 }
 
 
@@ -258,8 +258,12 @@ void Scene::CreateBuffers()
 {
 	m_shadowBuffer = std::make_shared<FrameBuffer>();
 	m_shadowBuffer->CreateTexture();
-	m_shadowBuffer->AttachArrayTexture(TEXTURE_MAX_SIZE, TEXTURE_MAX_SIZE, 4);
-	shadowData->ShadowSize = Vector2((float)TEXTURE_MAX_SIZE, (float)TEXTURE_MAX_SIZE);
+	m_shadowBuffer->AttachArrayTexture(TEXTURE_MAX_SIZE / 2.f, TEXTURE_MAX_SIZE /2.f, 4);
+	shadowData->ShadowSize = Vector2((float)TEXTURE_MAX_SIZE /2, (float)TEXTURE_MAX_SIZE /2);
+
+	m_LightsBuffer = std::make_shared<UniformBuffer>();
+	m_MatrixBuffer = std::make_shared<UniformBuffer>();
+	m_MatrixBuffer->InitData(sceneShader.get(), "Matrices");
 }
 
 

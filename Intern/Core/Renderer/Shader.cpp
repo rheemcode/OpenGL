@@ -5,6 +5,25 @@
 #include "Math/Vector2.h"
 #include "Core/Console.h"
 
+int64_t to_int(const std::string& str)
+{
+	int to = str.length();
+	int64_t integer = 0;
+	int64_t sign = 1;
+
+	for (int i = 0; i < to; i++)
+	{
+		char32_t c = str[i];
+		if (c >= '0' && c <= '9')
+		{
+			integer *= 10;
+			integer += c - '0';
+		}
+	}
+
+	return integer;
+}
+
 Shader::Shader(const std::string& filePath)
 {
 	ParseShader(filePath);
@@ -47,37 +66,68 @@ void Shader::ParseShader(const std::string& filePath)
 		{
 			ss[(int)shaderType] << line << '\n';
 		}
-
-		if (line.find("uniform") != std::string::npos)
+		
+		if (line.find("uniform") != std::string::npos && !line._Starts_with("//"))
 		{
+			bool isUniformBlock = false;
+			std::string uniformBlock;
+			int blockBinding = 0;
+			
+			if (line._Starts_with("layout"))
+			{
+				isUniformBlock = true;
+				auto start = line.find("binding");
+
+				if (start != line.npos)
+				{
+					const auto& str = line.substr(line.find("=") + 1);
+					blockBinding = to_int(str);
+				}
+			}
+
+			size_t slash = 0;
+			// remove trailing forward slashes at ending
+			if ((slash = line.find("//")) != line.npos)
+			{
+				line = line.substr(0, slash - 1);
+			}
+
 			const char* str = line.c_str();
 			std::string result = "";
+			
+			// extract unifrom name
 			while ((str = std::strstr(str, " ")) != NULL)
 			{
 				++str;
 				result = str;
+			}
+			
+			// remove semicolon at ending
+			size_t semicolon;
+			size_t braces;
+			
+			// predicting semicolon will be at the end 
+			// thus all instructions must be on new line
+			if ((semicolon = result.find(";")) != result.npos)
+			{
 				result = result.substr(0, result.size() - 1);
+			}
+
+			else if((braces = result.find("{")) != result.npos)
+				result = result.substr(0, result.size() - 1);
+
+			if (isUniformBlock)
+			{
+				cache.AddUniformBlockBinding(result, blockBinding);
+				continue;
 			}
 			
 			size_t pos;
 			if ((pos = result.find('[')) != result.npos)
 			{
 				const std::string numstr = result.substr(pos + 1, (result.size() - pos) - 2);
-				int to = numstr.length();
-				int64_t integer = 0;
-				int64_t sign = 1;
-
-				for (int i = 0; i < to; i++)
-				{
-					char32_t c = numstr[i];
-					if (c >= '0' && c <= '9')
-					{
-						integer *= 10;
-						integer += c - '0';
-					}
-				}
-
-				for (int i = 0; i < integer; i++)
+				int num = to_int(numstr);
+				for (int i = 0; i < num; i++)
 				{
 					std::stringstream _ss;
 					_ss << result.substr(0, pos) << "[" << i << "]";

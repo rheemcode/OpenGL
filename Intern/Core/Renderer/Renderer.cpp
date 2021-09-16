@@ -215,8 +215,21 @@ void Renderer::RenderMeshes(const RenderData& renderData)
 
 	const auto& shader = renderData.shader;
 	shader->Bind();
-	shader->UploadUniformMat4("projView", *renderData.cameraData->proj * *renderData.cameraData->view);
-	shader->UploadUniformMat4("shadowSpaceMatrix", renderData.shadowData->Bias * renderData.shadowData->Proj[0] * renderData.shadowData->View[0]);
+//	shader->UploadUniformMat4("projView", *renderData.cameraData->proj * *renderData.cameraData->view);
+	
+	renderData.shadowData->UpdateFarBounds(*renderData.cameraData->proj);
+	shader->UploadUniformVec4("farDistance", renderData.shadowData->farBound);
+	std::shared_ptr matricesBuffer = renderData.uniformBuffer;
+	matricesBuffer->UploadData(*renderData.cameraData->proj * *renderData.cameraData->view, 0);
+	matricesBuffer->UploadData(renderData.shadowData->Bias * renderData.shadowData->Proj[0] * renderData.shadowData->View[0], 128);
+	matricesBuffer->UploadData(renderData.shadowData->Bias * renderData.shadowData->Proj[1] * renderData.shadowData->View[1], 128 + 64);
+	matricesBuffer->UploadData(renderData.shadowData->Bias * renderData.shadowData->Proj[2] * renderData.shadowData->View[2], 128 + 128);
+	matricesBuffer->UploadData(renderData.shadowData->Bias * renderData.shadowData->Proj[3] * renderData.shadowData->View[3], 128 + 128 + 64);
+
+	for (int i = 0; i < renderData.shadowData->splitCount; i++)
+	{
+	//	shader->UploadUniformMat4("shadowSpaceMatrix", renderData.shadowData->Bias * renderData.shadowData->Proj[0] * renderData.shadowData->View[0]);
+	}
 
 
 #ifdef DRAW_DEPTH_MAP
@@ -250,8 +263,9 @@ void Renderer::RenderMeshes(const RenderData& renderData)
 			mesh.GetModelInstance()->BindTexture(mesh.GetMaterial().Diffuse, Model::TEX_DIFFUSE);
 			shader->UploadUniformInt("currentTex", mesh.GetMaterial().Diffuse);
 		}
-
-		shader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
+		matricesBuffer->UploadData(mesh.GetTransform().GetWorldMatrix(), 64);
+		matricesBuffer->FlushBuffer();
+	//	shader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
 
 		RenderCommand::DrawIndexed(attribs);
 	}

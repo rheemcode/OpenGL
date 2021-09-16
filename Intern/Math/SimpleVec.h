@@ -203,6 +203,12 @@ struct GLIB_API SimpleVec4
 		float component[4] = { 0 };
 	};
 
+	void Normalize()
+	{
+		auto len = _mm_rsqrt_ps(_mm_dp_ps(vec_comp, vec_comp, 0xff));
+		vec_comp = _mm_mul_ps(vec_comp, len);
+	}
+
 	SimpleVec4& operator +=(const SimpleVec4& p_vec)
 	{
 		this->vec_comp = _mm_add_ps(this->vec_comp, p_vec.vec_comp);

@@ -76,10 +76,7 @@ class GLIB_API Scene
 	friend Renderer;
 	friend GLApplication;
 	static Scene* s_activeScene;
-
 	static std::shared_ptr<Camera> sceneCamera;
-	std::shared_ptr<CameraData> cameraData;
-	std::shared_ptr<struct ShadowData> shadowData;
 
 	std::string sceneName;
 
@@ -110,12 +107,16 @@ class GLIB_API Scene
 
 	using ShadowBuffer = FrameBuffer;
 	std::shared_ptr<ShadowBuffer> m_shadowBuffer;
-	std::unique_ptr<class UniformBuffer> m_LightsBuffer;
+	std::shared_ptr<class UniformBuffer> m_LightsBuffer;
+	std::shared_ptr<class UniformBuffer> m_MatrixBuffer;
 
 	/* Scene Shaders */
 	std::shared_ptr<class Shader> sceneShader;
 	std::shared_ptr<class Shader> shadowShader;
 	std::shared_ptr<class Shader> testShader;
+
+	std::shared_ptr<CameraData> cameraData;
+	std::shared_ptr<struct ShadowData> shadowData;
 
 	/* Threading */
 	Thread::ID threadID;
@@ -145,7 +146,7 @@ private:
 	void InitSceneShaders();
 	void InitRenderer();
 	void InitSceneCamera();
-	void InitLightUniforms();
+	void InitLightBuffer();
 	void CreateBuffers();
 	void CreateTests();
 	void InitScene();

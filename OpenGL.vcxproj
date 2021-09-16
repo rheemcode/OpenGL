@@ -124,7 +124,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)Extern;$(SolutionDir)Extern\GLEW\include\;$(SolutionDir)\Intern\Core;$(SolutionDir)\Intern;$(SolutionDir)\Intern\Core\Renderer</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Create</PrecompiledHeader>
       <PrecompiledHeaderFile>glpch.h</PrecompiledHeaderFile>
