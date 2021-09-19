@@ -19,6 +19,7 @@ public:
 
 	bool LoadModel(MODEL_FORMAT modelFormat, const std::string& p_filePath, Model* p_model);
 	bool LoadAsStaticModel(MODEL_FORMAT modelFormat, const std::string& p_filePath, Model* p_model);
+	void ComputeTangentBasis(VertexAttrib* attrib);
 };
 
 struct TextureNameMap

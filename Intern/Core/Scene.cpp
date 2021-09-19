@@ -199,7 +199,7 @@ void Scene::CreateDefaultActor()
 {
 	std::shared_ptr<Actor> actor = std::make_shared<Actor>();
 	std::shared_ptr<TransformComponent> tComponent = std::make_shared<TransformComponent>(actor);
-	std::shared_ptr<MeshRendererComponent> renderComponent = std::make_shared<MeshRendererComponent>(actor, "./Assets/test2.obj");
+	std::shared_ptr<MeshRendererComponent> renderComponent = std::make_shared<StaticMeshRendererComponent>(actor, "./Assets/Madara_Uchiha.obj");
 	actor->AddComponent(tComponent);
 	actor->AddComponent(renderComponent);
 	meshDirty = true;

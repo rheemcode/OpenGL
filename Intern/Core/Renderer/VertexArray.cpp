@@ -70,7 +70,15 @@ void VertexArray::AddBuffer(const VertexBuffer& vb)
 	for (unsigned int i = 0; i < elements.size(); i++)
 	{
 		const auto& element = elements[i];
-		GLCall(glEnableVertexAttribArray(static_cast<uint32_t>(element.id)));
+		if (element.enabled)
+		{
+			GLCall(glEnableVertexAttribArray(static_cast<uint32_t>(element.id)));
+		}
+		else
+		{
+			GLCall(glDisableVertexAttribArray(static_cast<uint32_t>(element.id)));
+		}
+
 		GLCall(glVertexAttribPointer(static_cast<uint32_t>(element.id), static_cast<uint32_t>(element.count), static_cast<uint32_t>(element.type), element.normalized, layout.GetStride(), (void*) offset));
 		offset += static_cast<uint32_t>(element.count) * static_cast<uint32_t>(VertexBufferElement::GetSizeOfType(element.type));
 	}

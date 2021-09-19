@@ -81,12 +81,18 @@ bool ModelLoader::LoadModel(MODEL_FORMAT modelFormat, const std::string& p_fileP
 		{
 			size_t indexOffset = 0;
 			const int vertexAttribCount = (int)shapes[s].mesh.indices.size();
-			VertexAttrib* vertexAttribs = new VertexAttrib[vertexAttribCount];
-			uint32_t* indices = new uint32_t[vertexAttribCount];
+			
+			std::vector<VertexAttrib> vertexAttribs;
+			
+			uint32_t* indices  = new uint32_t[vertexAttribCount];
+			Vector3* tangent   = new Vector3[vertexAttribCount];
+			Vector3* bitangent = new Vector3[vertexAttribCount];
 
+			std::array<VertexAttrib, 3> vAttrib;
 			std::unordered_map<VertexAttrib, uint32_t> uniqueVertices;
 
 			AABB boundindBox;
+
 			for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++)
 			{
 				size_t fv = size_t(shapes[s].mesh.num_face_vertices[f]);
@@ -94,33 +100,48 @@ bool ModelLoader::LoadModel(MODEL_FORMAT modelFormat, const std::string& p_fileP
 				for (size_t v = 0; v < fv; v++)
 				{
 					tinyobj::index_t idx = shapes[s].mesh.indices[indexOffset + v];
-					VertexAttrib vAttrib;
 
-					vAttrib.vertices = { attribs.vertices[3 * size_t(idx.vertex_index) + 0], attribs.vertices[3 * size_t(idx.vertex_index) + 1], attribs.vertices[3 * size_t(idx.vertex_index) + 2] };
-				//	vAttrib.vertices *= 5.f;
+					vAttrib[v].vertices = { attribs.vertices[3 * size_t(idx.vertex_index) + 0], attribs.vertices[3 * size_t(idx.vertex_index) + 1], attribs.vertices[3 * size_t(idx.vertex_index) + 2] };
+				
 					if (f == 0)
-						boundindBox.position = vAttrib.vertices;
-					boundindBox.ExpandTo(vAttrib.vertices);
+						boundindBox.position = vAttrib[v].vertices;
+					boundindBox.ExpandTo(vAttrib[v].vertices);
 
 
 					if (idx.normal_index >= 0)
 					{
-
-						vAttrib.normals = { attribs.normals[3 * size_t(idx.normal_index) + 0], attribs.normals[3 * size_t(idx.normal_index) + 1], attribs.normals[3 * size_t(idx.normal_index) + 2] };
+						vAttrib[v].normals = { attribs.normals[3 * size_t(idx.normal_index) + 0], attribs.normals[3 * size_t(idx.normal_index) + 1], attribs.normals[3 * size_t(idx.normal_index) + 2] };
 					}
 
 					if (idx.texcoord_index >= 0)
 					{
-						vAttrib.uv = { attribs.texcoords[2 * size_t(idx.texcoord_index) + 0], attribs.texcoords[2 * size_t(idx.texcoord_index) + 1] };
+						vAttrib[v].uv = { attribs.texcoords[2 * size_t(idx.texcoord_index) + 0], attribs.texcoords[2 * size_t(idx.texcoord_index) + 1] };
 					}
 
-					if (uniqueVertices.count(vAttrib) == 0)
+					if (v == fv - 1)
 					{
-						uniqueVertices[vAttrib] = (uint32_t)indexOffset + v;
-						vertexAttribs[indexOffset + v] = vAttrib;
+						ComputeTangentBasis(vAttrib.data());
 					}
 
-					indices[indexOffset + v] = uniqueVertices[vAttrib];
+
+					vertexAttribs.push_back(vAttrib[v]);
+					if (uniqueVertices.count(vAttrib[v]) == 0)
+					{
+
+						uniqueVertices[vAttrib[v]] = (uint32_t)indexOffset + v;
+					}
+
+					else
+					{
+						
+						vAttrib[v].tangent +=  vAttrib[v].tangent;
+						vAttrib[v].bitangent += vAttrib[v].bitangent;
+						
+					}
+
+					indices[indexOffset + v] = uniqueVertices[vAttrib[v]];
+					tangent[indexOffset + v] = vAttrib[v].tangent;
+					bitangent[indexOffset + v] = vAttrib[v].bitangent;
 				}
 
 				shapes[s].mesh.indices;
@@ -161,8 +182,12 @@ bool ModelLoader::LoadModel(MODEL_FORMAT modelFormat, const std::string& p_fileP
 			Mesh mesh(vertexAttribs, indices, vertexAttribCount, material, boundindBox);
 
 			p_model->AddMesh(std::forward<Mesh>(mesh));
-			delete[] vertexAttribs;
+			vertexAttribs.clear();
+
+			
 			delete[] indices;
+			delete[] tangent;
+			delete[] bitangent;
 		}
 
 		return true;
@@ -173,6 +198,31 @@ bool ModelLoader::LoadModel(MODEL_FORMAT modelFormat, const std::string& p_fileP
 		return false;
 	}
 
+	}
+}
+
+void ModelLoader::ComputeTangentBasis(VertexAttrib* attrib)
+{
+	Vector3 deltaPos1 = attrib[1].vertices - attrib[0].vertices;
+	Vector3 deltaPos2 = attrib[2].vertices - attrib[0].vertices;
+
+	Vector3 deltaUV1 = attrib[1].uv - attrib[0].uv;
+	Vector3 deltaUV2 = attrib[2].uv - attrib[0].uv;
+
+	float r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
+
+	
+	if (isinf(r))
+		return;
+
+	Vector3 tangent = (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y) * r;
+	Vector3 bitangent = (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x) * r;
+	
+	
+	for (int i = 0; i < 3; i++)
+	{
+		attrib[i].tangent = tangent;
+		attrib[i].bitangent = bitangent;
 	}
 }
 
@@ -268,7 +318,7 @@ bool ModelLoader::LoadAsStaticModel(MODEL_FORMAT modelFormat, const std::string&
 					VertexAttrib vAttrib;
 
 					vAttrib.vertices = { attribs.vertices[3 * size_t(idx.vertex_index) + 0], attribs.vertices[3 * size_t(idx.vertex_index) + 1], attribs.vertices[3 * size_t(idx.vertex_index) + 2] };
-					vAttrib.vertices *= 5.f;
+		//			vAttrib.vertices *= 5.f;
 					if (f == 0)
 					{
 						//totalBoundingBox.position = vAttrib.vertices;

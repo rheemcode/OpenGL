@@ -15,6 +15,7 @@ enum class Attrib : uint32_t
 	NORMAL,
 	UV,
 	TANGENT,
+	BITANGENT,
 };
 
 enum class AttribCount : uint32_t
@@ -31,9 +32,10 @@ struct VertexBufferElement
 	Attrib id;
 	AttribCount count;
 	bool normalized;
+	bool enabled;
 
-	VertexBufferElement(AttribDataType p_type, Attrib p_id, AttribCount p_count, bool p_normalized = 0)
-		: type(p_type), id(p_id), count(p_count), normalized(p_normalized) {}
+	VertexBufferElement(AttribDataType p_type, Attrib p_id, AttribCount p_count, bool p_normalized = 0, bool p_enabled = true)
+		: type(p_type), id(p_id), count(p_count), normalized(p_normalized),enabled(p_enabled) {}
 
 	static uint32_t GetSizeOfType(AttribDataType type)
 	{

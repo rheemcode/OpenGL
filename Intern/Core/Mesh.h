@@ -18,6 +18,8 @@ struct VertexAttrib
 	Vector3 vertices;
 	Vector3 normals;
 	Vector2 uv;
+	Vector3 tangent;
+	Vector3 bitangent;
 
 	bool operator==(const VertexAttrib& p_other) const
 	{
@@ -93,6 +95,7 @@ public:
 	 Mesh(const std::vector<VertexAttrib> p_attribs) {};
 	 Mesh(const std::vector<VertexAttrib>& p_vAttribs, const std::vector<uint32_t>& p_indices, Material p_material, AABB p_aabb);
 	 Mesh(VertexAttrib* p_vAttribs, uint32_t* p_indices, uint32_t count, Material p_material, AABB p_aabb);
+	 Mesh(const std::vector<VertexAttrib>& p_vAttribs, uint32_t* p_indices, uint32_t count, Material p_material, AABB p_aabb);
 	 ~Mesh() = default;
 };
 
