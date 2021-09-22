@@ -1,8 +1,8 @@
 #include <glpch.h>
 #include "UniformBuffer.h"
-#include "Shader.h"
-#include "Debug.h"
-
+#include "OpenGL/Shader.h"
+#include "Utils/Debug.h"
+#include <GL/glew.h>
 
 void UniformBuffer::InitData(Shader* shader, const std::string& name)
 {

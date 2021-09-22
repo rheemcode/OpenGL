@@ -21,7 +21,7 @@ struct GLIB_API  SimpleVec3
 		return *this;
 	}
 
-	SimpleVec3& operator +(const SimpleVec3& p_vec) const
+	SimpleVec3 operator +(const SimpleVec3& p_vec) const
 	{
 		SimpleVec3 res = *this;
 		res.x += p_vec.x;

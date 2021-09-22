@@ -65,7 +65,7 @@
 		float m_XOffset, m_YOffset;
 	};
 
-	class MouseButtonEvent : public Event
+	class GLIB_API MouseButtonEvent : public Event
 	{
 	public:
 		int GetMouseButton() const { return m_Button; }

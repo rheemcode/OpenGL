@@ -29,6 +29,6 @@ public:
 template<typename T>
 inline void UniformBuffer::UploadData(const T& p_data, const int& offset)
 {
-	auto* buffer = new (m_data + offset) T;
+	T* buffer = new (m_data + offset) T;
 	*buffer = p_data;
 }

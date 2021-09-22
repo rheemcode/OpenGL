@@ -1,9 +1,9 @@
 #pragma once
-#include "Texture.h"
-#include "VertexArray.h"
+#include "OpenGL/Texture.h"
+#include "OpenGL/VertexArray.h"
 #include "Buffers/VertexBuffer.h"
 #include "Math/Matrix4x4.h"
-#include "Shader.h"
+#include "OpenGL/Shader.h"
 #include <memory>
 
 class SkyBox

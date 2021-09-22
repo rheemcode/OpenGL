@@ -1,8 +1,9 @@
 #include <glpch.h>
-#include "GLCore.h"
-#include "GLib.h"
 #include "GLSandbox.h"
-#include <SceneCamera.h>
+
+#include "GLApplication/GLCore.h"
+#include "GLib.h"
+#include "ECS/SceneCamera.h"
 
 void GLSandboxApplication::OnStart()
 {

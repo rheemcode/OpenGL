@@ -1,9 +1,9 @@
 #pragma once
 #include "Window/Display.h"
 #include "GLApplication.h"
-#include "Core/Console.h"
-#include "Renderer/Renderer.h"
-#include "Timestep.h"
+#include "Utils/Console.h"
+#include "OpenGL/Renderer.h"
+#include "Utils/Timestep.h"
 
 
 #if defined (ERROR)

@@ -21,9 +21,6 @@
     <ClCompile Include="SandboxMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="glpch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GLSandbox.h">

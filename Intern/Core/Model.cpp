@@ -52,7 +52,7 @@ bool ModelLoader::LoadModel(MODEL_FORMAT modelFormat, const std::string& p_fileP
 		//p_model->CreateSpecularTextures(textureCount);
 
 
-		for (int i = 0; i < diffuseTextureCount; i++)
+		for (int i = 0; i < int(diffuseTextureCount); i++)
 		{
 			auto tex = p_model->GetTexture(Model::TEX_DIFFUSE, i).lock();
 			tex->AddImage("./Assets/Textures/" + p_model->m_textureNames[i].name);
@@ -127,8 +127,8 @@ bool ModelLoader::LoadModel(MODEL_FORMAT modelFormat, const std::string& p_fileP
 					vertexAttribs.push_back(vAttrib[v]);
 					if (uniqueVertices.count(vAttrib[v]) == 0)
 					{
-
-						uniqueVertices[vAttrib[v]] = (uint32_t)indexOffset + v;
+			
+						uniqueVertices[vAttrib[v]] = (uint32_t)(indexOffset + v);
 					}
 
 					else
@@ -291,7 +291,7 @@ bool ModelLoader::LoadAsStaticModel(MODEL_FORMAT modelFormat, const std::string&
 
 		for (size_t s = 0; s < shapes.size(); s++)
 		{
-			totalVeticesCount += shapes[s].mesh.indices.size();
+			totalVeticesCount += (int)shapes[s].mesh.indices.size();
 		}
 
 		VertexAttrib* vertexAttribs = new VertexAttrib[totalVeticesCount];
@@ -340,7 +340,7 @@ bool ModelLoader::LoadAsStaticModel(MODEL_FORMAT modelFormat, const std::string&
 
 					if (uniqueVertices.count(vAttrib) == 0)
 					{
-						uniqueVertices[vAttrib] = (uint32_t)indexOffset + v + offset;
+						uniqueVertices[vAttrib] = (uint32_t)(indexOffset + v + offset);
 						vertexAttribs[indexOffset + v + offset] = vAttrib;
 					}
 

@@ -5,7 +5,7 @@
 #include "Tests/Object.h"
 #include "Math/Quaternion.h"
 #include "Math/Transform.h"
-#include "SceneCameraController.h"
+#include "ECS/SceneCameraController.h"
 #include "Math/Frustum.h"
 
 
@@ -20,7 +20,7 @@ struct GLIB_API CameraSettings
 	CameraMode mode;
 	float fovY, znear, zfar;
 	float left, right, top, bottom;
-	float winWidth, winHeight;
+	int winWidth, winHeight;
 	float ratio;
 };
 
@@ -28,16 +28,16 @@ class GLIB_API Camera
 {
 protected:
 	friend class Scene;
-	Transform transform;
-	std::shared_ptr<CameraController> cameraController;
+	float m_Width, m_Height;
 	CameraSettings m_cameraSettings;
 
 	Matrix4x4 m_ProjectionMatrix;
 	Matrix4x4 m_ViewMatrix;
-	Matrix4x4 m_ViewProjectionMatrix;
-
+	mutable Matrix4x4 m_ViewProjectionMatrix;
 	Frustum m_Frustum;
-	float m_Width, m_Height;
+	Transform transform;
+
+	std::shared_ptr<CameraController> cameraController;
 	Matrix4x4 MakeProjectionMatrix(const CameraMode& projectionMode);
 	Matrix4x4 MakeProjectionMatrix(const CameraSettings& setting);
 	Matrix4x4 MakeViewMatrix();

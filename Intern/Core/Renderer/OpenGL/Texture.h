@@ -5,8 +5,12 @@
 #define TEXTURE_MAX_SIZE 0x1000
 #define MAX_TEXTURES 32
 
+#define BIND_DEFAULT_TEXTURE() GLCall(glBindTexture(GL_TEXTURE_2D, Texture::s_defaultTexID))
+
 class Texture
 {
+	friend class Renderer;
+
 	enum InternalFormat
 	{
 		RGB8 = GL_RGB8,
@@ -28,6 +32,9 @@ class Texture
 	uint32_t textureCount = 0;
 	uint32_t levels = 1;
 
+	static uint32_t s_defaultTexID;
+	static Texture* s_defaultTexure;
+
 public:
 	void Bind();
 	void Bind(uint32_t p_val);
@@ -41,6 +48,7 @@ public:
 	void BufferData(unsigned char* data, int width, int height, DataFormat format);
 
 	static void Screenshot();
+	static void CreateDefaultTexture();
 	//static void Init();
 
 	bool operator==(const Texture& p_other)

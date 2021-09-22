@@ -1,5 +1,5 @@
 #pragma once
-#include "Renderer/OpenGLContext.h"
+#include "Context/OpenGLContext.h"
 #include "Input/KeyCode.h"
 #include "Math/SimpleVec.h"
 #include "Math/Vector2.h"

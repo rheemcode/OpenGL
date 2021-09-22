@@ -1,6 +1,6 @@
 #pragma once
 #include "Math/SimpleVec.h"
-#include "Renderer/Texture.h"
+#include "OpenGL/Texture.h"
 
 struct Material
 {

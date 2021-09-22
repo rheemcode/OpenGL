@@ -1,9 +1,9 @@
 #pragma once
 #include <vector>
 #include <memory>
-#include "Renderer/Shader.h"
+#include "OpenGL/Shader.h"
 #include "Renderer/Buffers/IndexBuffer.h"
-#include "Renderer/VertexArray.h"
+#include "OpenGL/VertexArray.h"
 #include "Math/Matrix4x4.h"
 #include "Math/Transform.h"
 #include "Renderer/Material.h"

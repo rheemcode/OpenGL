@@ -2,7 +2,7 @@
 
 #include "Buffers/BufferLayout.h"
 #include "Buffers/VertexBuffer.h"
-#include <Renderer/Buffers/IndexBuffer.h>
+#include "Buffers/IndexBuffer.h"
 
 class GLIB_API VertexArray
 {

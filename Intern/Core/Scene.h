@@ -1,16 +1,11 @@
 #pragma once
-#include "Thread.h"
-#include "Renderer/Renderer.h"
-#include "CommandBuffer.h"
-#include "Buffers/FrameBuffer.h"
-#include "Buffers/UniformBuffer.h"
-#include "Renderer/SkyBox.h"
+#include "Utils/Thread.h"
 #include "Math/Transform.h"
 #include "Events/Event.h"
-#include "Console.h"
+#include "Utils/Console.h"
 #include "ShadowBox.h"
-#include "Timestep.h"
-
+#include "Utils/Timestep.h"
+#include "Utils/CommandBuffer.h"
 
 struct GLIB_API Light
 {
@@ -61,15 +56,32 @@ struct LightUniformBuffer
 	bool Use;
 };
 
-using namespace FrameBufferName;
+//using namespace FrameBufferName;
 
 
 struct ShaderTest;
+struct ShadowData;
+struct CameraData;
+class Mesh;
+class UniformBuffer;
+class GBuffer;
 class Renderer;
 class FrameBuffer;
 class GLApplication;
+class SkyBox;
+class Shader;
+class Actor;
 
-
+GLIBSTORAGE template GLIB_API class std::shared_ptr<Camera>;
+GLIBSTORAGE template GLIB_API class std::shared_ptr<Shader>;
+GLIBSTORAGE template GLIB_API class std::unique_ptr<Light>;
+GLIBSTORAGE template GLIB_API class std::shared_ptr<FrameBuffer>;
+GLIBSTORAGE template GLIB_API class std::shared_ptr<UniformBuffer>;
+GLIBSTORAGE template GLIB_API class std::shared_ptr<GBuffer>;
+GLIBSTORAGE template GLIB_API class std::shared_ptr<CameraData>;
+GLIBSTORAGE template GLIB_API class std::shared_ptr<Actor>;
+GLIBSTORAGE template GLIB_API class std::shared_ptr<ShadowData>;
+GLIBSTORAGE template GLIB_API class std::shared_ptr<Mesh>;
 
 class GLIB_API Scene
 {
@@ -100,23 +112,23 @@ class GLIB_API Scene
 	EnviromentLight m_EnviromentLight;
 
 	/* Render-ables */
-	std::vector<std::shared_ptr<class Actor>> m_actors;
-	std::vector<class Mesh> culledMeshes;
-	std::vector<class Mesh> meshes;
+	std::vector<std::shared_ptr<Actor>> m_actors;
+	std::vector< Mesh> culledMeshes;
+	std::vector< Mesh> meshes;
 	bool meshDirty = false;
 
 	using ShadowBuffer = FrameBuffer;
 	std::shared_ptr<ShadowBuffer> m_shadowBuffer;
-	std::shared_ptr<class UniformBuffer> m_LightsBuffer;
-	std::shared_ptr<class UniformBuffer> m_MatrixBuffer;
-
+	std::shared_ptr<UniformBuffer> m_LightsBuffer;
+	std::shared_ptr<UniformBuffer> m_MatrixBuffer;
+	std::shared_ptr<GBuffer> m_Gbuffer;
 	/* Scene Shaders */
-	std::shared_ptr<class Shader> sceneShader;
-	std::shared_ptr<class Shader> shadowShader;
-	std::shared_ptr<class Shader> testShader;
+	std::shared_ptr<Shader> sceneShader;
+	std::shared_ptr<Shader> shadowShader;
+	std::shared_ptr<Shader> testShader;
 
 	std::shared_ptr<CameraData> cameraData;
-	std::shared_ptr<struct ShadowData> shadowData;
+	std::shared_ptr<ShadowData> shadowData;
 
 	/* Threading */
 	Thread::ID threadID;
@@ -131,8 +143,8 @@ class GLIB_API Scene
 
 private:
 	
-	void BindFBO(FrameBufferName::Type name);
-	void BindFBOTex(FrameBufferTexture::Type name);
+	void BindFBO(int name);
+	void BindFBOTex(int name);
 
 	void PrepareMeshes();
 
@@ -171,86 +183,86 @@ public:
 	~Scene();
 };
 
-
-struct ShaderTest
-{
-	struct ShaderParams
-	{
-		float iTime;
-
-	};
-
-	static const int MAX_TEST_SHADERS = 5;
-	std::unique_ptr<VertexArray> vertexArray;
-	std::unique_ptr<VertexBuffer> vertexBuffer;
-	std::unique_ptr<FrameBuffer> frameBuffer;
-	
-	std::unique_ptr<Shader> fboShader;
-	std::array<std::unique_ptr<Shader>, MAX_TEST_SHADERS> shaders;
-
-	void CreateShader(const std::string& filePath, int index)
-	{
-		shaders[index] = std::make_unique<Shader>(filePath);
-	}
-
-	void InitTest()
-	{
-		/*float vAttrib[] = 
-		{
-		   -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
-			0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
-			0.5f,  0.5f, 0.0f, 1.0f, 1.0f,
-		   -0.5f,  0.5f, 0.0f, 0.0f, 1.0f
-		};
-
-		uint32_t quadIndices[] = { 0, 1, 2, 2, 3, 0 };
-
-
-		vertexArray = std::make_unique<VertexArray>();
-		vertexBuffer = std::make_unique<VertexBuffer>(vAttrib, sizeof(vAttrib));
-		vertexBuffer->SetLayout({ { GL_FLOAT, 0, 3, 0 }, { GL_FLOAT, 1, 2, 0 } });
-		vertexArray->SetIndices(quadIndices, 6);
-		vertexArray->AddBuffer(*vertexBuffer.get());
-
-		frameBuffer = std::make_unique<FrameBuffer>();
-		frameBuffer->CreateTexture();
-		frameBuffer->AttachColorTexture();
-		frameBuffer->AttachRenderBuffer();*/
-
-	//	fboShader = std::make_unique<Shader>("./Assets/Shaders/fboTest.glsl");
-	}
-
-	void RenderTests(float deltaTime)
-	{
-		for (const auto& shader : shaders)
-		{
-			if (shader == nullptr)
-				return;
-
-			shader->Bind();
-			shader->UploadUniformFloat("iTime", deltaTime);
-			vertexArray->Bind();
-			RenderCommand::DrawIndexed(vertexArray->GetIndicies());
-		}
-	}
-
-	void RenderTest(float deltaTime, int id)
-	{
-		const auto& shader = shaders[id];
-
-		//frameBuffer->Bind(FrameBufferName::COLORBUFFER);
-		glViewport(0, 0, Display::GetSingleton()->GetMainWindow()->GetWidth(), Display::GetSingleton()->GetMainWindow()->GetHeight());
-		//fboShader->Bind();
-
-		shader->Bind();
-		shader->UploadUniformFloat("iTime", Time::GetSingleton()->GetElapsedTime());
-		frameBuffer->BindTexture(FrameBufferTexture::COLOR);
-		vertexArray->Bind();
-		RenderCommand::DrawIndexed(vertexArray->GetIndicies());
-	}
-};
-
-class SDFTest : public ShaderTest
-{
-
-};
+//
+//struct ShaderTest
+//{
+//	struct ShaderParams
+//	{
+//		float iTime;
+//
+//	};
+//
+//	static const int MAX_TEST_SHADERS = 5;
+//	std::unique_ptr<VertexArray> vertexArray;
+//	std::unique_ptr<VertexBuffer> vertexBuffer;
+//	std::unique_ptr<FrameBuffer> frameBuffer;
+//	
+//	std::unique_ptr<Shader> fboShader;
+//	std::array<std::unique_ptr<Shader>, MAX_TEST_SHADERS> shaders;
+//
+//	void CreateShader(const std::string& filePath, int index)
+//	{
+//		shaders[index] = std::make_unique<Shader>(filePath);
+//	}
+//
+//	void InitTest()
+//	{
+//		/*float vAttrib[] = 
+//		{
+//		   -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
+//			0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+//			0.5f,  0.5f, 0.0f, 1.0f, 1.0f,
+//		   -0.5f,  0.5f, 0.0f, 0.0f, 1.0f
+//		};
+//
+//		uint32_t quadIndices[] = { 0, 1, 2, 2, 3, 0 };
+//
+//
+//		vertexArray = std::make_unique<VertexArray>();
+//		vertexBuffer = std::make_unique<VertexBuffer>(vAttrib, sizeof(vAttrib));
+//		vertexBuffer->SetLayout({ { GL_FLOAT, 0, 3, 0 }, { GL_FLOAT, 1, 2, 0 } });
+//		vertexArray->SetIndices(quadIndices, 6);
+//		vertexArray->AddBuffer(*vertexBuffer.get());
+//
+//		frameBuffer = std::make_unique<FrameBuffer>();
+//		frameBuffer->CreateTexture();
+//		frameBuffer->AttachColorTexture();
+//		frameBuffer->AttachRenderBuffer();*/
+//
+//	//	fboShader = std::make_unique<Shader>("./Assets/Shaders/fboTest.glsl");
+//	}
+//
+//	void RenderTests(float deltaTime)
+//	{
+//		for (const auto& shader : shaders)
+//		{
+//			if (shader == nullptr)
+//				return;
+//
+//			shader->Bind();
+//			shader->UploadUniformFloat("iTime", deltaTime);
+//			vertexArray->Bind();
+//			RenderCommand::DrawIndexed(vertexArray->GetIndicies());
+//		}
+//	}
+//
+//	void RenderTest(float deltaTime, int id)
+//	{
+//		const auto& shader = shaders[id];
+//
+//		//frameBuffer->Bind(FrameBufferName::COLORBUFFER);
+//		glViewport(0, 0, Display::GetSingleton()->GetMainWindow()->GetWidth(), Display::GetSingleton()->GetMainWindow()->GetHeight());
+//		//fboShader->Bind();
+//
+//		shader->Bind();
+//		shader->UploadUniformFloat("iTime", Time::GetSingleton()->GetElapsedTime());
+//		frameBuffer->BindTexture(FrameBufferTexture::COLOR);
+//		vertexArray->Bind();
+//		RenderCommand::DrawIndexed(vertexArray->GetIndicies());
+//	}
+//};
+//
+//class SDFTest : public ShaderTest
+//{
+//
+//};

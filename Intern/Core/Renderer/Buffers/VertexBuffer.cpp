@@ -1,6 +1,7 @@
 #include <glpch.h>
-#include "Debug.h"
+#include "Utils/Debug.h"
 #include "VertexBuffer.h"
+#include <GL/glew.h>
 
 VertexBuffer::VertexBuffer()
 	: m_RendererID(0)

@@ -122,7 +122,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GLEW_STATIC;GLIB_BUILD_DLL;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Extern;$(SolutionDir)Extern\GLEW\include\;$(SolutionDir)\Intern\Core;$(SolutionDir)\Intern;$(SolutionDir)\Intern\Core\Renderer</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Extern;$(SolutionDir)Extern\GLEW\include\;$(SolutionDir)\Intern\Core;$(SolutionDir)Intern;$(SolutionDir)Intern\Core\Renderer;$(SolutionDir)Intern\Core\ECS;$(SolutionDir)Intern\Core\Renderer\OpenGL;$(SolutionDir)Intern\Core\GLApplication;$(SolutionDir)Intern\Core\Utils;$(SolutionDir)Intern\Core\Renderer\Context</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -163,54 +163,57 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Intern\Core\CameraController.cpp" />
-    <ClCompile Include="Intern\Core\GLApplication.cpp" />
-    <ClCompile Include="Intern\Core\Profiler.cpp" />
+    <ClCompile Include="Intern\Core\ECS\CameraController.cpp" />
+    <ClCompile Include="Intern\Core\GLApplication\GLApplication.cpp" />
+    <ClCompile Include="Intern\Core\Utils\Profiler.cpp" />
     <ClCompile Include="Intern\Core\Renderer\Buffers\FrameBuffer.cpp" />
-    <ClCompile Include="Intern\Core\CommandBuffer.cpp" />
-    <ClCompile Include="Intern\Core\Components\Component.cpp" />
-    <ClCompile Include="Intern\Core\Components\MeshRendererComponent.cpp" />
-    <ClCompile Include="Intern\Core\Components\TransformComponent.cpp" />
-    <ClCompile Include="Intern\Core\Console.cpp" />
+    <ClCompile Include="Intern\Core\Utils\CommandBuffer.cpp" />
+    <ClCompile Include="Intern\Core\ECS\Components\Component.cpp" />
+    <ClCompile Include="Intern\Core\ECS\Components\MeshRendererComponent.cpp" />
+    <ClCompile Include="Intern\Core\ECS\Components\TransformComponent.cpp" />
+    <ClCompile Include="Intern\Core\Utils\Console.cpp" />
     <ClCompile Include="Intern\Core\Mesh.cpp" />
     <ClCompile Include="Intern\Core\Model.cpp" />
+    <ClCompile Include="Intern\Core\Renderer\Buffers\GBuffer.cpp" />
     <ClCompile Include="Intern\Core\Renderer\Buffers\UniformBuffer.cpp" />
     <ClCompile Include="Intern\Core\Scene.cpp" />
-    <ClCompile Include="Intern\Core\SceneCameraController.cpp" />
-    <ClCompile Include="Intern\Core\Actor.cpp" />
+    <ClCompile Include="Intern\Core\ECS\SceneCameraController.cpp" />
+    <ClCompile Include="Intern\Core\ECS\Actor.cpp" />
     <ClCompile Include="Intern\Core\Renderer\SkyBox.cpp" />
     <ClCompile Include="Intern\Core\ShadowBox.cpp" />
-    <ClCompile Include="Intern\Core\Thread.cpp" />
-    <ClCompile Include="Intern\Core\Components\StaticMeshRendererComponent.cpp" />
-    <ClCompile Include="Intern\Core\SceneCamera.cpp" />
-    <ClCompile Include="Intern\Core\Renderer\RenderAPI.cpp" />
-    <ClInclude Include="Intern\Core\CameraController.h" />
-    <ClInclude Include="Intern\Core\GLApplication.h" />
-    <ClInclude Include="Intern\Core\GLCore.h" />
-    <ClInclude Include="Intern\Core\GLMain.h" />
-    <ClInclude Include="Intern\Core\Profiler.h" />
+    <ClCompile Include="Intern\Core\Utils\Thread.cpp" />
+    <ClCompile Include="Intern\Core\ECS\Components\StaticMeshRendererComponent.cpp" />
+    <ClCompile Include="Intern\Core\ECS\SceneCamera.cpp" />
+    <ClCompile Include="Intern\Core\Renderer\OpenGL\RenderAPI.cpp" />
+    <ClInclude Include="Intern\Core\ECS\CameraController.h" />
+    <ClInclude Include="Intern\Core\GLApplication\GLApplication.h" />
+    <ClInclude Include="Intern\Core\GLApplication\GLCore.h" />
+    <ClInclude Include="Intern\Core\GLApplication\GLMain.h" />
+    <ClInclude Include="Intern\Core\Templates.h" />
+    <ClInclude Include="Intern\Core\Utils\Profiler.h" />
+    <ClInclude Include="Intern\Core\Renderer\Buffers\GBuffer.h" />
     <ClInclude Include="Intern\Core\Window\Display.h" />
     <ClInclude Include="Intern\GLibEntry.h" />
     <ClInclude Include="Intern\glpch.h" />
     <ClInclude Include="Intern\Core\Renderer\Buffers\FrameBuffer.h" />
-    <ClInclude Include="Intern\Core\CommandBuffer.h" />
-    <ClInclude Include="Intern\Core\Actor.h" />
-    <ClCompile Include="Intern\Core\Timestep.cpp" />
+    <ClInclude Include="Intern\Core\Utils\CommandBuffer.h" />
+    <ClInclude Include="Intern\Core\ECS\Actor.h" />
+    <ClCompile Include="Intern\Core\Utils\Timestep.cpp" />
     <ClCompile Include="Intern\Core\Window\Display.cpp" />
     <ClCompile Include="Intern\glpch.cpp" />
     <ClCompile Include="Intern\Math\AABB.cpp" />
     <ClCompile Include="Intern\Math\Frustum.cpp" />
     <ClCompile Include="Intern\Math\Plane.cpp" />
     <ClInclude Include="Intern\Core\ShadowBox.h" />
-    <ClInclude Include="Intern\Core\Timestep.h" />
+    <ClInclude Include="Intern\Core\Utils\Timestep.h" />
     <ClInclude Include="Intern\GLib.h" />
     <ClInclude Include="Intern\Math\Transform.h" />
     <ClCompile Include="Intern\Math\Transform.cpp" />
     <ClCompile Include="Intern\Core\Camera.cpp" />
-    <ClCompile Include="Intern\Core\Debug.cpp" />
+    <ClCompile Include="Intern\Core\Utils\Debug.cpp" />
     <ClCompile Include="Intern\Core\Input\Input.cpp" />
-    <ClCompile Include="Intern\Core\Renderer\OpenGLContext.cpp" />
-    <ClCompile Include="Intern\Core\Renderer\Texture.cpp" />
+    <ClCompile Include="Intern\Core\Renderer\Context\OpenGLContext.cpp" />
+    <ClCompile Include="Intern\Core\Renderer\OpenGL\Texture.cpp" />
     <ClCompile Include="Intern\Math\Math.cpp" />
     <ClCompile Include="Intern\Math\Matrix3x3.cpp" />
     <ClCompile Include="Intern\Math\Matrix4x4.cpp" />
@@ -218,38 +221,37 @@
     <ClCompile Include="Intern\Math\SimpleVec.cpp" />
     <ClCompile Include="Intern\Math\Vector2.cpp" />
     <ClCompile Include="Intern\Math\Vector3.cpp" />
-    <ClCompile Include="Intern\Core\Renderer\Renderer.cpp" />
-    <ClCompile Include="Intern\Core\Renderer\Shader.cpp" />
-    <ClCompile Include="Intern\main.cpp" />
+    <ClCompile Include="Intern\Core\Renderer\OpenGL\Renderer.cpp" />
+    <ClCompile Include="Intern\Core\Renderer\OpenGL\Shader.cpp" />
     <ClCompile Include="Intern\Core\Renderer\Buffers\VertexBuffer.cpp" />
     <ClCompile Include="Intern\Core\Renderer\Buffers\IndexBuffer.cpp" />
-    <ClCompile Include="Intern\Core\Renderer\VertexArray.cpp" />
+    <ClCompile Include="Intern\Core\Renderer\OpenGL\VertexArray.cpp" />
     <ClCompile Include="Intern\Core\Renderer\Buffers\BufferLayout.cpp" />
     <ClCompile Include="Intern\Core\Window\Window.cpp" />
     <ClInclude Include="Intern\Core\Renderer\SkyBox.h" />
-    <ClInclude Include="Intern\Core\Thread.h" />
-    <ClInclude Include="Intern\Core\Components\StaticMeshRendererComponent.h" />
-    <ClInclude Include="Intern\Core\Renderer\RenderAPI.h" />
+    <ClInclude Include="Intern\Core\Utils\Thread.h" />
+    <ClInclude Include="Intern\Core\ECS\Components\StaticMeshRendererComponent.h" />
+    <ClInclude Include="Intern\Core\Renderer\OpenGL\RenderAPI.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="Intern\Core\SceneCamera.h" />
+    <ClInclude Include="Intern\Core\ECS\SceneCamera.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Extern\tiny_obj_loader.h" />
-    <ClInclude Include="Intern\Core\Components\Component.h" />
-    <ClInclude Include="Intern\Core\Components\MeshRendererComponent.h" />
-    <ClInclude Include="Intern\Core\Components\TransformComponent.h" />
-    <ClInclude Include="Intern\Core\Console.h" />
+    <ClInclude Include="Intern\Core\ECS\Components\Component.h" />
+    <ClInclude Include="Intern\Core\ECS\Components\MeshRendererComponent.h" />
+    <ClInclude Include="Intern\Core\ECS\Components\TransformComponent.h" />
+    <ClInclude Include="Intern\Core\Utils\Console.h" />
     <ClInclude Include="Intern\Core\Mesh.h" />
     <ClInclude Include="Intern\Core\Model.h" />
     <ClInclude Include="Intern\Core\Renderer\Buffers\UniformBuffer.h" />
     <ClInclude Include="Intern\Core\Renderer\Material.h" />
     <ClInclude Include="Intern\Core\Scene.h" />
-    <ClInclude Include="Intern\Core\SceneCameraController.h" />
+    <ClInclude Include="Intern\Core\ECS\SceneCameraController.h" />
     <ClInclude Include="Intern\Math\AABB.h" />
     <ClInclude Include="Intern\Math\Frustum.h" />
     <ClInclude Include="Intern\Math\Plane.h" />
     <ClInclude Include="Intern\Core\Camera.h" />
-    <ClInclude Include="Intern\Core\Debug.h" />
+    <ClInclude Include="Intern\Core\Utils\Debug.h" />
     <ClInclude Include="Intern\Core\Events\ApplicationEvent.h" />
     <ClInclude Include="Intern\Core\Events\Event.h" />
     <ClInclude Include="Intern\Core\Events\KeyEvent.h" />
@@ -257,8 +259,8 @@
     <ClInclude Include="Intern\Core\Input\Input.h" />
     <ClInclude Include="Intern\Core\Input\KeyCode.h" />
     <ClInclude Include="Intern\Core\Input\Mouse.h" />
-    <ClInclude Include="Intern\Core\Renderer\OpenGLContext.h" />
-    <ClInclude Include="Intern\Core\Renderer\Texture.h" />
+    <ClInclude Include="Intern\Core\Renderer\Context\OpenGLContext.h" />
+    <ClInclude Include="Intern\Core\Renderer\OpenGL\Texture.h" />
     <ClInclude Include="Intern\Math\fdecl.h" />
     <ClInclude Include="Intern\Math\Math.h" />
     <ClInclude Include="Intern\Math\Matrix3x3.h" />
@@ -268,10 +270,10 @@
     <ClInclude Include="Intern\Math\Vector2.h" />
     <ClInclude Include="Intern\Math\Vector3.h" />
     <ClInclude Include="Intern\Core\Renderer\Buffers\IndexBuffer.h" />
-    <ClInclude Include="Intern\Core\Renderer\Renderer.h" />
-    <ClInclude Include="Intern\Core\Renderer\Shader.h" />
+    <ClInclude Include="Intern\Core\Renderer\OpenGL\Renderer.h" />
+    <ClInclude Include="Intern\Core\Renderer\OpenGL\Shader.h" />
     <ClInclude Include="Intern\Core\Renderer\Buffers\VertexBuffer.h" />
-    <ClInclude Include="Intern\Core\Renderer\VertexArray.h" />
+    <ClInclude Include="Intern\Core\Renderer\OpenGL\VertexArray.h" />
     <ClInclude Include="Intern\Core\Renderer\Buffers\BufferLayout.h" />
     <ClInclude Include="Intern\Core\Window\Window.h" />
   </ItemGroup>

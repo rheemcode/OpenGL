@@ -1,6 +1,5 @@
 #pragma once
 
-#include <GL/glew.h>
 #include "Console.h"
 
 #define ASSERT(x) if (!(x)) __debugbreak();

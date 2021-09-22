@@ -2,9 +2,9 @@
 #include "Math/Vector2.h"
 #include "Math/Vector3.h"
 #include "Camera.h"
-#include "Renderer/VertexArray.h"
+#include "OpenGL/VertexArray.h"
+#include "OpenGL/Shader.h"
 #include "Renderer/Buffers/UniformBuffer.h" 
-#include "Renderer/Shader.h"
 #include "Texture.h"
 
 struct GLIB_API RenderCommand
@@ -68,6 +68,7 @@ struct RenderData
 	std::shared_ptr<struct ShadowData> shadowData;
 	std::shared_ptr<class FrameBuffer> framebuffer;
 	std::shared_ptr<class UniformBuffer> uniformBuffer;
+	std::shared_ptr<class GBuffer> gBuffer;
 };
 
 
@@ -117,6 +118,7 @@ public:
 	static void BeginScene(const RenderData& p_renderData);
 	static void RenderSkybox(const RenderData& p_renderData);
 	static void RenderShadows(const RenderData& p_renderData);
+	static void RenderDeffered(const RenderData& renderData);
 	static void RenderMeshes(const RenderData& p_renderData);
 	static void RenderAABB(const RenderData& p_renderData);
 	static void FlushRenderQueue();

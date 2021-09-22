@@ -1,7 +1,8 @@
 #include <glpch.h>
 #include "GLApplication.h"
 #include "Window/Display.h"
-#include "Profiler.h"
+#include "Utils/Profiler.h"
+
 
 GLApplication* GLApplication::s_instance;
 Scene* GLApplication::mainScene;
@@ -40,7 +41,7 @@ void GLApplication::Run()
 		uint64_t ticks = Time::GetSingleton()->GetTicks();
 		
 		float delta = float(ticks - lastTicks);
-		frame += delta;
+		frame += (uint32_t)delta;
 		lastTicks = ticks;
 		frames++;
 		mainScene->OnUpdate(delta / 1000000.f);

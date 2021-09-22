@@ -1,8 +1,13 @@
 #include <glpch.h> 
 #include "Scene.h"
 #include "Actor.h"
-#include "Renderer/Renderer.h"
+#include "OpenGL/Renderer.h"
 #include "Buffers/FrameBuffer.h"
+#include "Buffers/UniformBuffer.h"
+#include "Renderer/SkyBox.h"
+#include "OpenGL/Renderer.h"
+#include "Buffers/FrameBuffer.h"
+#include "Buffers/GBuffer.h"
 #include "Window/Window.h"
 #include "Events/MouseEvent.h"
 #include "Components/TransformComponent.h"
@@ -157,16 +162,6 @@ struct LightData
 	float Energy;
 };
 
-void Scene::BindFBO(FrameBufferName::Type name)
-{
-	m_shadowBuffer->Bind(name); 
-}
-
-void Scene::BindFBOTex(FrameBufferTexture::Type name) 
-{
-	m_shadowBuffer->BindTexture(name); 
-}
-
 void Scene::InitLightBuffer()
 {
 
@@ -179,7 +174,7 @@ void Scene::InitLightBuffer()
 	lightData.Color = {1.f, 1.f, 1.f, 1.f};
 	lightData.Direction = { 0, -0.3f, -1.f, 1.f };
 	lightData.AmbientEnergy = 1.f;
-	lightData.Energy = .69;
+	lightData.Energy = .69f;
 
 	m_LightsBuffer->UploadData(lightData.LightType, 0);
 	m_LightsBuffer->UploadData(lightData.AmbientEnergy, 4);
@@ -199,7 +194,7 @@ void Scene::CreateDefaultActor()
 {
 	std::shared_ptr<Actor> actor = std::make_shared<Actor>();
 	std::shared_ptr<TransformComponent> tComponent = std::make_shared<TransformComponent>(actor);
-	std::shared_ptr<MeshRendererComponent> renderComponent = std::make_shared<StaticMeshRendererComponent>(actor, "./Assets/Madara_Uchiha.obj");
+	std::shared_ptr<MeshRendererComponent> renderComponent = std::make_shared<MeshRendererComponent>(actor, "./Assets/test2.obj");
 	actor->AddComponent(tComponent);
 	actor->AddComponent(renderComponent);
 	meshDirty = true;
@@ -256,9 +251,10 @@ void Scene::CreateSkyLight()
 
 void Scene::CreateBuffers()
 {
+	m_Gbuffer = std::make_shared<GBuffer>();
 	m_shadowBuffer = std::make_shared<FrameBuffer>();
 	m_shadowBuffer->CreateTexture();
-	m_shadowBuffer->AttachArrayTexture(TEXTURE_MAX_SIZE / 2.f, TEXTURE_MAX_SIZE /2.f, 4);
+	m_shadowBuffer->AttachArrayTexture(TEXTURE_MAX_SIZE / 2, TEXTURE_MAX_SIZE / 2, 4);
 	shadowData->ShadowSize = Vector2((float)TEXTURE_MAX_SIZE /2, (float)TEXTURE_MAX_SIZE /2);
 
 	m_LightsBuffer = std::make_shared<UniformBuffer>();
@@ -269,7 +265,6 @@ void Scene::CreateBuffers()
 
 void Scene::InitRenderer()
 {
-
 	Renderer::Init();
 	/*Renderer2D renderer2D;
 	renderer2D.Init();*/

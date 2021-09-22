@@ -26,9 +26,40 @@
 			GLCall(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR)); \
 			GLCall(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
 
+
+Texture* Texture::s_defaultTexure = nullptr;
+uint32_t Texture::s_defaultTexID;
+
+void Texture::CreateDefaultTexture()
+{
+	if (s_defaultTexure == nullptr)
+	{
+		s_defaultTexure = new Texture();
+		float (*textureData)[3] = new float[4 * 4][3];
+		for (int x = 0; x < 4; x++)
+		{
+			for (int y = 0; y < 4; y++)
+			{
+				textureData[x + y * 4][0] = 255.f;
+				textureData[x + y * 4][1] = 255.f;
+				textureData[x + y * 4][2] = 255.f;
+
+			}
+		}
+
+		glGenTextures(1, &s_defaultTexID);
+		glBindTexture(GL_TEXTURE_2D, s_defaultTexID);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, 4, 4, 0, GL_RGB, GL_FLOAT, textureData);
+		glGenerateMipmap(GL_TEXTURE_2D);
+		delete[] textureData;
+	}
+}
+
 void Texture::Bind()
 {
-	GLCall(glActiveTexture(GL_TEXTURE1));
+	//GLCall(glActiveTexture(GL_TEXTURE1));
 	GLCall(glBindTexture(GL_TEXTURE_2D, m_ID[0]));
 }
 
@@ -71,7 +102,8 @@ void Texture::UnBind()
 
 void Texture::Delete()
 {
-	glDeleteTextures(10, m_ID);
+	glDeleteTextures(1, &s_defaultTexID);
+	glDeleteTextures(32, m_ID);
 }
 
 
@@ -211,7 +243,7 @@ void Texture::AddCubeMapImage(const std::array<std::string, 6>& p_files)
 Texture::Texture(uint32_t count)
 	: m_Width(1920), m_Height(1080), m_Components(4), m_DataFormat(RGBA), m_InternalFormat(RGBA8), xOffset(0), yOffset(0)
 {
-	GLCall(glGenTextures(count, m_ID));
+	//GLCall(glGenTextures(count, m_ID));
 }
 
 Texture::Texture(uint32_t width, uint32_t height)

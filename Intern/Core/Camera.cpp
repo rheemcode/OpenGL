@@ -59,7 +59,8 @@ const Matrix4x4& Camera::GetProjectionMatrix() const
 
 const Matrix4x4& Camera::GetViewProjectionMatrix() const
 {
-	return  m_ProjectionMatrix * m_ViewMatrix;
+	m_ViewProjectionMatrix =  m_ProjectionMatrix * m_ViewMatrix;
+	return m_ViewProjectionMatrix;
 }
 
 const Matrix4x4& Camera::GetViewMatrix() const

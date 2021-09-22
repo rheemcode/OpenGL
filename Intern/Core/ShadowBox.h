@@ -32,7 +32,7 @@ class ShadowBox
 		nearHeight[0] = nearDistance[0] * Math::Tan(Math::Deg2Rad(cameraSettings->fovY));
 		nearWidth[0] = nearHeight[0] * cameraSettings->ratio;
 
-		for (int i = 1; i < splitCount; i++)
+		for (int i = 1; i < (int)splitCount; i++)
 		{
 			float si = i / (float)splitCount;
 			nearDistance[i] = lambda * (1 * Math::Pow(ratio, si)) + (1.f - lambda) * (1.f + (far - 1.f) * si);
@@ -98,7 +98,7 @@ public:
 	void Update()
 	{
 		UpdateBounds();
-		for (int i = 0; i < splitCount; i++)
+		for (int i = 0; i < (int)splitCount; i++)
 		{
 			Vector4* points = UpdateFrustumVertices(i);
 
@@ -226,7 +226,7 @@ struct GLIB_API ShadowData
 
 	void UpdateView(Vector3 direction)
 	{
-		for (int i = 0; i < splitCount; i++)
+		for (int i = 0; i < int(splitCount); i++)
 		{
 			direction = Vector3::Normalize(direction);
 			const auto& center = -shadowBounds.GetCenter(i);
@@ -246,7 +246,7 @@ struct GLIB_API ShadowData
 
 	void UpdateFarBounds(const Matrix4x4& p_Proj)
 	{
-		for (int i = 0; i < splitCount; i++)
+		for (int i = 0; i < (int)splitCount; i++)
 		{
 			farBound[i] = 0.5f * (-shadowBounds.farDistance[i] * p_Proj[2][2] + p_Proj[3][2]) / shadowBounds.farDistance[i] + 0.5f;
 		}
@@ -256,7 +256,7 @@ struct GLIB_API ShadowData
 	void UpdateProjection()
 	{
 		const CameraSettings& camSettings = *shadowBounds.cameraSettings;
-		for (int i = 0; i < splitCount; i++)
+		for (int i = 0; i < (int)splitCount; i++)
 		{
 			Proj[i] = Matrix4x4::CreateOrtho(shadowBounds.minX[i], shadowBounds.maxX[i], shadowBounds.minY[i], shadowBounds.maxY[i], shadowBounds.minZ[i], shadowBounds.maxZ[i]);
 		}

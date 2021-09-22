@@ -78,6 +78,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -117,10 +118,11 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)Extern;$(SolutionDir)Extern\GLEW\include\;$(SolutionDir)Intern\Core;$(SolutionDir)Intern;$(SolutionDir)Intern\Core\Renderer</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Extern;$(SolutionDir)Extern\GLEW\include\;$(SolutionDir)Intern\Core;$(SolutionDir)Intern;$(SolutionDir)Intern\Core\Renderer;$(SolutionDir)Intern\Core\GLApplication</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile>glpch</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>glpch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(SolutionDir)x64\Debug\OpenGL.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -158,7 +160,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="glpch.cpp" />
     <ClCompile Include="GLSandbox.cpp" />
     <ClCompile Include="SandboxMain.cpp" />
   </ItemGroup>

@@ -1,6 +1,8 @@
 #include <glpch.h>
+
 #include "Debug.h"
-#include "Core/Console.h"
+#include <GL/glew.h>
+
 
 void GLClearError()
 {

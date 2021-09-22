@@ -4,6 +4,7 @@
 #include "Debug.h"
 #include "Renderer.h"
 #include "Scene.h"
+#include "SkyBox.h"
 #include "Components/MeshRendererComponent.h"
 #include "Input/Input.h"
 #include "Thread.h"
@@ -16,7 +17,11 @@ void RenderCommand::Init()
 	GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
 	GLCall(glEnable(GL_DEPTH_TEST));
 	GLCall(glDepthFunc(GL_LESS));
+	GLCall(glEnable(GL_MULTISAMPLE));
 	GLCall(glEnable(GL_CULL_FACE));
+
+	int enabled = 0;
+	glGetIntegerv(GL_SAMPLE_BUFFERS, &enabled);
 }
 
 void RenderCommand::DrawIndexed(const VertexArray& vertexArray)
@@ -64,6 +69,7 @@ RenderQueue Renderer::renderQueue;
 void Renderer::Init()
 {
 	RenderCommand::Init();
+	Texture::CreateDefaultTexture();
 	float testRender[] = {
 	 -0.5f, -0.5f, 0.0f,  0.0f, 0.0f,
 	 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
@@ -132,25 +138,10 @@ void Renderer::RenderShadows(const RenderData& renderData)
 
 	renderData.framebuffer->Bind(FrameBufferName::DEPTH);
 	const Vector2& shadowMapWidth = shadowData->ShadowSize;
-	RenderAPI::SetViewport(0, 0, shadowMapWidth.x, shadowMapWidth.y);
+	RenderAPI::SetViewport(0, 0, (uint32_t)shadowMapWidth.x, (uint32_t)shadowMapWidth.y);
 	//RenderAPI::CullFrontFace();
 
 	const std::vector<Mesh>& meshes = renderData.meshes;
-	//for (const auto& mesh : meshes)
-	//{
-	//	const auto& attribs = mesh.GetVertexAttribs();
-	//	attribs.Bind();
-	//	const auto& material = mesh.GetMaterial();
-	//	shader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
-	//	
-	//	for (int i = 0; i < shadowData->splitCount; i++)
-	//	{
-	//		shader->UploadUniformMat4("lightSpaceMatrix", shadowData->Proj[i] * shadowData->View[i]);
-	//		renderData.framebuffer->TextureLayer(FrameBufferTexture::SHADOWMAP, i);
-	//		RenderCommand::DrawIndexed(attribs);
-	//	}
-	//}	
-	//
 
 	for (int i = 0; i < shadowData->splitCount; i++)
 	{
@@ -161,13 +152,22 @@ void Renderer::RenderShadows(const RenderData& renderData)
 		{
 			const auto& attribs = mesh.GetVertexAttribs();
 			attribs.Bind();
+			//RenderAPI::DisableVertexAttribArray(Attrib::UV);
+			//RenderAPI::DisableVertexAttribArray(Attrib::NORMAL);
 			const auto& material = mesh.GetMaterial();
 			shader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
 			RenderCommand::DrawIndexed(attribs);
+			//RenderAPI::EnableVertexAttribArray(Attrib::UV);
+			//RenderAPI::EnableVertexAttribArray(Attrib::NORMAL);
 		}
 	}
 
 	//RenderAPI::CullBackFace();
+}
+
+void Renderer::RenderDeffered(const RenderData& renderData)
+{
+
 }
 
 void Renderer::RenderAABB(const RenderData& renderData)
@@ -210,12 +210,12 @@ void Renderer::RenderMeshes(const RenderData& renderData)
 	RenderAPI::ClearBuffers();
 	{
 		const Size2& fboSize = Display::GetSingleton()->GetWindowSize(MAIN_WINDOW_ID);
-		RenderAPI::SetViewport(0, 0, fboSize.x, fboSize.y);
+		RenderAPI::SetViewport(0, 0, (uint32_t)fboSize.x, (uint32_t)fboSize.y);
 	}
 
 	const auto& shader = renderData.shader;
 	shader->Bind();
-//	shader->UploadUniformMat4("projView", *renderData.cameraData->proj * *renderData.cameraData->view);
+
 	
 	renderData.shadowData->UpdateFarBounds(*renderData.cameraData->proj);
 	shader->UploadUniformVec4("farDistance", renderData.shadowData->farBound);
@@ -226,10 +226,6 @@ void Renderer::RenderMeshes(const RenderData& renderData)
 	matricesBuffer->UploadData(renderData.shadowData->Bias * renderData.shadowData->Proj[2] * renderData.shadowData->View[2], 128 + 128);
 	matricesBuffer->UploadData(renderData.shadowData->Bias * renderData.shadowData->Proj[3] * renderData.shadowData->View[3], 128 + 128 + 64);
 
-	for (int i = 0; i < renderData.shadowData->splitCount; i++)
-	{
-	//	shader->UploadUniformMat4("shadowSpaceMatrix", renderData.shadowData->Bias * renderData.shadowData->Proj[0] * renderData.shadowData->View[0]);
-	}
 
 
 #ifdef DRAW_DEPTH_MAP
@@ -247,6 +243,7 @@ void Renderer::RenderMeshes(const RenderData& renderData)
 
 
 	shader->UploadUniformInt("depthTexture", 0);
+	//shader->UploadUniformInt("diffuseTexture", 1);
 	renderData.framebuffer->BindArrayTexture(FrameBufferTexture::SHADOWMAP);
 	const std::vector<Mesh>& meshes = renderData.meshes;
 
@@ -256,17 +253,19 @@ void Renderer::RenderMeshes(const RenderData& renderData)
 		attribs.Bind();
 
 		const auto& material = mesh.GetMaterial();
-		if (mesh.GetMaterial().Diffuse != -1)
+
+	//	glActiveTexture(GL_TEXTURE1);
+		BIND_DEFAULT_TEXTURE();
+
+		/*if (mesh.GetMaterial().Diffuse != -1)
 		{
 			shader->UploadUniformInt("diffuseTexture", Model::TEX_DIFFUSE);
 			mesh.GetModelInstance()->ActiveTexture(mesh.GetMaterial().Diffuse, Model::TEX_DIFFUSE);
 			mesh.GetModelInstance()->BindTexture(mesh.GetMaterial().Diffuse, Model::TEX_DIFFUSE);
 			shader->UploadUniformInt("currentTex", mesh.GetMaterial().Diffuse);
-		}
+		}*/
 		matricesBuffer->UploadData(mesh.GetTransform().GetWorldMatrix(), 64);
 		matricesBuffer->FlushBuffer();
-	//	shader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
-
 		RenderCommand::DrawIndexed(attribs);
 	}
 #endif

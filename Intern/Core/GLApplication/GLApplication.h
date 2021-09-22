@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Utils/Debug.h"
 #include "GLCore.h"
 #include "Scene.h"
 

@@ -1,7 +1,8 @@
 #pragma once
-#include "Debug.h"
+#include "Utils/Debug.h"
+#include <GL/glew.h>
 
-enum class AttribDataType : uint32_t
+enum class GLIB_API AttribDataType : uint32_t
 {
 	T_FLOAT =  GL_FLOAT,
 	T_INT   =  GL_INT,
@@ -9,7 +10,7 @@ enum class AttribDataType : uint32_t
 	T_BYTE  =  GL_UNSIGNED_BYTE
 };
 
-enum class Attrib : uint32_t
+enum class GLIB_API Attrib : uint32_t
 {
 	VERTEXPOSITION,
 	NORMAL,
@@ -18,7 +19,7 @@ enum class Attrib : uint32_t
 	BITANGENT,
 };
 
-enum class AttribCount : uint32_t
+enum class GLIB_API AttribCount : uint32_t
 {
 	VEC1 = 1,
 	VEC2,
@@ -26,16 +27,13 @@ enum class AttribCount : uint32_t
 	VEC4
 };
 
-struct VertexBufferElement
+struct GLIB_API VertexBufferElement
 {
 	AttribDataType type;
 	Attrib id;
 	AttribCount count;
 	bool normalized;
 	bool enabled;
-
-	VertexBufferElement(AttribDataType p_type, Attrib p_id, AttribCount p_count, bool p_normalized = 0, bool p_enabled = true)
-		: type(p_type), id(p_id), count(p_count), normalized(p_normalized),enabled(p_enabled) {}
 
 	static uint32_t GetSizeOfType(AttribDataType type)
 	{
@@ -48,9 +46,16 @@ struct VertexBufferElement
 		}
 		return 0;
 	}
+
+	VertexBufferElement(AttribDataType p_type, Attrib p_id, AttribCount p_count, bool p_normalized = 0, bool p_enabled = true)
+		: type(p_type), id(p_id), count(p_count), normalized(p_normalized), enabled(p_enabled) {}
+	
+	VertexBufferElement() = default;
+	~VertexBufferElement() = default;
 };
 
 
+GLIBSTORAGE template GLIB_API class std::vector<VertexBufferElement>;
 
 class GLIB_API BufferLayout
 {

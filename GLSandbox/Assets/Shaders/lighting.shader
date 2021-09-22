@@ -5,6 +5,9 @@
 layout(location = 0) in vec3 vPos;
 layout(location = 1) in vec3 normal;
 layout(location = 2) in vec2 texCoord;
+layout(location = 3) in vec3 tangent;
+layout(location = 4) in vec3 bitangent;
+
 #define MAX_SPLIT 4
 
 out VS_OUT
@@ -63,7 +66,6 @@ in VS_OUT
 
 
 //*** [Lighting] ***//
-uniform int currentTex;
 
 struct LightProperties
 {
@@ -93,18 +95,18 @@ struct MaterialProperties
     float SpecularHighlights;
 
 };
+uniform int currentTex;
+
+uniform vec4 farDistance;
+uniform sampler2DArray depthTexture;
+uniform sampler2D diffuseTexture;
 
 layout(std140, binding=1) uniform LightsUniform
 {
     LightProperties Lights;
 };
 
-uniform sampler2DArray depthTexture;
-uniform sampler2D diffuseTexture;
-uniform sampler2D specularTexture;
-uniform vec4 farDistance;
-
-uniform MaterialProperties Material;
+//uniform sampler2D specularTexture;
 
 out vec4 FragColor;
 
@@ -152,7 +154,7 @@ int getDepth()
 {
     int index = 3;
 
-    if (gl_FragCoord.z < farDistance.x)
+    if (gl_FragCoord.z < farDistance.x + 0.0001)
         index = 0;
     else if (gl_FragCoord.z < farDistance.y)
         index = 1;
@@ -168,13 +170,15 @@ float ShadowCalculation(vec4 ShadowPos, int index)
     vec3 projCoords = ShadowPos.xyz / ShadowPos.w;
     //projCoords = clamp(projCoords, VEC3, VEC3_1);
     if (projCoords.z > ONE)
-        return 0;
+        projCoords.z = 1.0;
 
     float currentDepth = projCoords.z;
     float bias = max(0.002 * (ONE - dot(vs_out.Normal, lightDir)), 0.002);
     float shadow = 0.0;
     vec2 offset;
-
+    float pcfDepth = texture(depthTexture, vec3(projCoords.xy, index)).x;
+    if (currentDepth > pcfDepth + bias)
+        shadow = 1;
     //for (int i = 0; i < samples; i++)
     //{
     //    float pcfDepth = texture(depthTexture, vec3(projCoords.xy + poissonDisk[i] / 700.0, index)).x;
@@ -182,19 +186,19 @@ float ShadowCalculation(vec4 ShadowPos, int index)
     //        shadow += ONE;
     //}
 
-    for (int x = -pcfCount; x <= pcfCount; ++x)
-    {
-        for (int y = -pcfCount; y <= pcfCount; ++y)
-        {
-        //    int index = int(16.0 * random(floor(vs_out.FragPos.xyz * 1000.0), x + y * 4)) % 16;
+    //for (int x = -pcfCount; x <= pcfCount; ++x)
+    //{
+    //    for (int y = -pcfCount; y <= pcfCount; ++y)
+    //    {
+    //    //    int index = int(16.0 * random(floor(vs_out.FragPos.xyz * 1000.0), x + y * 4)) % 16;
 
-            offset.x = x; offset.y = y;
-            float pcfDepth = texture(depthTexture, vec3(projCoords.xy + offset, index * texelSize)).x;
-            if (currentDepth  > pcfDepth + bias)
-                shadow += ONE;
-            //shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
-        }
-    }
+    //        offset.x = x; offset.y = y;
+    //        float pcfDepth = texture(depthTexture, vec3(projCoords.xy + offset, 0)).x;
+    //        if (currentDepth  > pcfDepth + bias)
+    //            shadow += ONE;
+    //        //shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+    //    }
+    //}
 
  //   shadow /= totalTexels;
     return shadow;
@@ -208,11 +212,11 @@ void main()
  //   if (texCol.a == 0)
    //     discard;
 
-    float attenuation;
-    if (Lights.LightType == 1)
-    {
-        attenuation = ONE;
-    }
+    float attenuation = 1.0;
+ //   if (Lights.LightType == 1)
+   // {
+       // attenuation = ONE;
+   // }
 
 
 
@@ -235,11 +239,11 @@ void main()
     vec3 Light = Ambient + ((ONE - (shadow * vs_out.ShadowCoord[shadowIndex].w)) * Diffuse);
     //vec3 Light = (Ambient) + (Diffuse);
 
-   // vec3 color = min(Light * vec3(texCol), VEC3_1);
-    vec3 color = min(Light, VEC3_1);
+   vec3 color = min(Light * vec3(texCol), VEC3_1);
+   // vec3 color = min(Light, VEC3_1);
 
-    color = pow(color, vec3(1.0 / 2.2));
-    FragColor = vec4(color, texCol.a);
+ //   color = pow(color, vec3(1.0 / 2.2));
+    FragColor = vec4(color, 1.0);
 
-//    FragColor = vec4(vec3(texCol), 1);
+ // FragColor = vec4(vec3(texCol), 1);
 };
