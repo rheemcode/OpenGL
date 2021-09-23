@@ -116,6 +116,7 @@ public:
 			m_specularTextures[id]->Bind(0);
 			break;
 		default:
+			BIND_DEFAULT_TEXTURE();
 			break;
 		}
 	}

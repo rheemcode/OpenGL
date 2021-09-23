@@ -10,7 +10,7 @@
 class Texture
 {
 	friend class Renderer;
-
+	friend class Model;
 	enum InternalFormat
 	{
 		RGB8 = GL_RGB8,

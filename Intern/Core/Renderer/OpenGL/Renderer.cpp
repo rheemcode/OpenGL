@@ -9,6 +9,7 @@
 #include "Input/Input.h"
 #include "Thread.h"
 #include "Buffers/FrameBuffer.h"
+#include "Buffers/GBuffer.h"
 #include "stb_image_write.h"
 #include "Profiler.h"
 
@@ -71,17 +72,20 @@ void Renderer::Init()
 	RenderCommand::Init();
 	Texture::CreateDefaultTexture();
 	float testRender[] = {
-	 -0.5f, -0.5f, 0.0f,  0.0f, 0.0f,
-	 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
-	 0.5f,  0.5f, 0.0f,  1.0f, 1.0f,
-	 -0.5f,  0.5f, 0.0f, 0.0f, 1.0f };
+	 -1.f, -1.f, 0.0f,  0.0f, 0.0f,
+	 1.f, -1.f, 0.0f, 1.0f, 0.0f,
+	 1.f,  1.f, 0.0f,  1.0f, 1.0f,
+	 -1.f,  1.f, 0.0f, 0.0f, 1.0f };
 
 	uint32_t quadIndices[] = { 0, 1, 2, 2, 3, 0 };
 
 	testRenderData.m_VertexArray = std::make_unique<VertexArray>();
 	testRenderData.m_VertexBuffer = std::make_unique<VertexBuffer>(testRender, sizeof(testRender));
-	testRenderData.shader = std::make_unique<Shader>("Assets/Shaders/depthtest.glsl");
-	testRenderData.m_VertexBuffer->SetLayout({ { AttribDataType::T_FLOAT, Attrib::VERTEXPOSITION, AttribCount::VEC3, false }, { AttribDataType::T_FLOAT, Attrib::UV, AttribCount::VEC2, false } });
+	testRenderData.shader = std::make_unique<Shader>("Assets/Shaders/gBufferDraw.glsl");
+	testRenderData.m_VertexBuffer->SetLayout({
+		{ AttribDataType::T_FLOAT, Attrib::VERTEXPOSITION, AttribCount::VEC3, false },
+		{ AttribDataType::T_FLOAT, Attrib::UV, AttribCount::VEC2, false },
+		});
 	testRenderData.m_VertexArray->SetIndices(quadIndices, 6);
 	testRenderData.m_VertexArray->AddBuffer(*testRenderData.m_VertexBuffer.get());
 }
@@ -167,7 +171,50 @@ void Renderer::RenderShadows(const RenderData& renderData)
 
 void Renderer::RenderDeffered(const RenderData& renderData)
 {
+	RenderAPI::SetClearColor(0, 0, 0, 1.0);
+	const auto* shader = renderData.gBuffer->GetShader();
+	renderData.gBuffer->BindFramebuffer();
+	RenderAPI::ClearBuffers();
+	renderData.gBuffer->BindShader();
+	shader->UploadUniformMat4("projView", *renderData.cameraData->proj * *renderData.cameraData->view);
+	for (const auto& mesh : renderData.meshes)
+	{
+		const auto& attribs = mesh.GetVertexAttribs();
+		attribs.Bind();
+		//const auto& material = mesh.GetMaterial();
+	//	BIND_DEFAULT_TEXTURE();
 
+		if (mesh.GetMaterial().Diffuse != -1)
+		{
+			//shader->UploadUniformInt("diffuseTexture", Model::TEX_DIFFUSE);
+		//	mesh.GetModelInstance()->ActiveTexture(mesh.GetMaterial().Diffuse, Model::TEX_DIFFUSE);
+			glActiveTexture(GL_TEXTURE0);
+			shader->UploadUniformInt("texture_diffuse1", 0);
+			mesh.GetModelInstance()->BindTexture(mesh.GetMaterial().Diffuse, Model::TEX_DIFFUSE);
+		}
+
+		else
+		{
+			glActiveTexture(GL_TEXTURE0);
+			BIND_DEFAULT_TEXTURE();
+		}
+
+		shader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
+		RenderCommand::DrawIndexed(attribs);
+	}
+	
+	glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
+	RenderAPI::ClearBuffers();
+	testRenderData.shader->Bind();
+	testRenderData.shader->SetInt("gPosition", 0);
+	testRenderData.shader->SetInt("gNormal", 1);
+	testRenderData.shader->SetInt("gAlbedoSpec", 2);
+	testRenderData.m_VertexArray->Bind();
+	//RenderAPI::EnableVertexAttribArray(Attrib::UV);
+	renderData.gBuffer->BindAllTextures();
+	//renderData.framebuffer->BindArrayTexture(FrameBufferTexture::SHADOWMAP);
+	//glActiveTexture(GL_TEXTURE0);
+	RenderCommand::DrawIndexed(*testRenderData.m_VertexArray);
 }
 
 void Renderer::RenderAABB(const RenderData& renderData)
@@ -279,17 +326,22 @@ void Renderer::FlushRenderQueue()
 		{
 		case RenderPass::SKYBOX:
 		{
-			//Renderer::RenderSkybox(renderPass.renderData);
+		//	Renderer::RenderSkybox(renderPass.renderData);
 			break;
 		}
 		case RenderPass::DEPTH_PASS:
 		{
-			Renderer::RenderShadows(renderPass.renderData);
+		//	Renderer::RenderShadows(renderPass.renderData);
 			break;
 		}
 		case RenderPass::COLOR_PASS:
 		{
-			Renderer::RenderMeshes(renderPass.renderData);
+		//	Renderer::RenderMeshes(renderPass.renderData);
+			break;
+		}
+		case RenderPass::DEFFERED:
+		{
+			Renderer::RenderDeffered(renderPass.renderData);
 			break;
 		}
 		default:

@@ -75,7 +75,7 @@ struct RenderData
 struct RenderPass
 {
 	enum { CASCADED, SINGLE} ShadowType;
-	enum { DEPTH_PASS, COLOR_PASS, SKYBOX} Pass;
+	enum { DEPTH_PASS, COLOR_PASS, SKYBOX, DEFFERED} Pass;
 	RenderData renderData;
 };
 

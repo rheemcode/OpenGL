@@ -31,5 +31,9 @@
     <None Include="Assets\Shaders\depth.glsl" />
     <None Include="Assets\Shaders\skybox-procedural.glsl" />
     <None Include="Assets\Shaders\skybox-procedural2.glsl" />
+    <None Include="Assets\Shaders\gBuffer.glsl" />
+    <None Include="Assets\Shaders\gBufferDraw.glsl">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

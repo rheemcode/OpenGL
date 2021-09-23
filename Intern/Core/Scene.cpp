@@ -105,6 +105,21 @@ void Scene::Render()
 		Renderer::PushPass(std::move(skyboxPass));
 	}
 
+	{
+		// Deffered Pass
+		RenderPass colorPass;
+		colorPass.Pass = RenderPass::DEFFERED;
+		auto& renderData = colorPass.renderData;
+		renderData.cameraData = cameraData;
+		renderData.meshes = culledMeshes;
+		renderData.shader = sceneShader;
+		renderData.shadowData = shadowData;
+		renderData.framebuffer = m_shadowBuffer;
+		renderData.uniformBuffer = m_MatrixBuffer;
+		renderData.gBuffer = m_Gbuffer;
+		Renderer::PushPass(std::move(colorPass));
+	}
+
 	Renderer::FlushRenderQueue();
 }
 
@@ -194,7 +209,7 @@ void Scene::CreateDefaultActor()
 {
 	std::shared_ptr<Actor> actor = std::make_shared<Actor>();
 	std::shared_ptr<TransformComponent> tComponent = std::make_shared<TransformComponent>(actor);
-	std::shared_ptr<MeshRendererComponent> renderComponent = std::make_shared<MeshRendererComponent>(actor, "./Assets/test2.obj");
+	std::shared_ptr<MeshRendererComponent> renderComponent = std::make_shared<MeshRendererComponent>(actor, "./Assets/Madara_Uchiha.obj");
 	actor->AddComponent(tComponent);
 	actor->AddComponent(renderComponent);
 	meshDirty = true;
