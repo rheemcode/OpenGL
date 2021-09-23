@@ -1,5 +1,5 @@
 #shader vertex
-#version 410 core
+#version 430 core
 
 
 layout (location = 0) in vec3 aPos;
@@ -15,38 +15,50 @@ void main()
 }
 
 #shader fragment
-#version 410 core
+#version 430 core
 
 out vec4 FragColor;
   
 in vec2 TexCoords;
-#define iResolution vec2(1200, 700)
+
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gAlbedoSpec;
 
 
+//*** [Lighting] ***//
+
+struct LightProperties
+{
+    int LightType; // 0
+    float AmbientEnergy; // 4
+    float Energy; // 8
+    vec3 Ambient; // 16
+    vec3 Color; // 32
+    vec3 Direction; // 48
+    //vec3 Position;
+};
+
+uniform vec3 ViewPosition;
+
+layout(std140, binding=1) uniform LightsUniform
+{
+    LightProperties Lights;
+};
+
+
+
 void main()
 {             
-    // retrieve data from G-buffer
-    vec3 Color;
-    vec2 Coords = (2 * gl_FragCoord.xy - iResolution) / iResolution.y;
-    Coords.x /= 2;
-    if (TexCoords.x > 0.5)
-        Color = texture(gNormal, Coords).rgb;
-    else if (TexCoords.x < 0.5)
-        Color = texture(gPosition, Coords).rgb;
-    if (TexCoords.y > 0.5)
-        Color = texture(gAlbedoSpec, Coords).rgb;
-//    {
-//        Coords.x =  0.5f;
-//    }
-  // vec3 FragPos = texture(gNormal, Coords).rgb;
-  // if (TexCoords.x > 0.5)
-   //    discard;
-   // vec3 Normal = texture(gNormal, TexCoords).rgb;
-   // vec3 Albedo = texture(gAlbedoSpec, TexCoords).rgb;
-   // float Specular = texture(gAlbedoSpec, TexCoords).a;
-    
-    FragColor = vec4(Color, 1.0);
+    vec3 FragPos = texture(gPosition, TexCoords).rgb;
+    vec3 Normal = texture(gNormal, TexCoords).rgb;
+    vec3 Albedo = texture(gAlbedoSpec, TexCoords).rgb;
+
+    vec3 Color = Albedo * Lights.Ambient; // hard coded ambeint component;
+    vec3 ViewDir = normalize(ViewPosition - FragPos);
+
+    vec3 LightDir = -Lights.Direction;
+    vec3 Diffuse = max(dot(Normal, LightDir), 0.0) * Albedo * Lights.Color;
+    Color += Diffuse;
+    FragColor = vec4(Normal, 1.0);
 }  

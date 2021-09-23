@@ -83,6 +83,7 @@ void Frustum::SetFrustum(const Matrix4x4& p_projMatrix)
 	planes[FrustumPlane::Far].normal.z = bottom_f[5];
 	planes[FrustumPlane::Far].d = bottom_f[4];
 #else
+	planes[FrustumPlane::Left].normal.x = p_projMatrix[0][3] + p_projMatrix[0][0];
 	planes[FrustumPlane::Left].normal.y = p_projMatrix[1][3] + p_projMatrix[1][0];
 	planes[FrustumPlane::Left].normal.z = p_projMatrix[2][3] + p_projMatrix[2][0];
 	planes[FrustumPlane::Left].d = p_projMatrix[3][3] + p_projMatrix[3][0];

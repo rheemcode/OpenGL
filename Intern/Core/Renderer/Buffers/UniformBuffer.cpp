@@ -24,7 +24,7 @@ void UniformBuffer::Bind()
 void UniformBuffer::FlushBuffer()
 {
 	Bind();
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, m_size, m_data);
+	GLCall(glBufferSubData(GL_UNIFORM_BUFFER, 0, m_size, m_data));
 	glBindBuffer(GL_UNIFORM_BUFFER, GL_NONE);
 }
 

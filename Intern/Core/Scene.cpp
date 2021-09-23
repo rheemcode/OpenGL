@@ -1,6 +1,7 @@
 #include <glpch.h> 
 #include "Scene.h"
 #include "Actor.h"
+#include "OpenGL/VertexArray.h"
 #include "OpenGL/Renderer.h"
 #include "Buffers/FrameBuffer.h"
 #include "Buffers/UniformBuffer.h"
@@ -37,6 +38,7 @@ void Scene::PrepareMeshes()
 	culledMeshes.clear();
 	if (meshDirty)
 		meshes.clear();
+	const auto& frustum = sceneCamera->GetFrustum();
 	for (auto& actor : m_actors)
 	{
 
@@ -50,7 +52,7 @@ void Scene::PrepareMeshes()
 				{
 					meshes.push_back(mesh);
 				}
-				if (mesh.GetInstanceBound().InFrustum(sceneCamera->GetFrustum()))
+				if (mesh.GetInstanceBound().InFrustum(frustum))
 				{
 					culledMeshes.push_back(mesh);
 				}
@@ -95,6 +97,18 @@ void Scene::Render()
 		Renderer::PushPass(std::move(colorPass));
 	}
 
+	{
+		// AABB Pass
+		RenderPass colorPass;
+		colorPass.Pass = RenderPass::AABB;
+		auto& renderData = colorPass.renderData;
+		renderData.cameraData = cameraData;
+		renderData.meshes = culledMeshes;
+		renderData.shader = aabbShader;
+		renderData.vertexArray = aabbVertexArray;
+		renderData.vertexBuffer = aabbVertexBuffer;
+		Renderer::PushPass(std::move(colorPass));
+	}
 
 	{
 		// Skybox Pass
@@ -120,6 +134,7 @@ void Scene::Render()
 		Renderer::PushPass(std::move(colorPass));
 	}
 
+	
 	Renderer::FlushRenderQueue();
 }
 
@@ -266,7 +281,7 @@ void Scene::CreateSkyLight()
 
 void Scene::CreateBuffers()
 {
-	m_Gbuffer = std::make_shared<GBuffer>();
+	//m_Gbuffer = std::make_shared<GBuffer>();
 	m_shadowBuffer = std::make_shared<FrameBuffer>();
 	m_shadowBuffer->CreateTexture();
 	m_shadowBuffer->AttachArrayTexture(TEXTURE_MAX_SIZE / 2, TEXTURE_MAX_SIZE / 2, 4);
@@ -275,6 +290,13 @@ void Scene::CreateBuffers()
 	m_LightsBuffer = std::make_shared<UniformBuffer>();
 	m_MatrixBuffer = std::make_shared<UniformBuffer>();
 	m_MatrixBuffer->InitData(sceneShader.get(), "Matrices");
+
+	static uint32_t indices[] = { 0, 1, 1, 2, 2, 3, 3, 0, 0, 4, 4, 5, 5, 1, 5, 6, 2, 6, 6, 7, 7, 3, 7, 4 };
+	aabbVertexArray = std::make_shared<VertexArray>();
+	aabbVertexBuffer = std::make_shared<VertexBuffer>(sizeof(Vector3) * 24);
+	aabbVertexBuffer->SetLayout({ { AttribDataType::T_FLOAT, Attrib::VERTEXPOSITION, AttribCount::VEC3, false } });
+	aabbVertexArray->SetIndices(indices, 24);
+	aabbVertexArray->AddBuffer(*aabbVertexBuffer.get());
 }
 
 
@@ -287,8 +309,9 @@ void Scene::InitRenderer()
 
 void Scene::InitSceneShaders()
 {
-	sceneShader = std::make_unique<Shader>("Assets/Shaders/lighting.shader");
-	shadowShader = std::make_unique<Shader>("Assets/Shaders/depth.glsl");
+	sceneShader = std::make_shared<Shader>("Assets/Shaders/lighting.shader");
+	shadowShader = std::make_shared<Shader>("Assets/Shaders/depth.glsl");
+	aabbShader = std::make_shared<Shader>("./Assets/Shaders/aabb.glsl");
 	testShader = std::make_unique<Shader>("Assets/Shaders/envmap.glsl");
 }
 

@@ -4,8 +4,11 @@
 
 class GBuffer
 {
+	friend class Scene;
+	friend class Renderer;
 	std::unique_ptr<FrameBuffer> m_framebuffer;
 	std::unique_ptr<Shader> m_shader;
+	std::unique_ptr<Shader> m_lightingShader;
 public:
 	GBuffer()
 	{
@@ -13,6 +16,7 @@ public:
 		m_framebuffer->CreateTexture();
 		m_framebuffer->AttachGBufferTextures();
 		m_shader = std::make_unique<Shader>("./Assets/Shaders/gBuffer.glsl");
+		m_lightingShader = std::make_unique<Shader>("./Assets/Shaders/gBufferDraw.glsl");
 	}
 
 	void BindFramebuffer()
@@ -33,6 +37,11 @@ public:
 	void BindShader()
 	{
 		m_shader->Bind();
+	}
+
+	void BindLightingShader()
+	{
+		m_lightingShader->Bind();
 	}
 
 	Shader* GetShader() { return m_shader.get(); }

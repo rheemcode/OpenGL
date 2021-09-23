@@ -125,7 +125,11 @@ class GLIB_API Scene
 	/* Scene Shaders */
 	std::shared_ptr<Shader> sceneShader;
 	std::shared_ptr<Shader> shadowShader;
+	std::shared_ptr<Shader> aabbShader;
 	std::shared_ptr<Shader> testShader;
+
+	std::shared_ptr<class VertexArray> aabbVertexArray;
+	std::shared_ptr<class VertexBuffer> aabbVertexBuffer;
 
 	std::shared_ptr<CameraData> cameraData;
 	std::shared_ptr<ShadowData> shadowData;

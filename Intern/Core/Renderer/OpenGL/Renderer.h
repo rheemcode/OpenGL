@@ -69,13 +69,15 @@ struct RenderData
 	std::shared_ptr<class FrameBuffer> framebuffer;
 	std::shared_ptr<class UniformBuffer> uniformBuffer;
 	std::shared_ptr<class GBuffer> gBuffer;
+	std::shared_ptr<VertexArray> vertexArray;
+	std::shared_ptr<VertexBuffer> vertexBuffer;
 };
 
 
 struct RenderPass
 {
 	enum { CASCADED, SINGLE} ShadowType;
-	enum { DEPTH_PASS, COLOR_PASS, SKYBOX, DEFFERED} Pass;
+	enum { DEPTH_PASS, COLOR_PASS, SKYBOX, AABB, DEFFERED} Pass;
 	RenderData renderData;
 };
 

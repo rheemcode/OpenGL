@@ -46,24 +46,7 @@ void RenderCommand::RenderLines(const VertexArray& vertexArray)
 //RendererData Renderer::renderData;
 TT Renderer::testRenderData;
 //
-//static Vector3 temp_aabbVertices[] =
-//{
-//	{-1.f, -1.f, -1.f}, // 0
-//	{ 1.f, -1.f, -1.f}, // 1
-//	{ 1.f, 1.f, -1.f},  // 2
-//	{ -1.f, 1.f, -1.f}, // 3	
-//
-//	{-1.f, -1.f, 1.f}, // 4
-//	{ 1.f, -1.f, 1.f}, // 5
-//	{ 1.f, 1.f,  1.f},  // 6
-//	{ -1.f, 1.f, 1.f}, // 7
-//};
-//
-//static Vector3 aabVertices[24];
-//
-//static uint32_t indices[] = { 0, 1, 1, 2, 2, 3, 3, 0, 0, 4, 4, 5, 5, 1, 5, 6, 2, 6, 6, 7, 7, 3, 7, 4 };
-//std::vector<Mesh> Renderer::s_renderMeshes;
-
+static Vector3 aabbVertices[24];
 
 RenderQueue Renderer::renderQueue;
 
@@ -81,7 +64,7 @@ void Renderer::Init()
 
 	testRenderData.m_VertexArray = std::make_unique<VertexArray>();
 	testRenderData.m_VertexBuffer = std::make_unique<VertexBuffer>(testRender, sizeof(testRender));
-	testRenderData.shader = std::make_unique<Shader>("Assets/Shaders/gBufferDraw.glsl");
+	//testRenderData.shader = std::make_unique<Shader>("Assets/Shaders/gBufferDraw.glsl");
 	testRenderData.m_VertexBuffer->SetLayout({
 		{ AttribDataType::T_FLOAT, Attrib::VERTEXPOSITION, AttribCount::VEC3, false },
 		{ AttribDataType::T_FLOAT, Attrib::UV, AttribCount::VEC2, false },
@@ -205,10 +188,10 @@ void Renderer::RenderDeffered(const RenderData& renderData)
 	
 	glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
 	RenderAPI::ClearBuffers();
-	testRenderData.shader->Bind();
-	testRenderData.shader->SetInt("gPosition", 0);
-	testRenderData.shader->SetInt("gNormal", 1);
-	testRenderData.shader->SetInt("gAlbedoSpec", 2);
+	renderData.gBuffer->BindLightingShader();
+	renderData.gBuffer->m_lightingShader->SetInt("gPosition", 0);
+	renderData.gBuffer->m_lightingShader->SetInt("gNormal", 1);
+	renderData.gBuffer->m_lightingShader->SetInt("gAlbedoSpec", 2);
 	testRenderData.m_VertexArray->Bind();
 	//RenderAPI::EnableVertexAttribArray(Attrib::UV);
 	renderData.gBuffer->BindAllTextures();
@@ -219,36 +202,29 @@ void Renderer::RenderDeffered(const RenderData& renderData)
 
 void Renderer::RenderAABB(const RenderData& renderData)
 {
-
-#ifdef RENDER_AABB
-
-	RenderCommand::DrawIndexed(attribs);
-	drawCalls++;
-
-	Vector3 a;
-	Vector3 b;
-
-	int c = 0;
-	int d = 1;
-	for (int i = 0; i < 12; i++)
+	for (const auto& mesh : renderData.meshes)
 	{
-		mesh.GetAABB().GetEdge(i, a, b);
-		aabVertices[c] = a;
-		aabVertices[d] = b;
-		c += 2;
-		d += 2;
+		Vector3 a;
+		Vector3 b;
+
+		int c = 0;
+		int d = 1;
+		for (int i = 0; i < 12; i++)
+		{
+			mesh.GetAABB().GetEdge(i, a, b);
+			aabbVertices[c] = a;
+			aabbVertices[d] = b;
+			c += 2;
+			d += 2;
+		}
+
+		renderData.shader->Bind();
+		renderData.vertexArray->Bind();
+		renderData.vertexBuffer->BufferSubData(aabbVertices, 0, sizeof(aabbVertices));
+		renderData.shader->UploadUniformMat4("projView", *renderData.cameraData->proj * *renderData.cameraData->view);
+		renderData.shader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
+		RenderCommand::RenderLines(*renderData.vertexArray.get());
 	}
-
-	renderData.shader->Bind();
-	renderData.m_aabbVertexArray->Bind();
-	renderData.m_aabbVertexBuffer->BufferSubData(aabVertices, 0, sizeof(aabVertices));
-	renderData.shader->UploadUniformMat4("projView", renderData.proj * renderData.view);
-	renderData.shader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
-	RenderCommand::RenderLines(*renderData.m_aabbVertexArray);
-	shader.Bind();
-
-#endif // RENDER_AABB
-
 }
 
 void Renderer::RenderMeshes(const RenderData& renderData)
@@ -326,22 +302,27 @@ void Renderer::FlushRenderQueue()
 		{
 		case RenderPass::SKYBOX:
 		{
-		//	Renderer::RenderSkybox(renderPass.renderData);
+			//Renderer::RenderSkybox(renderPass.renderData);
 			break;
 		}
 		case RenderPass::DEPTH_PASS:
 		{
-		//	Renderer::RenderShadows(renderPass.renderData);
+			//Renderer::RenderShadows(renderPass.renderData);
 			break;
 		}
 		case RenderPass::COLOR_PASS:
 		{
-		//	Renderer::RenderMeshes(renderPass.renderData);
+			Renderer::RenderMeshes(renderPass.renderData);
 			break;
 		}
 		case RenderPass::DEFFERED:
 		{
-			Renderer::RenderDeffered(renderPass.renderData);
+		//	Renderer::RenderDeffered(renderPass.renderData);
+			break;
+		}
+		case RenderPass::AABB:
+		{
+			//Renderer::RenderAABB(renderPass.renderData);
 			break;
 		}
 		default:
