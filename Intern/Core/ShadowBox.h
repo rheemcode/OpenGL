@@ -226,22 +226,20 @@ struct GLIB_API ShadowData
 
 	void UpdateView(Vector3 direction)
 	{
+		direction = Vector3::Normalize(direction);
+		float pitch = Math::ACos(Vector2::Length(Vector2(direction.x, direction.z)));
+		float yaw = Math::Rad2deg((Math::ATan(direction.x / direction.z)));
+		float yawRad = Math::Deg2Rad(yaw);
 		for (int i = 0; i < int(splitCount); i++)
 		{
-			direction = Vector3::Normalize(direction);
 			const auto& center = -shadowBounds.GetCenter(i);
-			View[i] = Matrix4x4();
-
-			float pitch = Math::ACos(Vector2::Length(Vector2(direction.x, direction.z)));
-
+			View[i] = Matrix4x4::Identity;
 			View[i] = Matrix4x4::Rotate(View[i], Vector3(1, 0, 0), pitch);
-			float yaw = Math::Rad2deg((Math::ATan(direction.x / direction.z)));
 			yaw = direction.z > 0 ? yaw - 180 : yaw;
-			View[i] = Matrix4x4::Rotate(View[i], Vector3(0, 1, 0), -Math::Deg2Rad(yaw));
+			View[i] = Matrix4x4::Rotate(View[i], Vector3(0, 1, 0), -yawRad);
 
 			View[i] = Matrix4x4::Translate(View[i], center);
 		}
-
 	}
 
 	void UpdateFarBounds(const Matrix4x4& p_Proj)

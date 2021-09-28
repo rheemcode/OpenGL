@@ -145,12 +145,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GLEW_STATIC;GLIB_BUILD_DLL;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Extern;$(SolutionDir)Extern\GLEW\include\;$(SolutionDir)\Intern\Core;$(SolutionDir)\Intern;$(SolutionDir)\Intern\Core\Renderer</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Extern;$(SolutionDir)Extern\GLEW\include\;$(SolutionDir)\Intern\Core;$(SolutionDir)Intern;$(SolutionDir)Intern\Core\Renderer;$(SolutionDir)Intern\Core\ECS;$(SolutionDir)Intern\Core\Renderer\OpenGL;$(SolutionDir)Intern\Core\GLApplication;$(SolutionDir)Intern\Core\Utils;$(SolutionDir)Intern\Core\Renderer\Context</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Create</PrecompiledHeader>
       <PrecompiledHeaderFile>glpch.h</PrecompiledHeaderFile>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <Optimization>MaxSpeed</Optimization>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -185,6 +188,7 @@
     <ClCompile Include="Intern\Core\ECS\Components\StaticMeshRendererComponent.cpp" />
     <ClCompile Include="Intern\Core\ECS\SceneCamera.cpp" />
     <ClCompile Include="Intern\Core\Renderer\OpenGL\RenderAPI.cpp" />
+    <ClCompile Include="Intern\Core\Renderer\Effects\SSAO.cpp" />
     <ClInclude Include="Intern\Core\ECS\CameraController.h" />
     <ClInclude Include="Intern\Core\GLApplication\GLApplication.h" />
     <ClInclude Include="Intern\Core\GLApplication\GLCore.h" />
@@ -234,6 +238,7 @@
     <ClInclude Include="Intern\Core\Renderer\OpenGL\RenderAPI.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Intern\Core\ECS\SceneCamera.h" />
+    <ClInclude Include="Intern\Core\Renderer\Effects\SSAO.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Extern\tiny_obj_loader.h" />

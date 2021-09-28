@@ -42,9 +42,9 @@ void Scene::PrepareMeshes()
 	for (auto& actor : m_actors)
 	{
 
-		if (const std::shared_ptr<Component> cmp = actor->GetComponent("Renderer Component").lock())
+		if (const Component* cmp = actor->GetComponent("Renderer Component"))
 		{
-			auto meshRenderer = std::dynamic_pointer_cast<MeshRendererComponent, Component>(cmp);
+			const auto meshRenderer = (MeshRendererComponent*) cmp;
 			meshRenderer->UpdateTransform();
 			for (const auto& mesh : meshRenderer->GetMeshes())
 			{
@@ -70,6 +70,14 @@ void Scene::Render()
 	shadowData->UpdateView(GetSkyLightDirection());
 	shadowData->UpdateProjection();
 	
+	m_MatrixBuffer->UploadData(sceneCamera->GetViewMatrix(), 0);
+	m_MatrixBuffer->UploadData(sceneCamera->GetProjectionMatrix(), 64);
+	m_MatrixBuffer->UploadData(shadowData->Bias * shadowData->Proj[0] * shadowData->View[0], 128 + 64);
+	m_MatrixBuffer->UploadData(shadowData->Bias * shadowData->Proj[1] * shadowData->View[1], 256);
+	m_MatrixBuffer->UploadData(shadowData->Bias * shadowData->Proj[2] * shadowData->View[2], 320);
+	m_MatrixBuffer->UploadData(shadowData->Bias * shadowData->Proj[3] * shadowData->View[3], 384);
+	m_MatrixBuffer->FlushBuffer();
+
 	{
 		// Depth Pass
 		RenderPass depthPass;
@@ -94,29 +102,16 @@ void Scene::Render()
 		renderData.shadowData = shadowData;
 		renderData.framebuffer = m_shadowBuffer;
 		renderData.uniformBuffer = m_MatrixBuffer;
-		Renderer::PushPass(std::move(colorPass));
-	}
-
-	{
-		// AABB Pass
-		RenderPass colorPass;
-		colorPass.Pass = RenderPass::AABB;
-		auto& renderData = colorPass.renderData;
-		renderData.cameraData = cameraData;
-		renderData.meshes = culledMeshes;
-		renderData.shader = aabbShader;
-		renderData.vertexArray = aabbVertexArray;
-		renderData.vertexBuffer = aabbVertexBuffer;
-		Renderer::PushPass(std::move(colorPass));
+	//	Renderer::PushPass(std::move(colorPass));
 	}
 
 	{
 		// Skybox Pass
-		RenderPass skyboxPass;
-		skyboxPass.Pass = RenderPass::SKYBOX;
-		auto& renderData = skyboxPass.renderData;
-		renderData.cameraData = cameraData;
-		Renderer::PushPass(std::move(skyboxPass));
+		//RenderPass skyboxPass;
+		//skyboxPass.Pass = RenderPass::SKYBOX;
+		//auto& renderData = skyboxPass.renderData;
+		//renderData.cameraData = cameraData;
+	//	Renderer::PushPass(std::move(skyboxPass));
 	}
 
 	{
@@ -134,7 +129,18 @@ void Scene::Render()
 		Renderer::PushPass(std::move(colorPass));
 	}
 
-	
+	{
+		//// AABB Pass
+		//RenderPass colorPass;
+		//colorPass.Pass = RenderPass::AABB;
+		//auto& renderData = colorPass.renderData;
+		//renderData.cameraData = cameraData;
+		//renderData.meshes = culledMeshes;
+		//renderData.shader = aabbShader;
+		//renderData.vertexArray = aabbVertexArray;
+		//renderData.vertexBuffer = aabbVertexBuffer;
+	//	Renderer::PushPass(std::move(colorPass));
+	}
 	Renderer::FlushRenderQueue();
 }
 
@@ -260,7 +266,7 @@ void Scene::InitSceneCamera()
 void Scene::CreateSkyLight()
 {
 
-	sceneShader->Bind();
+	//sceneShader->Bind();
 
 	m_EnviromentLight.Ambient = { 1.f, 1.f, 1.f };
 	m_EnviromentLight.Energy = .19f;
@@ -281,9 +287,9 @@ void Scene::CreateSkyLight()
 
 void Scene::CreateBuffers()
 {
-	//m_Gbuffer = std::make_shared<GBuffer>();
+	m_Gbuffer = std::make_shared<GBuffer>();
 	m_shadowBuffer = std::make_shared<FrameBuffer>();
-	m_shadowBuffer->CreateTexture();
+	m_shadowBuffer->CreateTexture(FrameBufferTexture::SHADOWMAP);
 	m_shadowBuffer->AttachArrayTexture(TEXTURE_MAX_SIZE / 2, TEXTURE_MAX_SIZE / 2, 4);
 	shadowData->ShadowSize = Vector2((float)TEXTURE_MAX_SIZE /2, (float)TEXTURE_MAX_SIZE /2);
 

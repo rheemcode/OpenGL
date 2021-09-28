@@ -6,7 +6,7 @@
 #include <cassert>
 #include <iostream>
 
-//#define USE_INTRINSIC
+#define USE_INTRINSIC
 
 const Matrix4x4 Matrix4x4::Identity = Matrix4x4(1.f, 0.f, 0.f, 0.f,
 	0.f, 1.f, 0.f, 0.f,
@@ -623,7 +623,7 @@ float Matrix4x4::Determinant(const Matrix4x4& m)
 Matrix4x4 Matrix4x4::Transpose(const Matrix4x4& m)
 {
 	Matrix4x4 result(0);
-#ifndef USE_INTRNSIC
+#ifndef USE_INTRINSIC
 	result[0][0] = m[0][0];
 	result[0][1] = m[1][0];
 	result[0][2] = m[2][0];

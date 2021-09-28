@@ -131,13 +131,6 @@ void Texture::BufferData(unsigned char* data, int width, int height, DataFormat 
 	}
 }
 
-void Texture::Screenshot()
-{
-	//glReadBuffer(GL_BACK);
-	//void* imgData = (void*) malloc(1200 * 700);
-	//GLCall(glReadPixels(0, 0, 1200, 700, GL_DEPTH, GL_UNSIGNED_BYTE, imgData));
-}
-
 uint32_t Texture::AddImage(const std::string& filepath)
 {
 	stbi_set_flip_vertically_on_load(1);

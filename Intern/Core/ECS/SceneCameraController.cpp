@@ -31,26 +31,33 @@ void SceneCameraController::HandleMouseInput(float xPos, float yPos)
 		m_rotationVelocity.x = Input::GetAxisRaw(Input::AXIS_X) * m_mouseSensitivity * m_rotationSpeed;
 		m_rotationVelocity.y = Input::GetAxisRaw(Input::AXIS_Y) * m_mouseSensitivity * m_rotationSpeed;
 
-		Vector3 eulerAngles = Quaternion::EulerAngles(cameraTransform->GetLocalRotation());
+		//Vector3 eulerAngles = Quaternion::EulerAngles(cameraTransform->GetLocalRotation());
 
-		if (eulerAngles.z >= 179.0f || eulerAngles.z <= -179.0f)
-		{
-			eulerAngles.x += eulerAngles.z;
-			eulerAngles.y = 180.0f - eulerAngles.y;
-			eulerAngles.z = 0.0f;
-		}
+		//if (eulerAngles.z >= 179.0f || eulerAngles.z <= -179.0f)
+		//{
+		//	eulerAngles.x += eulerAngles.z;
+		//	eulerAngles.y = 180.0f - eulerAngles.y;
+		//	eulerAngles.z = 0.0f;
+		//}
 
-		if (eulerAngles.x > 180.0f) 
-			eulerAngles.x -= 360.0f;
-		if (eulerAngles.x < -180.0f) 
-			eulerAngles.x += 360.0f;
+		//if (eulerAngles.x > 180.0f) 
+		//	eulerAngles.x -= 360.0f;
+		//if (eulerAngles.x < -180.0f) 
+		//	eulerAngles.x += 360.0f;
 
 	//	std::stringstream ss;
 	//	ss << "Mouse Axis" << "X: " << Input::GetAxis(Input::AXIS_X) << " , " << "Y: " << Input::GetAxis(Input::AXIS_X) << "\n";
 	//	Console::Log(ss.str());
-		float pitch = eulerAngles.x - m_rotationVelocity.y;
+		/*float pitch = eulerAngles.x - m_rotationVelocity.y;
 		pitch = Math::Clamp(pitch, -84.f, 84.f);
 		float yaw = eulerAngles.y - m_rotationVelocity.x;
+
+		currentController.xRot = pitch;
+		currentController.yRot = yaw;
+		*/
+		pitch -= m_rotationVelocity.y;
+		pitch = Math::Clamp(pitch, -84.f, 84.f);
+		yaw -=  m_rotationVelocity.x;
 
 		currentController.xRot = pitch;
 		currentController.yRot = yaw;

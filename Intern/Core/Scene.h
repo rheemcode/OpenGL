@@ -56,8 +56,6 @@ struct LightUniformBuffer
 	bool Use;
 };
 
-//using namespace FrameBufferName;
-
 
 struct ShaderTest;
 struct ShadowData;
@@ -146,10 +144,6 @@ class GLIB_API Scene
 	static void ThreadCallback(void* p_instance);
 
 private:
-	
-	void BindFBO(int name);
-	void BindFBOTex(int name);
-
 	void PrepareMeshes();
 
 	void Render();
@@ -186,87 +180,3 @@ public:
 	Scene(const std::string& p_name);
 	~Scene();
 };
-
-//
-//struct ShaderTest
-//{
-//	struct ShaderParams
-//	{
-//		float iTime;
-//
-//	};
-//
-//	static const int MAX_TEST_SHADERS = 5;
-//	std::unique_ptr<VertexArray> vertexArray;
-//	std::unique_ptr<VertexBuffer> vertexBuffer;
-//	std::unique_ptr<FrameBuffer> frameBuffer;
-//	
-//	std::unique_ptr<Shader> fboShader;
-//	std::array<std::unique_ptr<Shader>, MAX_TEST_SHADERS> shaders;
-//
-//	void CreateShader(const std::string& filePath, int index)
-//	{
-//		shaders[index] = std::make_unique<Shader>(filePath);
-//	}
-//
-//	void InitTest()
-//	{
-//		/*float vAttrib[] = 
-//		{
-//		   -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
-//			0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
-//			0.5f,  0.5f, 0.0f, 1.0f, 1.0f,
-//		   -0.5f,  0.5f, 0.0f, 0.0f, 1.0f
-//		};
-//
-//		uint32_t quadIndices[] = { 0, 1, 2, 2, 3, 0 };
-//
-//
-//		vertexArray = std::make_unique<VertexArray>();
-//		vertexBuffer = std::make_unique<VertexBuffer>(vAttrib, sizeof(vAttrib));
-//		vertexBuffer->SetLayout({ { GL_FLOAT, 0, 3, 0 }, { GL_FLOAT, 1, 2, 0 } });
-//		vertexArray->SetIndices(quadIndices, 6);
-//		vertexArray->AddBuffer(*vertexBuffer.get());
-//
-//		frameBuffer = std::make_unique<FrameBuffer>();
-//		frameBuffer->CreateTexture();
-//		frameBuffer->AttachColorTexture();
-//		frameBuffer->AttachRenderBuffer();*/
-//
-//	//	fboShader = std::make_unique<Shader>("./Assets/Shaders/fboTest.glsl");
-//	}
-//
-//	void RenderTests(float deltaTime)
-//	{
-//		for (const auto& shader : shaders)
-//		{
-//			if (shader == nullptr)
-//				return;
-//
-//			shader->Bind();
-//			shader->UploadUniformFloat("iTime", deltaTime);
-//			vertexArray->Bind();
-//			RenderCommand::DrawIndexed(vertexArray->GetIndicies());
-//		}
-//	}
-//
-//	void RenderTest(float deltaTime, int id)
-//	{
-//		const auto& shader = shaders[id];
-//
-//		//frameBuffer->Bind(FrameBufferName::COLORBUFFER);
-//		glViewport(0, 0, Display::GetSingleton()->GetMainWindow()->GetWidth(), Display::GetSingleton()->GetMainWindow()->GetHeight());
-//		//fboShader->Bind();
-//
-//		shader->Bind();
-//		shader->UploadUniformFloat("iTime", Time::GetSingleton()->GetElapsedTime());
-//		frameBuffer->BindTexture(FrameBufferTexture::COLOR);
-//		vertexArray->Bind();
-//		RenderCommand::DrawIndexed(vertexArray->GetIndicies());
-//	}
-//};
-//
-//class SDFTest : public ShaderTest
-//{
-//
-//};

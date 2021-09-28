@@ -18,7 +18,7 @@ void RenderCommand::Init()
 	GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
 	GLCall(glEnable(GL_DEPTH_TEST));
 	GLCall(glDepthFunc(GL_LESS));
-	GLCall(glEnable(GL_MULTISAMPLE));
+	//GLCall(glEnable(GL_MULTISAMPLE));
 	GLCall(glEnable(GL_CULL_FACE));
 
 	int enabled = 0;
@@ -27,6 +27,7 @@ void RenderCommand::Init()
 
 void RenderCommand::DrawIndexed(const VertexArray& vertexArray)
 {
+	
 	GLCall(glDrawElements(GL_TRIANGLES, vertexArray.GetIndicies(), GL_UNSIGNED_INT, 0));
 }
 
@@ -41,20 +42,18 @@ void RenderCommand::RenderLines(const VertexArray& vertexArray)
 	glDrawArrays(GL_LINES, 0, vertexArray.GetIndicies());
 }
 
-//
-//
-//RendererData Renderer::renderData;
-TT Renderer::testRenderData;
-//
 static Vector3 aabbVertices[24];
 
 RenderQueue Renderer::renderQueue;
+
+Renderer::QuadData Renderer::quadData;
 
 void Renderer::Init()
 {
 	RenderCommand::Init();
 	Texture::CreateDefaultTexture();
-	float testRender[] = {
+
+	float quad[] = {
 	 -1.f, -1.f, 0.0f,  0.0f, 0.0f,
 	 1.f, -1.f, 0.0f, 1.0f, 0.0f,
 	 1.f,  1.f, 0.0f,  1.0f, 1.0f,
@@ -62,15 +61,14 @@ void Renderer::Init()
 
 	uint32_t quadIndices[] = { 0, 1, 2, 2, 3, 0 };
 
-	testRenderData.m_VertexArray = std::make_unique<VertexArray>();
-	testRenderData.m_VertexBuffer = std::make_unique<VertexBuffer>(testRender, sizeof(testRender));
-	//testRenderData.shader = std::make_unique<Shader>("Assets/Shaders/gBufferDraw.glsl");
-	testRenderData.m_VertexBuffer->SetLayout({
+	quadData.m_VertexArray = std::make_unique<VertexArray>();
+	quadData.m_VertexBuffer = std::make_unique<VertexBuffer>(quad, sizeof(quad));
+	quadData.m_VertexBuffer->SetLayout({
 		{ AttribDataType::T_FLOAT, Attrib::VERTEXPOSITION, AttribCount::VEC3, false },
 		{ AttribDataType::T_FLOAT, Attrib::UV, AttribCount::VEC2, false },
 		});
-	testRenderData.m_VertexArray->SetIndices(quadIndices, 6);
-	testRenderData.m_VertexArray->AddBuffer(*testRenderData.m_VertexBuffer.get());
+	quadData.m_VertexArray->SetIndices(quadIndices, 6);
+	quadData.m_VertexArray->AddBuffer(*quadData.m_VertexBuffer.get());
 }
 
 void Renderer::Clear()
@@ -114,8 +112,9 @@ void Renderer::BeginScene(const RenderData& renderData)
 }
 
 
-void Renderer::RenderShadows(const RenderData& renderData)
+void Renderer::RenderDepth(const RenderData& renderData)
 {
+	//PROFILE_FUNCTION
 	const auto& shader = renderData.shader;
 	std::shared_ptr<ShadowData> shadowData = renderData.shadowData;
 	const auto& shadowBox = shadowData->shadowBounds;
@@ -154,25 +153,25 @@ void Renderer::RenderShadows(const RenderData& renderData)
 
 void Renderer::RenderDeffered(const RenderData& renderData)
 {
-	RenderAPI::SetClearColor(0, 0, 0, 1.0);
-	const auto* shader = renderData.gBuffer->GetShader();
+	const auto* shader = renderData.gBuffer->m_bufferGenShader.get();
 	renderData.gBuffer->BindFramebuffer();
+	{
+		const Size2& fboSize = Display::GetSingleton()->GetScreenSize(0);
+		RenderAPI::SetViewport(0, 0, (uint32_t)fboSize.x, (uint32_t)fboSize.y);
+	}
+
 	RenderAPI::ClearBuffers();
-	renderData.gBuffer->BindShader();
-	shader->UploadUniformMat4("projView", *renderData.cameraData->proj * *renderData.cameraData->view);
+	shader->Bind();
 	for (const auto& mesh : renderData.meshes)
 	{
 		const auto& attribs = mesh.GetVertexAttribs();
 		attribs.Bind();
-		//const auto& material = mesh.GetMaterial();
-	//	BIND_DEFAULT_TEXTURE();
 
 		if (mesh.GetMaterial().Diffuse != -1)
 		{
-			//shader->UploadUniformInt("diffuseTexture", Model::TEX_DIFFUSE);
-		//	mesh.GetModelInstance()->ActiveTexture(mesh.GetMaterial().Diffuse, Model::TEX_DIFFUSE);
 			glActiveTexture(GL_TEXTURE0);
-			shader->UploadUniformInt("texture_diffuse1", 0);
+		//	BIND_DEFAULT_TEXTURE();
+			//shader->UploadUniformInt("texture_diffuse1", 0);
 			mesh.GetModelInstance()->BindTexture(mesh.GetMaterial().Diffuse, Model::TEX_DIFFUSE);
 		}
 
@@ -182,26 +181,48 @@ void Renderer::RenderDeffered(const RenderData& renderData)
 			BIND_DEFAULT_TEXTURE();
 		}
 
-		shader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
+		renderData.uniformBuffer->UploadData(mesh.GetTransform().GetWorldMatrix(), 128);
+		renderData.uniformBuffer->FlushBuffer();
 		RenderCommand::DrawIndexed(attribs);
 	}
 	
+
+	// Render Framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
+	{
+		const Size2& fboSize = Display::GetSingleton()->GetWindowSize(MAIN_WINDOW_ID);
+		RenderAPI::SetViewport(0, 0, (uint32_t)fboSize.x, (uint32_t)fboSize.y);
+	}
 	RenderAPI::ClearBuffers();
-	renderData.gBuffer->BindLightingShader();
-	renderData.gBuffer->m_lightingShader->SetInt("gPosition", 0);
-	renderData.gBuffer->m_lightingShader->SetInt("gNormal", 1);
-	renderData.gBuffer->m_lightingShader->SetInt("gAlbedoSpec", 2);
-	testRenderData.m_VertexArray->Bind();
-	//RenderAPI::EnableVertexAttribArray(Attrib::UV);
+
+	renderData.shadowData->UpdateFarBounds(*renderData.cameraData->proj);
+	
+	renderData.gBuffer->BindShader(GBuffer::USE);
+	renderData.gBuffer->m_bufferRenderShader->UploadUniformVec4("farDistance", renderData.shadowData->farBound);
+
+	renderData.gBuffer->m_bufferRenderShader->SetInt("gPosition", 0);
+	renderData.gBuffer->m_bufferRenderShader->SetInt("gNormal", 1);
+	renderData.gBuffer->m_bufferRenderShader->SetInt("gAlbedoSpec", 2);
+	renderData.gBuffer->m_bufferRenderShader->SetInt("depthMap", 3);
+	quadData.m_VertexArray->Bind();
 	renderData.gBuffer->BindAllTextures();
-	//renderData.framebuffer->BindArrayTexture(FrameBufferTexture::SHADOWMAP);
-	//glActiveTexture(GL_TEXTURE0);
-	RenderCommand::DrawIndexed(*testRenderData.m_VertexArray);
+	glActiveTexture(GL_TEXTURE3);
+	renderData.framebuffer->BindArrayTexture(FrameBufferTexture::SHADOWMAP);
+	RenderCommand::DrawIndexed(6);
+
+	// Copy Framebuffer's Depth Bti to default Framebuffer's Depth Bit
+	renderData.gBuffer->BindFramebuffer(FrameBuffer::READ);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	const Size2& fboSize = Display::GetSingleton()->GetWindowSize(MAIN_WINDOW_ID);
+	const Size2& scrSize = Display::GetSingleton()->GetScreenSize(0);
+	glBlitFramebuffer(0, 0, scrSize.x, scrSize.y, 0, 0, fboSize.x, fboSize.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
 }
 
 void Renderer::RenderAABB(const RenderData& renderData)
 {
+	//RenderAPI::ClearBuffers();
+	
 	for (const auto& mesh : renderData.meshes)
 	{
 		Vector3 a;
@@ -242,56 +263,32 @@ void Renderer::RenderMeshes(const RenderData& renderData)
 	
 	renderData.shadowData->UpdateFarBounds(*renderData.cameraData->proj);
 	shader->UploadUniformVec4("farDistance", renderData.shadowData->farBound);
-	std::shared_ptr matricesBuffer = renderData.uniformBuffer;
-	matricesBuffer->UploadData(*renderData.cameraData->proj * *renderData.cameraData->view, 0);
-	matricesBuffer->UploadData(renderData.shadowData->Bias * renderData.shadowData->Proj[0] * renderData.shadowData->View[0], 128);
-	matricesBuffer->UploadData(renderData.shadowData->Bias * renderData.shadowData->Proj[1] * renderData.shadowData->View[1], 128 + 64);
-	matricesBuffer->UploadData(renderData.shadowData->Bias * renderData.shadowData->Proj[2] * renderData.shadowData->View[2], 128 + 128);
-	matricesBuffer->UploadData(renderData.shadowData->Bias * renderData.shadowData->Proj[3] * renderData.shadowData->View[3], 128 + 128 + 64);
-
-
-
-#ifdef DRAW_DEPTH_MAP
-
-	testRenderData.shader->Bind();
-	testRenderData.shader->SetInt("depthMap", 0);
-	testRenderData.m_VertexArray->Bind();
-	RenderAPI::EnableVertexAttribArray(Attrib::UV);
-	renderData.framebuffer->BindArrayTexture(FrameBufferTexture::SHADOWMAP);
-	//glActiveTexture(GL_TEXTURE0);
-	RenderCommand::DrawIndexed(*testRenderData.m_VertexArray);
-
-#else // _DEBUG
-
-
-
+	const std::shared_ptr<UniformBuffer>& matricesBuffer = renderData.uniformBuffer;
 	shader->UploadUniformInt("depthTexture", 0);
 	//shader->UploadUniformInt("diffuseTexture", 1);
 	renderData.framebuffer->BindArrayTexture(FrameBufferTexture::SHADOWMAP);
 	const std::vector<Mesh>& meshes = renderData.meshes;
-
 	for (const auto& mesh : meshes)
 	{
 		const auto& attribs = mesh.GetVertexAttribs();
 		attribs.Bind();
 
 		const auto& material = mesh.GetMaterial();
-
-	//	glActiveTexture(GL_TEXTURE1);
-		BIND_DEFAULT_TEXTURE();
-
-		/*if (mesh.GetMaterial().Diffuse != -1)
+		glActiveTexture(GL_TEXTURE0);
+		//	BIND_DEFAULT_TEXTURE();
+			//shader->UploadUniformInt("texture_diffuse1", 0);
+		if (mesh.GetMaterial().Diffuse != -1)
 		{
-			shader->UploadUniformInt("diffuseTexture", Model::TEX_DIFFUSE);
-			mesh.GetModelInstance()->ActiveTexture(mesh.GetMaterial().Diffuse, Model::TEX_DIFFUSE);
 			mesh.GetModelInstance()->BindTexture(mesh.GetMaterial().Diffuse, Model::TEX_DIFFUSE);
-			shader->UploadUniformInt("currentTex", mesh.GetMaterial().Diffuse);
-		}*/
-		matricesBuffer->UploadData(mesh.GetTransform().GetWorldMatrix(), 64);
+			//shader->UploadUniformInt("diffuseTexture", Model::TEX_DIFFUSE);
+			//mesh.GetModelInstance()->ActiveTexture(mesh.GetMaterial().Diffuse, Model::TEX_DIFFUSE);
+			//mesh.GetModelInstance()->BindTexture(mesh.GetMaterial().Diffuse, Model::TEX_DIFFUSE);
+			//s/hader->UploadUniformInt("currentTex", mesh.GetMaterial().Diffuse);
+		}
+		matricesBuffer->UploadData(mesh.GetTransform().GetWorldMatrix(), 128);
 		matricesBuffer->FlushBuffer();
 		RenderCommand::DrawIndexed(attribs);
 	}
-#endif
 }
 
 void Renderer::FlushRenderQueue()
@@ -307,7 +304,7 @@ void Renderer::FlushRenderQueue()
 		}
 		case RenderPass::DEPTH_PASS:
 		{
-			//Renderer::RenderShadows(renderPass.renderData);
+			Renderer::RenderDepth(renderPass.renderData);
 			break;
 		}
 		case RenderPass::COLOR_PASS:
@@ -317,12 +314,12 @@ void Renderer::FlushRenderQueue()
 		}
 		case RenderPass::DEFFERED:
 		{
-		//	Renderer::RenderDeffered(renderPass.renderData);
+			Renderer::RenderDeffered(renderPass.renderData);
 			break;
 		}
 		case RenderPass::AABB:
 		{
-			//Renderer::RenderAABB(renderPass.renderData);
+			Renderer::RenderAABB(renderPass.renderData);
 			break;
 		}
 		default:

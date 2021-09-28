@@ -10,9 +10,6 @@
 struct GLIB_API RenderCommand
 {
 	static void Init();
-	//static void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
-	//static void SetClearColor(float r, float g, float b, float a);
-	//static void Clear();
 	static void DrawIndexed(const VertexArray& vertexArray);
 	static void DrawIndexed(const uint32_t& p_indices);
 	static void RenderLines(const VertexArray& vertexArray);
@@ -77,7 +74,7 @@ struct RenderData
 struct RenderPass
 {
 	enum { CASCADED, SINGLE} ShadowType;
-	enum { DEPTH_PASS, COLOR_PASS, SKYBOX, AABB, DEFFERED} Pass;
+	enum { DEPTH_PASS, COLOR_PASS, SKYBOX, AABB, POSTPROCESS, DEFFERED} Pass;
 	RenderData renderData;
 };
 
@@ -86,20 +83,19 @@ struct RenderQueue
 	std::vector<RenderPass> renderPasses;
 };
 
-struct TT
-{
-	std::unique_ptr<Shader> shader;
-	std::unique_ptr<VertexBuffer> m_VertexBuffer;
-	std::unique_ptr<VertexArray> m_VertexArray;
-
-};
 
 
-
-class GLIB_API Renderer
+class Renderer
 {
 	static RenderQueue renderQueue;
-	static TT testRenderData;
+	static struct QuadData 
+	{
+		std::unique_ptr<VertexBuffer> m_VertexBuffer;
+		std::unique_ptr<VertexArray> m_VertexArray;
+
+	} quadData;
+
+
 public:
 
 	enum PRIMITIVE_MODE
@@ -119,7 +115,7 @@ public:
 	static void PushPass(RenderPass&& renderPass);
 	static void BeginScene(const RenderData& p_renderData);
 	static void RenderSkybox(const RenderData& p_renderData);
-	static void RenderShadows(const RenderData& p_renderData);
+	static void RenderDepth(const RenderData& p_renderData);
 	static void RenderDeffered(const RenderData& renderData);
 	static void RenderMeshes(const RenderData& p_renderData);
 	static void RenderAABB(const RenderData& p_renderData);

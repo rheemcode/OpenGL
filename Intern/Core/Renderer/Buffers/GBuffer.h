@@ -7,21 +7,28 @@ class GBuffer
 	friend class Scene;
 	friend class Renderer;
 	std::unique_ptr<FrameBuffer> m_framebuffer;
-	std::unique_ptr<Shader> m_shader;
-	std::unique_ptr<Shader> m_lightingShader;
+	std::unique_ptr<Shader> m_bufferGenShader;
+	std::unique_ptr<Shader> m_bufferRenderShader;
+
+	enum ShaderType { CREATE, USE };
 public:
 	GBuffer()
 	{
 		m_framebuffer = std::make_unique<FrameBuffer>();
 		m_framebuffer->CreateTexture();
 		m_framebuffer->AttachGBufferTextures();
-		m_shader = std::make_unique<Shader>("./Assets/Shaders/gBuffer.glsl");
-		m_lightingShader = std::make_unique<Shader>("./Assets/Shaders/gBufferDraw.glsl");
+		m_bufferGenShader = std::make_unique<Shader>("./Assets/Shaders/gBuffer.glsl");
+		m_bufferRenderShader = std::make_unique<Shader>("./Assets/Shaders/deffered.glsl");
 	}
 
-	void BindFramebuffer()
+	void BindFramebuffer() const
 	{
 		m_framebuffer->Bind(FrameBufferName::GBUFFER);
+	}
+
+	void BindFramebuffer(FrameBuffer::Buffer type) const
+	{
+		m_framebuffer->Bind(type, FrameBufferName::GBUFFER);
 	}
 
 	void BindAllTextures()
@@ -34,17 +41,16 @@ public:
 		m_framebuffer->BindTexture(FrameBufferTexture::COLOR);
 	}
 
-	void BindShader()
+	void BindShader(ShaderType type)
 	{
-		m_shader->Bind();
-	}
+		if (type == ShaderType::USE)
+		{
+			m_bufferRenderShader->Bind();
+			return;
+		}
 
-	void BindLightingShader()
-	{
-		m_lightingShader->Bind();
+		m_bufferGenShader->Bind();
 	}
-
-	Shader* GetShader() { return m_shader.get(); }
 
 	~GBuffer(){}
 };

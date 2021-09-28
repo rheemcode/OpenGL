@@ -27,7 +27,8 @@ public:
 	void SetLocalPosition(const Vector3&  p_position)  { m_transform.SetLocalPosition(p_position); }
 	
 
-	std::weak_ptr<Component> GetComponent(const std::string& componentName);
+	//std::weak_ptr<Component> GetComponent(const std::string& componentName);
+	Component* GetComponent(const std::string& componentName);
 	void AddComponent(std::shared_ptr<Component> p_component);
 	void RemoveComponent(const std::string& p_componentName);
 	

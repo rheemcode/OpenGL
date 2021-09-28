@@ -1,5 +1,5 @@
 #shader [vertex]
-#version 410 core
+#version 430 core
 
 
 layout(location = 0) in vec3 vPos;
@@ -14,57 +14,50 @@ out VS_OUT
     vec2 TexCoord;
     vec3 FragPos;
     vec3 NormalInterp;
-  //  vec3 Normal;
 } vs_out;
 
 
-//uniform mat4 view;
-//uniform mat4 proj;
-uniform mat4 projView; // offset 0
-uniform mat4 model; // offset 16 * 4//  128
+layout(std140, binding = 0) uniform Matrices
+{
+   mat4 view;
+   mat4 proj; // offset 0
+   mat4 model; // offset 16 * 4
+   mat4 shadowSpaceMatrix[MAX_SPLIT]; //  128
+};
 
 void main()
 {
     vec4 FragPos = model * vec4(vPos, 1.0);
-    vs_out.FragPos = vec3(FragPos);
-//
-  //  vs_out.Normal = transpose(inverse(mat3(model))) * normal;
+    vs_out.FragPos = (view * FragPos).rgb;
     vs_out.TexCoord = texCoord;
-    vs_out.NormalInterp = normalize((model * vec4(normal, 0.0)).xyz);
-//    
-    gl_Position = projView * FragPos;
+    vs_out.NormalInterp = (view * normalize((model * vec4(normal, 0.0)))).xyz; 
+    gl_Position = proj * view * FragPos;
 };
 
-//
-//
+
 #shader[fragment]
-#version 410 core
+#version 430 core
 //
-layout (location = 0) out vec3 gPosition;
+layout (location = 0) out vec4 gPosition;
 layout (location = 1) out vec3 gNormal;
 layout (location = 2) out vec4 gAlbedoSpec;
 
-//
+
 in VS_OUT
 {
     vec2 TexCoord;
     vec3 FragPos;
     vec3 NormalInterp;
-  //  vec3 Normal;
 } vs_out;
-//
+
 uniform sampler2D texture_diffuse1;
-////uniform sampler2D texture_specular1;
-//
-//
+//uniform sampler2D texture_specular1;
+
 void main()
 {
-    // store the fragment position vector in the first gbuffer texture
-    gPosition = vs_out.FragPos;
-    // also store the per-fragment normals into the gbuffer
+    vec4 texDiff = texture(texture_diffuse1, vs_out.TexCoord);
+    gPosition = vec4(vs_out.FragPos, gl_FragCoord.z);
     gNormal = vs_out.NormalInterp;
-    // and the diffuse per-fragment color
-    gAlbedoSpec.rgb = texture(texture_diffuse1, vs_out.TexCoord).rgb;
-    // store specular intensity in gAlbedoSpec's alpha component
-     //gAlbedoSpec.a = texture(texture_specular1, vs_out.TexCoord).r;
+    gAlbedoSpec.rgb = texDiff.rgb;
+    //gAlbedoSpec.a = texture(texture_specular1, vs_out.TexCoord).r;
 };

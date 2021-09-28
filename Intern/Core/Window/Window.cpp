@@ -41,6 +41,7 @@ void Window::EventDispatcher(const Event& event)
 
 void Window::WindowResized(int width, int height)
 {
+	//TODO: replace with proper implementation
 	glViewport(0, 0, width, height);
 }
 

@@ -18,6 +18,11 @@ public:
 	void SwapBuffer();
 
 	void SetUseVysnc(bool useVysnc);
-
+	~OpenGLContext()
+	{
+		wglMakeCurrent(NULL, NULL);
+		wglDeleteContext(hRC);
+		ReleaseDC(hwnd, hDC);
+	}
 
 };

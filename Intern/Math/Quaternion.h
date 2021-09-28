@@ -8,6 +8,7 @@ struct GLIB_API Quaternion
 	{
 		struct { float x, y, z, w; };
 		float component[4] = { 0 };
+		__m128 vec_comp;
 	};
 	typedef Quaternion Quat;
 

@@ -35,13 +35,20 @@ class GLIB_API FrameBuffer
 	bool isDepthOnly = true;
 
 public:
+	enum Buffer
+	{
+		READ = GL_READ_FRAMEBUFFER,
+		DRAW = GL_DRAW_FRAMEBUFFER
+	};
+
+public:
 
 	void CreateTexture()
 	{
 		glGenTextures(FrameBufferTexture::MAX, textures);
 	}
 
-	void CreateTexuture(FrameBufferTexture::Type name)
+	void CreateTexture(FrameBufferTexture::Type name)
 	{
 		glGenTextures(1, &textures[name]);
 	}
@@ -101,7 +108,7 @@ public:
 		uint32_t rbo;
 		glGenRenderbuffers(1, &rbo);
 		glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, Display::GetSingleton()->GetMainWindow()->GetWidth(), Display::GetSingleton()->GetMainWindow()->GetHeight());
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, GLsizei(Display::GetSingleton()->GetScreenSize(0).x), Display::GetSingleton()->GetScreenSize(0).y);
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo);
 
 		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -152,44 +159,29 @@ public:
 
 	void AttachGBufferTextures()
 	{
-	//	BindTexture(FrameBufferTexture::SHADOWMAP);
-	//	glTexImage2D(GL_TEXTURE_2D, GLint(0), GL_RGBA8, GLsizei(Display::GetSingleton()->GetMainWindow()->GetWidth()), Display::GetSingleton()->GetMainWindow()->GetHeight(), 0, GL_RGBA, GL_FLOAT, NULL);
-	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	//	glBindTexture(GL_TEXTURE_2D, 0);
-
-	//	glBindFramebuffer(GL_FRAMEBUFFER, fboID[FrameBufferName::GBUFFER]);
-	//	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textures[FrameBufferTexture::SHADOWMAP], 0);
-	//	//if (isDepthOnly)
-	//	//{
-	//	//	glDrawBuffer(GL_NONE);
-	//	//	glReadBuffer(GL_NONE);
-	//	//}
-
-	////	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
 
 		Bind(FrameBufferName::GBUFFER);
 		BindTexture(FrameBufferTexture::POSITION);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, GLsizei(Display::GetSingleton()->GetMainWindow()->GetWidth()), Display::GetSingleton()->GetMainWindow()->GetHeight(), 0, GL_RGBA, GL_FLOAT, nullptr);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, GLsizei(Display::GetSingleton()->GetScreenSize(0).x), Display::GetSingleton()->GetScreenSize(0).y, 0, GL_RGBA, GL_FLOAT, nullptr);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textures[FrameBufferTexture::POSITION], 0);
 
 		BindTexture(FrameBufferTexture::NORMAL);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, GLsizei(Display::GetSingleton()->GetMainWindow()->GetWidth()), Display::GetSingleton()->GetMainWindow()->GetHeight(), 0, GL_RGBA, GL_FLOAT, nullptr);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, GLsizei(Display::GetSingleton()->GetScreenSize(0).x), Display::GetSingleton()->GetScreenSize(0).y, 0, GL_RGBA, GL_FLOAT, nullptr);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, textures[FrameBufferTexture::NORMAL], 0);
 
 		BindTexture(FrameBufferTexture::COLOR);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, GLsizei(Display::GetSingleton()->GetMainWindow()->GetWidth()), Display::GetSingleton()->GetMainWindow()->GetHeight(), 0, GL_RGBA, GL_FLOAT, nullptr);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, GLsizei(Display::GetSingleton()->GetScreenSize(0).x), Display::GetSingleton()->GetScreenSize(0).y, 0, GL_RGBA, GL_FLOAT, nullptr);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, textures[FrameBufferTexture::COLOR], 0);
 
-		
+
 		uint32_t attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 		GLCall(glDrawBuffers(3, attachments));
 
@@ -206,6 +198,10 @@ public:
 		glBindTexture(GL_TEXTURE_2D, GL_NONE);
 	}
 
+	void Bind(Buffer type, FrameBufferName::Type name) const
+	{
+		glBindFramebuffer(type, fboID[name]);
+	}
 	void Bind(FrameBufferName::Type name) const
 	{
 		GLCall(glBindFramebuffer(GL_FRAMEBUFFER, fboID[name]));
@@ -213,7 +209,6 @@ public:
 
 	void BindTexture(FrameBufferTexture::Type name) const
 	{
-		//glActiveTexture(GL_TEXTURE0);
 		GLCall(glBindTexture(GL_TEXTURE_2D, textures[name]));
 	}
 
@@ -228,7 +223,6 @@ public:
 	
 	void BindArrayTexture(FrameBufferTexture::Type name) const
 	{
-		glActiveTexture(GL_TEXTURE0);
 		GLCall(glBindTexture(GL_TEXTURE_2D_ARRAY, textures[name]));
 	}
 

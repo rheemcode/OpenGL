@@ -16,15 +16,15 @@ out VS_OUT
     vec3 FragPos;
     vec3 NormalInterp;
     vec4 ShadowCoord[MAX_SPLIT];
+    vec3 Normal;
 } vs_out;
 
 
 //uniform mat4 view;
 //uniform mat4 proj;
-layout(std140, binding = 0) uniform Matrices
+layout(std140, binding=0) uniform Matrices
 {
-   mat4 view;
-   mat4 proj; // offset 0
+   mat4 projView; // offset 0
    mat4 model; // offset 16 * 4
    mat4 shadowSpaceMatrix[MAX_SPLIT]; //  128
 };
@@ -32,16 +32,16 @@ layout(std140, binding = 0) uniform Matrices
 void main()
 {
     vec4 FragPos = model * vec4(vPos, 1.0);
-    vs_out.FragPos = FragPos.xyz;
+    vs_out.FragPos = vec3(FragPos);
 
     for (int i = 0; i < MAX_SPLIT; i++)
         vs_out.ShadowCoord[i] = shadowSpaceMatrix[i] * FragPos;
 
-    //vs_out.Normal = (view * transpose(inverse(mat3(model))) * normal).xyz;
+    vs_out.Normal = transpose(inverse(mat3(model))) * normal;
     vs_out.TexCoord = texCoord;
-    vs_out.NormalInterp = normalize((model * vec4(normal, 0.0))).xyz;
+    vs_out.NormalInterp = normalize((model * vec4(normal, 0.0)).xyz);
     
-    gl_Position = proj* view * FragPos;
+    gl_Position = projView * FragPos;
 };
 
 
@@ -75,27 +75,9 @@ struct LightProperties
     vec3 Ambient; // 16
     vec3 Color; // 32
     vec3 Direction; // 48
-    //vec3 Position;
+    vec3 Position;
+    vec3 attenuation;
 };
-
-//int LightType; // 0
-//float AmbientEnergy; // 0 + 4 -> 4
-//float Energy; // 4 + 4 -> 8
-//vec3 Ambient; // 8 + 4 -> 16
-//vec3 Color; // 16 + 16 -> 32
-//vec3 Direction; // 32 + 16 -> 58
-////vec3 Position;
-//
-
-struct MaterialProperties
-{
-    int diffuseMap;
-    vec4 Color;
-    float Shininess;
-    float SpecularHighlights;
-
-};
-uniform int currentTex;
 
 uniform vec4 farDistance;
 uniform sampler2DArray depthTexture;
@@ -106,10 +88,7 @@ layout(std140, binding=1) uniform LightsUniform
     LightProperties Lights;
 };
 
-//uniform sampler2D specularTexture;
-
 out vec4 FragColor;
-
 
 vec3 lightDir;
 float attenuation;
@@ -122,7 +101,8 @@ const float texelSize = 1.0 / mapSize;
 
 #define VEC3 vec3(0, 0, 0)
 #define VEC3_1 vec3(1, 1, 1)
-
+#define ZERO 0
+#define ONE 1.0
 
 const vec2 poissonDisk[16] = vec2[](
     vec2(-0.94201624, -0.39906216),
@@ -153,7 +133,7 @@ int getDepth()
 {
     int index = 3;
 
-    if (gl_FragCoord.z < farDistance.x)
+    if (gl_FragCoord.z < farDistance.x + 0.0001)
         index = 0;
     else if (gl_FragCoord.z < farDistance.y)
         index = 1;
@@ -168,25 +148,23 @@ float ShadowCalculation(vec4 ShadowPos, int index)
 
     vec3 projCoords = ShadowPos.xyz / ShadowPos.w;
     //projCoords = clamp(projCoords, VEC3, VEC3_1);
-    if (projCoords.z > 1.0)
-        return 1.0;
+    if (projCoords.z > ONE)
+        projCoords.z = 1.0;
 
     float currentDepth = projCoords.z;
-    float bias = max(0.002 * (1.0 - dot(vs_out.NormalInterp, lightDir)), 0.002);
+    float bias = max(0.002 * (ONE - dot(vs_out.Normal, lightDir)), 0.002);
     float shadow = 0.0;
-  
+    vec2 offset;
     float pcfDepth = texture(depthTexture, vec3(projCoords.xy, index)).x;
-    
     if (currentDepth > pcfDepth + bias)
-        shadow = 1.0;
-
+        shadow = 1;
     //for (int i = 0; i < samples; i++)
     //{
     //    float pcfDepth = texture(depthTexture, vec3(projCoords.xy + poissonDisk[i] / 700.0, index)).x;
     //    if (currentDepth > pcfDepth + bias)
-    //        shadow += 1.0;
+    //        shadow += ONE;
     //}
-    //vec2 offset;
+
     //for (int x = -pcfCount; x <= pcfCount; ++x)
     //{
     //    for (int y = -pcfCount; y <= pcfCount; ++y)
@@ -194,14 +172,14 @@ float ShadowCalculation(vec4 ShadowPos, int index)
     //    //    int index = int(16.0 * random(floor(vs_out.FragPos.xyz * 1000.0), x + y * 4)) % 16;
 
     //        offset.x = x; offset.y = y;
-    //        float pcfDepth = texture(depthTexture, vec3(projCoords.xy + offset * texelSize, index)).x;
-    //        //if (currentDepth  > pcfDepth + bias)
-    //    //        shadow += 1.0;
-    //        shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+    //        float pcfDepth = texture(depthTexture, vec3(projCoords.xy + offset, 0)).x;
+    //        if (currentDepth  > pcfDepth + bias)
+    //            shadow += ONE;
+    //        //shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
     //    }
     //}
 
-    //shadow /= totalTexels;
+ //   shadow /= totalTexels;
     return shadow;
 }
 
@@ -216,27 +194,28 @@ void main()
     float attenuation = 1.0;
  //   if (Lights.LightType == 1)
    // {
-       // attenuation = 1.0;
+       // attenuation = ONE;
    // }
 
 
 
     lightDir = vec3(-Lights.Direction);
 
-    float NdotL = max(dot(vs_out.NormalInterp, lightDir),0.0);
+    float NdotL = max(dot(vs_out.NormalInterp, lightDir),ZERO);
     vec3 halfVec = normalize(lightDir + normalize(-vs_out.FragPos));
-    float eyeLight = max(dot(vs_out.NormalInterp, halfVec), 0.0);
-    float Specular = 0;
-  
-    if (NdotL > 0.0)
-        Specular = 1.0 * pow(eyeLight, 2);
+    float eyeLight = max(dot(vs_out.NormalInterp, halfVec), ZERO);
+    float Specular;
+    if (NdotL > ZERO)
+        Specular = ONE * pow(eyeLight, 2);
+    else
+        Specular = ZERO;
 
     vec3 Ambient = vec3(Lights.Ambient) * Lights.AmbientEnergy * attenuation;
     vec3 Diffuse = vec3(Lights.Color) * NdotL * Lights.Energy * attenuation;
 
     int shadowIndex = getDepth();
     float shadow = ShadowCalculation(vs_out.ShadowCoord[shadowIndex], shadowIndex);
-    vec3 Light = Ambient + ((1.0 - (shadow * vs_out.ShadowCoord[shadowIndex].w)) * Diffuse);
+    vec3 Light = Ambient + ((ONE - (shadow * vs_out.ShadowCoord[shadowIndex].w)) * Diffuse);
     //vec3 Light = (Ambient) + (Diffuse);
 
    vec3 color = min(Light * vec3(texCol), VEC3_1);

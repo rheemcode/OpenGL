@@ -20,12 +20,20 @@ void Actor::DispatchEventToComponents(const Event& p_event)
 	}
 }
 
-std::weak_ptr<Component> Actor::GetComponent(const std::string& componentName)
+//std::weak_ptr<Component> Actor::GetComponent(const std::string& componentName)
+//{
+//	auto val = m_components.find(componentName);
+//	if (val != m_components.end())
+//		return val->second;
+//	return std::weak_ptr<Component>();
+//}
+
+Component* Actor::GetComponent(const std::string& componentName)
 {
 	auto val = m_components.find(componentName);
 	if (val != m_components.end())
-		return val->second;
-	return std::weak_ptr<Component>();
+		return val->second.get();
+	return nullptr;
 }
 
 void Actor::AddComponent(std::shared_ptr<Component> p_component)

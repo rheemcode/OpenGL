@@ -49,15 +49,30 @@ public:
 	const CameraSettings GetCameraSettings() const { return m_cameraSettings; }
 	const Transform& GetTransform() const { return transform; }
 
-	virtual Frustum& GetFrustum() { return m_Frustum; };
 	virtual void OnUpdate(float p_delta) {};
 	virtual void OnEvent(const Event& event) {};
 
+	inline void UpdateView()
+	{
+		m_ViewMatrix = Matrix4x4::Inverse(transform.GetWorldMatrix());
+	}
+
+	inline const Frustum& GetFrustum() {
+		UpdateView();
+		m_Frustum.SetFrustum(m_ProjectionMatrix * m_ViewMatrix);
+		return m_Frustum;
+	};
 
 	const CameraController* const GetController() const { return cameraController.get(); }
 	void AttachController(CameraController* p_cameraController)
 	{
 		cameraController.reset(p_cameraController);
+		cameraController->cameraTransform = &transform;
+	}
+	
+	void AttachController(std::shared_ptr<CameraController> p_cameraController)
+	{
+		cameraController = p_cameraController;
 		cameraController->cameraTransform = &transform;
 	}
 

@@ -20,7 +20,7 @@ void GLSandboxApplication::OnStart()
 	cameraSettings.winHeight = display->GetMainWindow()->GetHeight();
 	cameraSettings.ratio = cameraSettings.winWidth / cameraSettings.winHeight;
 	std::shared_ptr<Camera> camera = std::make_shared<SceneCamera>(cameraSettings);
-	SceneCameraController* controller = new SceneCameraController();
+	std::shared_ptr<SceneCameraController> controller = std::make_shared<SceneCameraController>();
 	camera->AttachController(controller);
 	scene->SetMainCamera(camera);
 	AttachScene(scene);									

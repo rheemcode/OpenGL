@@ -1,6 +1,6 @@
 #include <glpch.h>
 #include "OpenGLContext.h"
-
+#include "Window/Display.h"
 #include <GL/wglew.h>
 
 
@@ -9,6 +9,38 @@
 int OpenGLContext::Init(HWND p_Hwnd)
 {
 	hwnd = p_Hwnd;
+	
+	DWORD dwExStyle =0;
+	DWORD dwStyle=0;
+
+	//GetWindowStyles(m_windowCount == 0, p_mode == WindowMode::WINDOW_MODE_FULLSCREEN, p_flags & WINDOW_FLAG_BORDERLESS_BIT, !(p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT), p_mode == WINDOW_MODE_MAXIMIZED, (p_flags & WINDOW_FLAG_NO_FOCUS_BIT), dwStyle, dwExStyle);
+	RECT WindowRect;
+
+	WindowRect.left = 0;
+	WindowRect.right = 100;
+	WindowRect.top = 0;
+	WindowRect.bottom = 100;
+
+	AdjustWindowRectEx(&WindowRect, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, FALSE, WS_EX_WINDOWEDGE);
+
+	HWND hwnd1 = CreateWindowExW(
+		WS_EX_WINDOWEDGE,
+		L"Renderer",
+		L"ex",
+		WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
+		WindowRect.left,
+		WindowRect.top,
+		WindowRect.right - WindowRect.left,
+		WindowRect.bottom - WindowRect.top,
+		nullptr,
+		nullptr,
+		Display::s_Instance->hInstance,
+		nullptr
+	);
+	if (!hwnd1)
+	{
+		return 1;
+	}
 	static PIXELFORMATDESCRIPTOR pfd =
 	{
 		sizeof(PIXELFORMATDESCRIPTOR),
@@ -30,7 +62,7 @@ int OpenGLContext::Init(HWND p_Hwnd)
 	};
 
 
-	hDC = GetDC(hwnd);
+	hDC = GetDC(hwnd1);
 
 	if (!hDC) {
 		return 1; // Return FALSE
@@ -47,8 +79,8 @@ int OpenGLContext::Init(HWND p_Hwnd)
 			WGL_COLOR_BITS_ARB, 32,
 			WGL_DEPTH_BITS_ARB, 24,
 			WGL_STENCIL_BITS_ARB, 8,
-			WGL_SAMPLE_BUFFERS_ARB, GL_TRUE,
-			WGL_SAMPLES_ARB, 1,
+			//WGL_SAMPLE_BUFFERS_ARB, GL_TRUE,
+			//WGL_SAMPLES_ARB, 0,
 			0 // End of attributes list
 	};
 	
@@ -65,7 +97,34 @@ int OpenGLContext::Init(HWND p_Hwnd)
 	{
 		return 1; // Return FALSE
 	}
+	
+	hRC = wglCreateContext(hDC);
 
+	if (!hRC) // Are We Able To Get A Rendering Context?
+	{
+		return 1; // Return FALSE
+	}
+
+	wglMakeCurrent(hDC, hRC);
+
+	GLenum err = glewInit();
+	if (GLEW_OK != err)
+	{
+		return 1;
+	}
+
+
+	ReleaseDC(hwnd1, hDC);
+	DestroyWindow(hwnd1);
+
+	hDC = GetDC(hwnd);
+	wglDeleteContext(hRC);
+	wglChoosePixelFormatARB(hDC, iPixelFormatAttribList, NULL, 1, &pixelFormat, &numFormat);
+	BOOL ret1 = SetPixelFormat(hDC, pixelFormat, &pfd);
+	if (!ret1) // Are We Able To Set The Pixel Format?
+	{
+		return 1; // Return FALSE
+	}
 	hRC = wglCreateContext(hDC);
 
 	if (!hRC) // Are We Able To Get A Rendering Context?
@@ -75,21 +134,14 @@ int OpenGLContext::Init(HWND p_Hwnd)
 
 	wglMakeCurrent(hDC, hRC);
 	
-	GLenum err = glewInit();
-	if (GLEW_OK != err)
-	{
-		return 1;
-	}
-	//wglChoosePixelFormatARB(hDC, iPixelFormatAttribList, NULL, 1, &pixelFormat, &numFormat);
-//	BOOL ret = SetPixelFormat(hDC, pixelFormat, &pfd);
-	if (!ret) // Are We Able To Set The Pixel Format?
-	{
-		return 1; // Return FALSE
-	}
+
+
+
+
 	int attribs[] = {
 	WGL_CONTEXT_MAJOR_VERSION_ARB, 4, //we want a 4.1 context
 	WGL_CONTEXT_MINOR_VERSION_ARB, 1,
-
+	
 	//and it shall be forward compatible so that we can only use up to date functionality
 	WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
 	WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB /*| _WGL_CONTEXT_DEBUG_BIT_ARB*/,

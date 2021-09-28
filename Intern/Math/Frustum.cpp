@@ -1,7 +1,7 @@
 #include <glpch.h>
 #include "Frustum.h"
 #include <immintrin.h>
-
+#define USE_INTRINSIC
 void Frustum::SetFrustum(float p_fov, float p_aspect, float p_zoom, float p_zNear, float p_zFar, const Matrix4x4& p_transform)
 {
 	p_zNear = MAX(p_zNear, 0.0f);
@@ -35,7 +35,7 @@ void Frustum::SetFrustum(const Vector3& lNear, const Vector3& lFar, const Matrix
 
 void Frustum::SetFrustum(const Matrix4x4& p_projMatrix)
 {
-#ifdef USE_INTRIN
+#ifdef USE_INTRINSIC
 	__m256 a = _mm256_set_ps(p_projMatrix[0][3], p_projMatrix[1][3], p_projMatrix[2][3], p_projMatrix[3][3], p_projMatrix[0][3], p_projMatrix[1][3], p_projMatrix[2][3], p_projMatrix[3][3]);
 	__m256 b = _mm256_set_ps(p_projMatrix[0][0], p_projMatrix[1][0], p_projMatrix[2][0], p_projMatrix[3][0], p_projMatrix[0][1], p_projMatrix[1][1], p_projMatrix[2][1], p_projMatrix[3][1]);
 	__m256 c = _mm256_set_ps(p_projMatrix[0][2], p_projMatrix[1][2], p_projMatrix[2][2], p_projMatrix[3][2], 0, 0, 0, 0);

@@ -16,6 +16,8 @@ class GLIB_API SceneCameraController : public CameraController
 
 	bool inFreelook = false;
 	
+	float pitch = 0;
+	float yaw = 0;
 	float m_speed;
 	float inertia = 0.85f;
 	float rotInertia = 0.1f;
@@ -46,7 +48,7 @@ public:
 	SceneCameraController()
 	{
 		m_speed = 2.f;
-		m_mouseSensitivity = 0.8f;
+		m_mouseSensitivity = 0.4f;
 		controller.distance = 1.f;
 		controller.rotationSpeed = 3.f;
 

@@ -19,6 +19,11 @@ class GLMain;
 
 class GLIB_API GLApplication
 {
+public:
+	enum RenderPipline { FORWARD, DEFFERED };
+private:
+	RenderPipline renderPipline;
+
 protected:
 	friend GLMain;
 
@@ -32,12 +37,14 @@ protected:
 
 	std::string applicationName;
 
+
 public:
-	virtual const std::string& GetApplicationName() { return applicationName; }
+	void SetRenderPipline(RenderPipline p_renderPipline) { renderPipline = p_renderPipline; }
+	virtual const std::string& GetApplicationName() const { return applicationName; }
 	virtual void OnStart() {};
 	void AttachScene(Scene* p_scene);
 	void SetMainScene(const std::string& sceneName);
-	Scene* CreateScene(const std::string& sceneName) { return new Scene(sceneName); }
+	Scene* CreateScene(const std::string& sceneName) const { return new Scene(sceneName); }
 	static GLApplication* GetSingleton() { return s_instance; }
 };
 

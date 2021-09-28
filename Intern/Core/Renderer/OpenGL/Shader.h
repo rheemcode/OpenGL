@@ -43,6 +43,7 @@ class GLIB_API  Shader
 {
 	ShaderCache cache;
 	std::vector<std::string> uniformNames;
+	std::string filePath;
 	std::string vertexSource, 
 				fragmentSource, 
 				geometrySource, 

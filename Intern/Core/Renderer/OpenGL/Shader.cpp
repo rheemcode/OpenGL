@@ -24,12 +24,13 @@ int64_t to_int(const std::string& str)
 	return integer;
 }
 
-Shader::Shader(const std::string& filePath)
+Shader::Shader(const std::string& p_filePath)
+	: filePath(p_filePath)
 {
-	ParseShader(filePath);
+	ParseShader(p_filePath);
 }
 
-void Shader::ParseShader(const std::string& filePath)
+void Shader::ParseShader(const std::string& p_filePath)
 {
 
 	std::ifstream stream(filePath);
@@ -248,6 +249,7 @@ unsigned int Shader::CompileShader(const std::string& src, unsigned int type)
 	if (result == GL_FALSE)
 	{
 		std::stringstream ss;
+		ss << "Shader File [" << filePath << "] ";
 		int length;
 		GLCall(glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length));
 		char* message = (char*)_malloca(length * sizeof(char));
@@ -256,10 +258,10 @@ unsigned int Shader::CompileShader(const std::string& src, unsigned int type)
 		const char* _type = "";
 		switch (type)
 		{
-		case(GL_FRAGMENT_SHADER): _type = "[FRAGMENT SHADER] :: "; break;
-		case(GL_VERTEX_SHADER): _type = "[VERTEX SHADER] :: "; break;
-		case(GL_GEOMETRY_SHADER): _type = "[GEOMETRY SHADER] :: "; break;
-		default: break;
+			case(GL_FRAGMENT_SHADER): _type = "[FRAGMENT SHADER] :: "; break;
+			case(GL_VERTEX_SHADER): _type = "[VERTEX SHADER] :: "; break;
+			case(GL_GEOMETRY_SHADER): _type = "[GEOMETRY SHADER] :: "; break;
+			default: break;
 		}
 
 		ss << _type << message;

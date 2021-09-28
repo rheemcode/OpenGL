@@ -38,6 +38,7 @@ void GLApplication::Run()
 	{
 		
 		//PROFILE_FUNCTION(
+		profiler.Start();
 		uint64_t ticks = Time::GetSingleton()->GetTicks();
 		
 		float delta = float(ticks - lastTicks);
@@ -46,7 +47,6 @@ void GLApplication::Run()
 		frames++;
 		mainScene->OnUpdate(delta / 1000000.f);
 		mainScene->Render();
-		profiler.Start();
 		display->ProcessEvents();
 		frameTimesVec.push_back(profiler.End());
 		if (frame > 1000000)
