@@ -59,13 +59,15 @@ struct GLIB_API CameraData
 
 struct RenderData
 {
-	std::vector<class Mesh> meshes;
+	class Mesh* meshes;
+	int meshCount;
 	std::shared_ptr<Shader> shader;
 	std::shared_ptr<CameraData> cameraData;
 	std::shared_ptr<struct ShadowData> shadowData;
-	std::shared_ptr<class FrameBuffer> framebuffer;
+	std::shared_ptr<class Framebuffer> framebuffer;
 	std::shared_ptr<class UniformBuffer> uniformBuffer;
 	std::shared_ptr<class GBuffer> gBuffer;
+	std::shared_ptr<class PostProcess> postProcessEffect;
 	std::shared_ptr<VertexArray> vertexArray;
 	std::shared_ptr<VertexBuffer> vertexBuffer;
 };
@@ -74,7 +76,7 @@ struct RenderData
 struct RenderPass
 {
 	enum { CASCADED, SINGLE} ShadowType;
-	enum { DEPTH_PASS, COLOR_PASS, SKYBOX, AABB, POSTPROCESS, DEFFERED} Pass;
+	enum { GBUFFER_PASS, DEPTH_PASS, COLOR_PASS, SKYBOX, AABB, POSTPROCESS_PASS, DEFFERED_PASS} Pass;
 	RenderData renderData;
 };
 
@@ -116,8 +118,10 @@ public:
 	static void BeginScene(const RenderData& p_renderData);
 	static void RenderSkybox(const RenderData& p_renderData);
 	static void RenderDepth(const RenderData& p_renderData);
+	static void RenderGBuffer(const RenderData& renderData);
 	static void RenderDeffered(const RenderData& renderData);
 	static void RenderMeshes(const RenderData& p_renderData);
+	static void RenderSSAO(const RenderData& p_renderData);
 	static void RenderAABB(const RenderData& p_renderData);
 	static void FlushRenderQueue();
 	static void SetViewport(int x, int y, int width, int height);
@@ -137,5 +141,5 @@ public:
 	void BeginScene(const Camera& camera);
 	void StartBatch();
 	void EndScene();
-	void DrawQuad(const Matrix4x4& transform, const Texture& texture);
+	//void DrawQuad(const Matrix4x4& transform, const Texture& texture);
 };

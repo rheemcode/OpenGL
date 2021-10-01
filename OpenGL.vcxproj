@@ -168,6 +168,7 @@
   <ItemGroup>
     <ClCompile Include="Intern\Core\ECS\CameraController.cpp" />
     <ClCompile Include="Intern\Core\GLApplication\GLApplication.cpp" />
+    <ClCompile Include="Intern\Core\Renderer\OpenGL\ShaderCompiler.cpp" />
     <ClCompile Include="Intern\Core\Utils\Profiler.cpp" />
     <ClCompile Include="Intern\Core\Renderer\Buffers\FrameBuffer.cpp" />
     <ClCompile Include="Intern\Core\Utils\CommandBuffer.cpp" />
@@ -193,6 +194,7 @@
     <ClInclude Include="Intern\Core\GLApplication\GLApplication.h" />
     <ClInclude Include="Intern\Core\GLApplication\GLCore.h" />
     <ClInclude Include="Intern\Core\GLApplication\GLMain.h" />
+    <ClInclude Include="Intern\Core\Renderer\OpenGL\ShaderCompiler.h" />
     <ClInclude Include="Intern\Core\Templates.h" />
     <ClInclude Include="Intern\Core\Utils\Profiler.h" />
     <ClInclude Include="Intern\Core\Renderer\Buffers\GBuffer.h" />

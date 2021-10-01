@@ -10,6 +10,7 @@
 #include "Thread.h"
 #include "Buffers/FrameBuffer.h"
 #include "Buffers/GBuffer.h"
+#include "Effects/SSAO.h"
 #include "stb_image_write.h"
 #include "Profiler.h"
 
@@ -122,20 +123,21 @@ void Renderer::RenderDepth(const RenderData& renderData)
 	shader->Bind();
 	//shader->UploadUniformMat4("lightSpaceMatrix", shadowData->ProjView);
 
-	renderData.framebuffer->Bind(FrameBufferName::DEPTH);
+	renderData.framebuffer->Bind(FramebufferName::DEPTH);
 	const Vector2& shadowMapWidth = shadowData->ShadowSize;
 	RenderAPI::SetViewport(0, 0, (uint32_t)shadowMapWidth.x, (uint32_t)shadowMapWidth.y);
 	//RenderAPI::CullFrontFace();
 
-	const std::vector<Mesh>& meshes = renderData.meshes;
+	
 
-	for (int i = 0; i < shadowData->splitCount; i++)
-	{
-		shader->UploadUniformMat4("lightSpaceMatrix", shadowData->Proj[i] * shadowData->View[i]);
-		renderData.framebuffer->TextureLayer(FrameBufferTexture::SHADOWMAP, i);
+	//for (int i = 0; i < shadowData->splitCount; i++)
+	//{
+	//	shader->UploadUniformMat4("lightSpaceMatrix", shadowData->Proj[i] * shadowData->View[i]);
+		//renderData.framebuffer->BindTexture(FramebufferTexture::SHADOWMAPARRAY, i);
 		RenderAPI::ClearDepthBuffer();
-		for (const auto& mesh : meshes)
+		for (int i = 0; i < renderData.meshCount; ++i)
 		{
+			const auto& mesh = renderData.meshes[i];
 			const auto& attribs = mesh.GetVertexAttribs();
 			attribs.Bind();
 			//RenderAPI::DisableVertexAttribArray(Attrib::UV);
@@ -146,12 +148,12 @@ void Renderer::RenderDepth(const RenderData& renderData)
 			//RenderAPI::EnableVertexAttribArray(Attrib::UV);
 			//RenderAPI::EnableVertexAttribArray(Attrib::NORMAL);
 		}
-	}
+	//}
 
 	//RenderAPI::CullBackFace();
 }
 
-void Renderer::RenderDeffered(const RenderData& renderData)
+void Renderer::RenderGBuffer(const RenderData& renderData)
 {
 	const auto* shader = renderData.gBuffer->m_bufferGenShader.get();
 	renderData.gBuffer->BindFramebuffer();
@@ -162,16 +164,15 @@ void Renderer::RenderDeffered(const RenderData& renderData)
 
 	RenderAPI::ClearBuffers();
 	shader->Bind();
-	for (const auto& mesh : renderData.meshes)
+	for (int i = 0; i < renderData.meshCount; ++i)
 	{
+		const auto& mesh = renderData.meshes[i];
 		const auto& attribs = mesh.GetVertexAttribs();
 		attribs.Bind();
 
 		if (mesh.GetMaterial().Diffuse != -1)
 		{
 			glActiveTexture(GL_TEXTURE0);
-		//	BIND_DEFAULT_TEXTURE();
-			//shader->UploadUniformInt("texture_diffuse1", 0);
 			mesh.GetModelInstance()->BindTexture(mesh.GetMaterial().Diffuse, Model::TEX_DIFFUSE);
 		}
 
@@ -185,8 +186,10 @@ void Renderer::RenderDeffered(const RenderData& renderData)
 		renderData.uniformBuffer->FlushBuffer();
 		RenderCommand::DrawIndexed(attribs);
 	}
-	
+}
 
+void Renderer::RenderDeffered(const RenderData& renderData)
+{
 	// Render Framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
 	{
@@ -194,37 +197,56 @@ void Renderer::RenderDeffered(const RenderData& renderData)
 		RenderAPI::SetViewport(0, 0, (uint32_t)fboSize.x, (uint32_t)fboSize.y);
 	}
 	RenderAPI::ClearBuffers();
-
-	renderData.shadowData->UpdateFarBounds(*renderData.cameraData->proj);
 	
 	renderData.gBuffer->BindShader(GBuffer::USE);
-	renderData.gBuffer->m_bufferRenderShader->UploadUniformVec4("farDistance", renderData.shadowData->farBound);
-
-	renderData.gBuffer->m_bufferRenderShader->SetInt("gPosition", 0);
-	renderData.gBuffer->m_bufferRenderShader->SetInt("gNormal", 1);
-	renderData.gBuffer->m_bufferRenderShader->SetInt("gAlbedoSpec", 2);
-	renderData.gBuffer->m_bufferRenderShader->SetInt("depthMap", 3);
 	quadData.m_VertexArray->Bind();
 	renderData.gBuffer->BindAllTextures();
-	glActiveTexture(GL_TEXTURE3);
-	renderData.framebuffer->BindArrayTexture(FrameBufferTexture::SHADOWMAP);
+	auto* ssaoEffect = (SSAO*)renderData.postProcessEffect.get();
+	Texture::ActiveTexture(Texture::TEXTURE3);
+	ssaoEffect->BindFrambufferTexture();
+
 	RenderCommand::DrawIndexed(6);
 
-	// Copy Framebuffer's Depth Bti to default Framebuffer's Depth Bit
-	renderData.gBuffer->BindFramebuffer(FrameBuffer::READ);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-	const Size2& fboSize = Display::GetSingleton()->GetWindowSize(MAIN_WINDOW_ID);
-	const Size2& scrSize = Display::GetSingleton()->GetScreenSize(0);
-	glBlitFramebuffer(0, 0, scrSize.x, scrSize.y, 0, 0, fboSize.x, fboSize.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-	glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
+	// Copy Framebuffer's Depth Bit to default Framebuffer's Depth Bit
+//	renderData.gBuffer->BindFramebuffer(Framebuffer::READ);
+//	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+//	const Size2& fboSize = Display::GetSingleton()->GetWindowSize(MAIN_WINDOW_ID);
+	//const Size2& scrSize = Display::GetSingleton()->GetScreenSize(0);
+	//glBlitFramebuffer(0, 0, scrSize.x, scrSize.y, 0, 0, fboSize.x, fboSize.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	//glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
+}
+
+void Renderer::RenderSSAO(const RenderData& renderData)
+{
+	// RenderSSAO first;
+	
+	auto* ssaoEffect = (SSAO*)renderData.postProcessEffect.get();
+	ssaoEffect->BindFramebuffer();
+	RenderAPI::ClearBuffers();
+	const Size2& fboSize = Display::GetSingleton()->GetScreenSize(0);
+	RenderAPI::SetViewport(0, 0, (uint32_t)fboSize.x, (uint32_t)fboSize.y);
+	Shader* shader = ssaoEffect->GetShader();
+	shader->Bind();
+	Texture::ActiveTexture(Texture::TEXTURE0);
+	renderData.gBuffer->BindTexture(FramebufferTexture::POSITION);
+	Texture::ActiveTexture(Texture::TEXTURE1);
+	renderData.gBuffer->BindTexture(FramebufferTexture::NORMAL);
+	Texture::ActiveTexture(Texture::TEXTURE2);
+	ssaoEffect->BindTexture();
+
+
+	quadData.m_VertexArray->Bind();
+	
+	RenderCommand::DrawIndexed(6);
 }
 
 void Renderer::RenderAABB(const RenderData& renderData)
 {
 	//RenderAPI::ClearBuffers();
 	
-	for (const auto& mesh : renderData.meshes)
+	for (int i = 0; i < renderData.meshCount; ++i)
 	{
+		const auto& mesh = renderData.meshes[i];
 		Vector3 a;
 		Vector3 b;
 
@@ -266,10 +288,10 @@ void Renderer::RenderMeshes(const RenderData& renderData)
 	const std::shared_ptr<UniformBuffer>& matricesBuffer = renderData.uniformBuffer;
 	shader->UploadUniformInt("depthTexture", 0);
 	//shader->UploadUniformInt("diffuseTexture", 1);
-	renderData.framebuffer->BindArrayTexture(FrameBufferTexture::SHADOWMAP);
-	const std::vector<Mesh>& meshes = renderData.meshes;
-	for (const auto& mesh : meshes)
+	renderData.framebuffer->BindTexture(FramebufferTexture::SHADOWMAP);
+	for (int i = 0; i < renderData.meshCount; ++i)
 	{
+		const auto& mesh = renderData.meshes[i];
 		const auto& attribs = mesh.GetVertexAttribs();
 		attribs.Bind();
 
@@ -312,15 +334,24 @@ void Renderer::FlushRenderQueue()
 			Renderer::RenderMeshes(renderPass.renderData);
 			break;
 		}
-		case RenderPass::DEFFERED:
+		case RenderPass::DEFFERED_PASS:
 		{
 			Renderer::RenderDeffered(renderPass.renderData);
+			break;
+		}
+		case RenderPass::GBUFFER_PASS:
+		{
+			Renderer::RenderGBuffer(renderPass.renderData);
 			break;
 		}
 		case RenderPass::AABB:
 		{
 			Renderer::RenderAABB(renderPass.renderData);
 			break;
+		}
+		case RenderPass::POSTPROCESS_PASS:
+		{
+			Renderer::RenderSSAO(renderPass.renderData);
 		}
 		default:
 			break;
@@ -423,39 +454,39 @@ void Renderer2D::StartBatch()
 }
 
 static int ci = 0;
-void Renderer2D::DrawQuad(const Matrix4x4& transform, const Texture& texture)
-{
-
-	constexpr int quadVertexCount = 4;
-	const Vector2 texCoords[] = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
-
-
-	float textureIndex = 0.0f;
-	for (uint32_t i = 0; i < m_Data.textureSlotIndex; i++)
-	{
-
-		if (*m_Data.textures[i].get() == texture)
-		{
-			textureIndex = float(i + 1);
-			break;
-		}
-	}
-
-	if (textureIndex == 0.0f)
-	{
-		textureIndex = (float)m_Data.textureSlotIndex;
-		m_Data.textures[m_Data.textureSlotIndex] = std::make_unique<Texture>(texture);
-		m_Data.textureSlotIndex++;
-	}
-
-	for (int i = 0; i < quadVertexCount; i++)
-	{
-		m_Data.vertexAttribPtr->Position = transform * m_Data.vertexPositions[i];
-		m_Data.vertexAttribPtr->texCoord = texCoords[i];
-		m_Data.vertexAttribPtr->texIndex = textureIndex;
-		m_Data.vertexAttribPtr++;
-	}
-
-	m_Data.quadIndexCount += 6;
-
-}
+//void Renderer2D::DrawQuad(const Matrix4x4& transform, const Texture& texture)
+//{
+//
+//	constexpr int quadVertexCount = 4;
+//	const Vector2 texCoords[] = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
+//
+//
+//	float textureIndex = 0.0f;
+//	for (uint32_t i = 0; i < m_Data.textureSlotIndex; i++)
+//	{
+//
+//	/*	if (*m_Data.textures[i].get() == texture)
+//		{
+//			textureIndex = float(i + 1);
+//			break;
+//		}*/
+//	}
+//
+//	if (textureIndex == 0.0f)
+//	{
+//		textureIndex = (float)m_Data.textureSlotIndex;
+//	//	m_Data.textures[m_Data.textureSlotIndex] = std::make_unique<Texture>(texture);
+//		m_Data.textureSlotIndex++;
+//	}
+//
+//	for (int i = 0; i < quadVertexCount; i++)
+//	{
+//		m_Data.vertexAttribPtr->Position = transform * m_Data.vertexPositions[i];
+//		m_Data.vertexAttribPtr->texCoord = texCoords[i];
+//		m_Data.vertexAttribPtr->texIndex = textureIndex;
+//		m_Data.vertexAttribPtr++;
+//	}
+//
+//	m_Data.quadIndexCount += 6;
+//
+//}

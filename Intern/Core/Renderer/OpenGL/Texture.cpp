@@ -1,40 +1,19 @@
-#include "Texture.h"
 #include <glpch.h>
+#include "Texture.h"
+
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_WINDOWS_UTF8
 
 #include <stb_image.h>
 #include <Debug.h>
 
-
-#define TEXTURE_INIT_2D GLCall(glTexStorage2D(GL_TEXTURE_2D, 1, m_InternalFormat, m_Width, m_Height)); \
-			GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)); \
-			GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)); \
-			GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)); \
-			GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-
-#define TEXTURE_PARAM_2D GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)); \
-			GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)); \
-			GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)); \
-			GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-
-#define TEXTURE_INIT_CUBE_MAP GLCall(glTexStorage2D(GL_TEXTURE_CUBE_MAP, 1, GL_RGBA8, 256, 256)); \
-
-
-#define TEXTURE_PARAM_CUBE_MAP GLCall(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)); \
-			GLCall(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)); \
-			GLCall(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR)); \
-			GLCall(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-
-
-Texture* Texture::s_defaultTexure = nullptr;
-uint32_t Texture::s_defaultTexID;
+Texture* Texture::s_defaultTexture = nullptr;
 
 void Texture::CreateDefaultTexture()
 {
-	if (s_defaultTexure == nullptr)
+	stbi_set_flip_vertically_on_load(true);
+	if (s_defaultTexture == nullptr)
 	{
-		s_defaultTexure = new Texture();
 		float (*textureData)[3] = new float[4 * 4][3];
 		for (int x = 0; x < 4; x++)
 		{
@@ -46,216 +25,46 @@ void Texture::CreateDefaultTexture()
 
 			}
 		}
+		
+		TextureParameters texParam;
+		texParam.dataFormat = TextureFormat::RGB;
+		texParam.internalFormat = TextureFormat::RGB8;
+		texParam.magFilter = TextureFilter::NEAREST;
+		texParam.minFilter = TextureFilter::NEAREST;
+		texParam.textureDataType = TextureDataType::FLOAT;
+		texParam.wrap = TextureWrap::REPEAT;
+		s_defaultTexture = new Texture2D();
+		s_defaultTexture->SetHeight(4);
+		s_defaultTexture->SetWidth(4);
+		s_defaultTexture->Create(textureData, texParam);
 
-		glGenTextures(1, &s_defaultTexID);
-		glBindTexture(GL_TEXTURE_2D, s_defaultTexID);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, 4, 4, 0, GL_RGB, GL_FLOAT, textureData);
-		glGenerateMipmap(GL_TEXTURE_2D);
 		delete[] textureData;
 	}
 }
 
-void Texture::Bind()
+void Texture::BindImageTexture(uint32_t unit, TextureAccess access)
 {
-	//GLCall(glActiveTexture(GL_TEXTURE1));
-	GLCall(glBindTexture(GL_TEXTURE_2D, m_ID[0]));
+	glBindImageTexture(unit, m_ID, 0, GL_FALSE, 0, (GLenum)access, (GLenum)textureParameters.internalFormat);
 }
 
-void Texture::ActiveTexture(uint32_t count)
+void Texture2D::Bind()
 {
-	if (textureCount > 1)
-	{
-		// GL_TEXTURE because GL_TEXTURE0 is shadowMap texture
-		glActiveTexture(GL_TEXTURE0 + count);
-		return;
-	}
-
-	GLCall(glActiveTexture(GL_TEXTURE1));
+	glBindTexture(GL_TEXTURE_2D, m_ID);
 }
 
-void Texture::Bind(uint32_t p_val)
+void Texture2D::Bind(uint32_t p_texture)
 {
-	GLCall(glBindTexture(GL_TEXTURE_2D, m_ID[p_val]));
+
 }
 
-void Texture::BindAll()
+void Texture2D::CreateFromFile(const std::string& p_filePath, const TextureParameters& p_textureParameters)
 {
-	for (int i = 0; i < textureCount; i++)
-	{
-		GLCall(glActiveTexture(GL_TEXTURE1 + i));
-		GLCall(glBindTexture(GL_TEXTURE_2D, m_ID[i]));
-	}
-}
+	textureParameters = p_textureParameters;
+	textureParameters.textureDataType = TextureDataType::UBYTE;
+	glGenTextures(1, &m_ID);
 
-void Texture::BindCubeMap()
-{
-	GLCall(glActiveTexture(GL_TEXTURE0));
-	GLCall(glBindTexture(GL_TEXTURE_CUBE_MAP, m_ID[0]));
-}
-
-void Texture::UnBind()
-{
-	glBindTexture(GL_TEXTURE_2D, 0);
-}
-
-void Texture::Delete()
-{
-	glDeleteTextures(1, &s_defaultTexID);
-	glDeleteTextures(32, m_ID);
-}
-
-
-
-void Texture::BufferData(unsigned char* data, int width, int height, DataFormat format)
-{
-
-	m_Width = width;
-	m_Height = height;
-	switch (format)
-	{
-	case Texture::RGB:
-		m_Components = 3;
-		break;
-	case Texture::RGBA:
-		m_Components = 4;
-		break;
-	default:
-		break;
-	}
-	if (data)
-	{
-		GLCall(glTexImage2D(GL_TEXTURE_2D, 0, m_InternalFormat, m_Width, m_Height, 0, m_DataFormat, GL_UNSIGNED_BYTE, data));
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-}
-
-uint32_t Texture::AddImage(const std::string& filepath)
-{
-	stbi_set_flip_vertically_on_load(1);
-	const unsigned char* imgData = stbi_load(filepath.c_str(), &m_Width, &m_Height, &m_Components, 0);
-
-	if (m_Components == 3)
-	{
-		m_DataFormat = RGB;
-		m_InternalFormat = RGB8;
-	}
-
-	if (m_Components == 4)
-	{
-		m_DataFormat = RGBA;
-		m_InternalFormat = RGBA8;
-	}
-
-	if (imgData)
-	{
-		++textureCount;
-	//	ActiveTexture(textureCount);
-		Bind(0);
-
-
-		TEXTURE_PARAM_2D
-		GLCall(glTexImage2D(GL_TEXTURE_2D, 0, m_InternalFormat, m_Width, m_Height, 0, m_DataFormat, GL_UNSIGNED_BYTE, imgData));
-		GLCall(glGenerateMipmap(GL_TEXTURE_2D));
-		levels += 1;
-	}
-
-	xOffset += (m_Width);
-	yOffset += (m_Height);
-	stbi_image_free((void*)imgData);
-	return textureCount;
-}
-
-uint32_t Texture::AddImage(const std::string& filepath, uint32_t id)
-{
-	ActiveTexture(id);
-	Bind(id);
-	const unsigned char* imgData = stbi_load(filepath.c_str(), &m_Width, &m_Height, &m_Components, 0);
-
-	if (m_Components == 3)
-	{
-		m_DataFormat = RGB;
-		m_InternalFormat = RGB8;
-	}
-
-	if (m_Components == 4)
-	{
-		m_DataFormat = RGBA;
-		m_InternalFormat = RGBA8;
-	}
-
-	if (imgData)
-	{
-		glTexSubImage2D(GL_TEXTURE_2D, 1, xOffset, yOffset, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, imgData);
-		GLCall(glGenerateMipmap(GL_TEXTURE_2D));
-	}
-
-	xOffset += m_Width;
-	yOffset += m_Height;
-	stbi_image_free((void*)imgData);
-	return textureCount++;
-}
-
-
-void Texture::AddCubeMapImage(const std::array<std::string, 6>& p_files)
-{
-	glActiveTexture(GL_TEXTURE0);
-	GLCall(glBindTexture(GL_TEXTURE_CUBE_MAP, m_ID[0]));
-
-	//stbi_set_flip_vertically_on_load(1);
-	TEXTURE_INIT_CUBE_MAP
-		//stbi_convert_wchar_to_utf8
-
-		for (int i = 0; i < 6; i++)
-		{
-			auto& imgFile = p_files[i];
-			const uint8_t* imgData = stbi_load(imgFile.c_str(), &m_Width, &m_Height, &m_Components, 0);
-
-			if (m_Components == 3)
-			{
-				m_DataFormat = RGB;
-				m_InternalFormat = RGB8;
-			}
-
-			if (m_Components == 4)
-			{
-				m_DataFormat = RGBA;
-				m_InternalFormat = RGBA8;
-			}
-
-
-
-			int target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + i;
-			GLCall(glTexSubImage2D(target, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, imgData));
-		}
-
-	TEXTURE_PARAM_CUBE_MAP
-}
-
-Texture::Texture(uint32_t count)
-	: m_Width(1920), m_Height(1080), m_Components(4), m_DataFormat(RGBA), m_InternalFormat(RGBA8), xOffset(0), yOffset(0)
-{
-	GLCall(glGenTextures(count, m_ID));
-}
-
-Texture::Texture(uint32_t width, uint32_t height)
-	: m_Width(width), m_Height(height), m_Components(4), m_DataFormat(RGB), m_InternalFormat(RGB8), xOffset(0), yOffset(0)
-{
-	glGenTextures(1, m_ID);
-	ActiveTexture(0);
-	GLCall(glBindTexture(GL_TEXTURE_2D, m_ID[0]));
-
-	TEXTURE_INIT_2D
-}
-
-
-Texture::Texture(const std::string& filename, uint32_t count)
-	: xOffset(0), yOffset(0)
-{
-	stbi_set_flip_vertically_on_load(1);
-	const unsigned char* imgData = stbi_load(filename.c_str(), &m_Width, &m_Height, &m_Components, 0);
-	if (!imgData)
+	const uint8_t* imgData = stbi_load(p_filePath.c_str(), &m_Width, &m_Height, &m_Components, 0);
+	if (imgData == nullptr)
 	{
 		stbi_image_free((void*)imgData);
 		return;
@@ -263,24 +72,444 @@ Texture::Texture(const std::string& filename, uint32_t count)
 
 	if (m_Components == 3)
 	{
-		m_DataFormat = RGB;
-		m_InternalFormat = RGB8;
+		textureParameters.internalFormat = TextureFormat::RGB8;
+		textureParameters.dataFormat = TextureFormat::RGB;
+	}
+	
+	if (m_Components == 4)
+	{
+		textureParameters.internalFormat = TextureFormat::RGBA8;
+		textureParameters.dataFormat = TextureFormat::RGBA;
+	}
+
+	Bind();
+	glTexImage2D(GL_TEXTURE_2D, 0, (int)textureParameters.internalFormat, m_Width, m_Height, 0, (int)textureParameters.dataFormat, (GLenum)textureParameters.textureDataType, imgData);
+
+	if (textureParameters.setTextureParams)
+	{
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (int)textureParameters.magFilter);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (int)textureParameters.minFilter);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (int)textureParameters.wrap);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (int)textureParameters.wrap);
+	}
+
+	if (textureParameters.generateMips)
+	{
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	glBindTexture(GL_TEXTURE_2D, GL_NONE);
+}
+
+void Texture2D::Create(const void* p_data, const TextureParameters& p_textureParameters)
+{
+	textureParameters = p_textureParameters;
+	glGenTextures(1, &m_ID);
+	Bind();
+	GLCall(glTexImage2D(GL_TEXTURE_2D, 0, (int)textureParameters.internalFormat, m_Width, m_Height, 0, (int)textureParameters.dataFormat, (GLenum)textureParameters.textureDataType, p_data));
+
+	if (textureParameters.setTextureParams)
+	{
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (int)textureParameters.magFilter);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (int)textureParameters.minFilter);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (int)textureParameters.wrap);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (int)textureParameters.wrap);
+	}
+
+	if (textureParameters.dataFormat == TextureFormat::DEPTH)
+	{
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, (GLenum)textureParameters.textureCompFunc);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+	}
+
+	if (textureParameters.generateMips)
+	{
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+
+	glBindTexture(GL_TEXTURE_2D, GL_NONE);
+}
+
+void Texture2D::Create(const TextureParameters& p_textureParameters)
+{
+	textureParameters = p_textureParameters;
+	glGenTextures(1, &m_ID);
+	Bind();
+	glTexImage2D(GL_TEXTURE_2D, 0, (int)textureParameters.internalFormat, m_Width, m_Height, 0, (int)textureParameters.dataFormat, (GLenum)textureParameters.textureDataType, nullptr);
+	
+	if (textureParameters.setTextureParams)
+	{
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (int)textureParameters.magFilter);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (int)textureParameters.minFilter);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (int)textureParameters.wrap);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (int)textureParameters.wrap);
+	}
+
+	if (textureParameters.dataFormat == TextureFormat::DEPTH)
+	{
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, (GLenum)textureParameters.textureCompFunc);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+	}
+	if (textureParameters.generateMips)
+	{
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	glBindTexture(GL_TEXTURE_2D, GL_NONE);
+}
+
+void Texture2D::BufferData(const void* p_data)
+{
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_Width, m_Height, (int)textureParameters.dataFormat, (GLenum)textureParameters.textureDataType, p_data);
+	if (textureParameters.generateMips)
+		glGenerateMipmap(GL_TEXTURE_2D);
+	
+	glBindTexture(GL_TEXTURE_2D, GL_NONE);
+}
+
+void Texture2D::BufferData(const std::string& p_filePath)
+{
+	const uint8_t* imgData = stbi_load(p_filePath.c_str(), &m_Width, &m_Height, &m_Components, 0);
+	if (imgData == nullptr)
+	{
+		stbi_image_free((void*)imgData);
+		return;
+	}
+
+	if (m_Components == 3)
+	{
+		textureParameters.internalFormat = TextureFormat::RGB8;
+		textureParameters.dataFormat = TextureFormat::RGB;
 	}
 
 	if (m_Components == 4)
 	{
-		m_DataFormat = RGBA;
-		m_InternalFormat = RGBA8;
+		textureParameters.internalFormat = TextureFormat::RGBA8;
+		textureParameters.dataFormat = TextureFormat::RGBA;
 	}
 
-	glGenTextures(count, m_ID);
-	Bind();
-	TEXTURE_INIT_2D
-		GLCall(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, imgData));
-	GLCall(glGenerateMipmap(GL_TEXTURE_2D));
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_Width, m_Height, (int)textureParameters.dataFormat, (GLenum)textureParameters.textureDataType, imgData);
+	if (textureParameters.generateMips)
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+	glBindTexture(GL_TEXTURE_2D, GL_NONE);
 }
 
-Texture::~Texture()
+void Texture2D::Delete()
 {
-	Delete();
+	glDeleteTextures(1, &m_ID);
+}
+
+void Texture3D::Bind()
+{
+	if (isArrayTexture)
+	{
+		glBindTexture(GL_TEXTURE_2D_ARRAY, m_ID);
+		return;
+	}
+
+	glBindTexture(GL_TEXTURE_3D, m_ID);
+
+}
+
+void Texture3D::Bind(uint32_t p_texture)
+{
+
+}
+
+void Texture3D::CreateFromFile(const std::string& p_filePath, const TextureParameters& p_textureParameters)
+{
+	textureParameters = p_textureParameters;
+	glGenTextures(1, &m_ID);
+
+	const uint8_t* imgData = stbi_load(p_filePath.c_str(), &m_Width, &m_Height, &m_Components, 0);
+	if (imgData == nullptr)
+	{
+		stbi_image_free((void*)imgData);
+		return;
+	}
+
+	if (m_Components == 3)
+	{
+		textureParameters.internalFormat = TextureFormat::RGB8;
+		textureParameters.dataFormat = TextureFormat::RGB;
+	}
+	
+	if (m_Components == 4)
+	{
+		textureParameters.internalFormat = TextureFormat::RGBA8;
+		textureParameters.dataFormat = TextureFormat::RGBA;
+	}
+
+	Bind();
+	GLenum textureTarget = GL_TEXTURE_3D;
+	if (isArrayTexture)
+		textureTarget = GL_TEXTURE_2D_ARRAY;
+
+	glTexImage3D(textureTarget, 0, (int)textureParameters.internalFormat, m_Width, m_Height, textureParameters.depth, 0, (int)textureParameters.dataFormat, (GLenum)textureParameters.textureDataType, imgData);
+
+	if (textureParameters.setTextureParams)
+	{
+		glTexParameteri(textureTarget, GL_TEXTURE_MAG_FILTER, (int)textureParameters.magFilter);
+		glTexParameteri(textureTarget, GL_TEXTURE_MIN_FILTER, (int)textureParameters.minFilter);
+		glTexParameteri(textureTarget, GL_TEXTURE_WRAP_S, (int)textureParameters.wrap);
+		glTexParameteri(textureTarget, GL_TEXTURE_WRAP_T, (int)textureParameters.wrap);
+	}
+	
+	if (textureParameters.generateMips)
+	{
+		glGenerateMipmap(textureTarget);
+	}
+
+	glBindTexture(textureTarget, GL_NONE);
+}
+
+void Texture3D::Create(const void* p_data, const TextureParameters& p_textureParameters)
+{
+	textureParameters = p_textureParameters;
+	glGenTextures(1, &m_ID);
+	Bind();
+	GLenum textureTarget = GL_TEXTURE_3D;
+	if (isArrayTexture)
+		textureTarget = GL_TEXTURE_2D_ARRAY;
+
+
+	glTexImage3D(textureTarget, 0, (int)textureParameters.internalFormat, m_Width, m_Height, textureParameters.depth, 0, (int)textureParameters.dataFormat, (GLenum)textureParameters.textureDataType, p_data);
+	if (textureParameters.setTextureParams)
+	{
+		glTexParameteri(textureTarget, GL_TEXTURE_MAG_FILTER, (int)textureParameters.magFilter);
+		glTexParameteri(textureTarget, GL_TEXTURE_MIN_FILTER, (int)textureParameters.minFilter);
+		glTexParameteri(textureTarget, GL_TEXTURE_WRAP_S, (int)textureParameters.wrap);
+		glTexParameteri(textureTarget, GL_TEXTURE_WRAP_T, (int)textureParameters.wrap);
+	}
+
+	if (textureParameters.dataFormat == TextureFormat::DEPTH)
+	{
+		glTexParameteri(textureTarget, GL_TEXTURE_COMPARE_FUNC, (GLenum)textureParameters.textureCompFunc);
+		glTexParameteri(textureTarget, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+	}
+	if (textureParameters.generateMips)
+	{
+		glGenerateMipmap(textureTarget);
+	}
+	glBindTexture(textureTarget, GL_NONE);
+}
+
+void Texture3D::Create(const TextureParameters& p_textureParameters)
+{
+	textureParameters = p_textureParameters;
+	glGenTextures(1, &m_ID);
+	Bind();
+	GLenum textureTarget = GL_TEXTURE_3D;
+	if (isArrayTexture)
+		textureTarget = GL_TEXTURE_2D_ARRAY;
+
+	glTexImage3D(textureTarget, 0, (int)textureParameters.internalFormat, m_Width, m_Height, textureParameters.depth, 0, (int)textureParameters.dataFormat, (GLenum)textureParameters.textureDataType, nullptr);
+	if (textureParameters.setTextureParams)
+	{
+		glTexParameteri(textureTarget, GL_TEXTURE_MAG_FILTER, (int)textureParameters.magFilter);
+		glTexParameteri(textureTarget, GL_TEXTURE_MIN_FILTER, (int)textureParameters.minFilter);
+		glTexParameteri(textureTarget, GL_TEXTURE_WRAP_S, (int)textureParameters.wrap);
+		glTexParameteri(textureTarget, GL_TEXTURE_WRAP_T, (int)textureParameters.wrap);
+	}
+
+	if (textureParameters.generateMips)
+	{
+		glGenerateMipmap(textureTarget);
+	}
+	glBindTexture(textureTarget, GL_NONE);
+}
+
+void Texture3D::BufferData(const void* p_data)
+{
+	GLenum textureTarget = GL_TEXTURE_3D;
+	if (isArrayTexture)
+		textureTarget = GL_TEXTURE_2D_ARRAY;
+
+	glTexImage3D(textureTarget, 0, (int)textureParameters.internalFormat, m_Width, m_Height, textureParameters.depth, 0, (int)textureParameters.dataFormat, (GLenum)textureParameters.textureDataType, p_data);
+	if (textureParameters.generateMips)
+		glGenerateMipmap(textureTarget);
+	glBindTexture(textureTarget, GL_NONE);
+}
+
+void Texture3D::BufferData(const std::string& p_filePath)
+{
+	const uint8_t* imgData = stbi_load(p_filePath.c_str(), &m_Width, &m_Height, &m_Components, 0);
+	if (imgData == nullptr)
+	{
+		stbi_image_free((void*)imgData);
+		return;
+	}
+
+	if (m_Components == 3)
+	{
+		textureParameters.internalFormat = TextureFormat::RGB8;
+		textureParameters.dataFormat = TextureFormat::RGB;
+	}
+
+	if (m_Components == 4)
+	{
+		textureParameters.internalFormat = TextureFormat::RGBA8;
+		textureParameters.dataFormat = TextureFormat::RGBA;
+	}
+	GLenum textureTarget = GL_TEXTURE_3D;
+	if (isArrayTexture)
+		textureTarget = GL_TEXTURE_2D_ARRAY;
+
+	glTexImage3D(textureTarget, 0, (int)textureParameters.internalFormat, m_Width, m_Height, textureParameters.depth, 0, (int)textureParameters.dataFormat, (GLenum)textureParameters.textureDataType, imgData);
+	if (textureParameters.generateMips)
+		glGenerateMipmap(textureTarget);
+	glBindTexture(textureTarget, GL_NONE);
+}
+
+void Texture3D::Delete()
+{
+	glDeleteTextures(1, &m_ID);
+}
+
+void TextureCube::Bind()
+{
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_ID);
+}
+
+void TextureCube::Bind(uint32_t p_texture)
+{
+
+}
+
+void TextureCube::CreateFromFile(const std::string& p_filePath, const TextureParameters& p_textureParameters)
+{
+	textureParameters = p_textureParameters;
+	glGenTextures(1, &m_ID);
+
+	const uint8_t* imgData = stbi_load(p_filePath.c_str(), &m_Width, &m_Height, &m_Components, 0);
+	if (imgData == nullptr)
+	{
+		stbi_image_free((void*)imgData);
+		return;
+	}
+
+	if (m_Components == 3)
+	{
+		textureParameters.internalFormat = TextureFormat::RGB8;
+		textureParameters.dataFormat = TextureFormat::RGB;
+	}
+
+	if (m_Components == 4)
+	{
+		textureParameters.internalFormat = TextureFormat::RGBA8;
+		textureParameters.dataFormat = TextureFormat::RGBA;
+	}
+
+	Bind();
+	GLenum textureTarget = GL_TEXTURE_CUBE_MAP;
+	for (int i = 0; i < 6; i++)
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, (int)textureParameters.internalFormat, m_Width, m_Height, 0, (int)textureParameters.dataFormat, (GLenum)textureParameters.textureDataType, imgData);
+
+	if (textureParameters.setTextureParams)
+	{
+		glTexParameteri(textureTarget, GL_TEXTURE_MAG_FILTER, (int)textureParameters.magFilter);
+		glTexParameteri(textureTarget, GL_TEXTURE_MIN_FILTER, (int)textureParameters.minFilter);
+		glTexParameteri(textureTarget, GL_TEXTURE_WRAP_S, (int)textureParameters.wrap);
+		glTexParameteri(textureTarget, GL_TEXTURE_WRAP_T, (int)textureParameters.wrap);
+		glTexParameteri(textureTarget, GL_TEXTURE_WRAP_R, (int)textureParameters.wrap);
+	}
+
+	if (textureParameters.generateMips)
+	{
+		glGenerateMipmap(textureTarget);
+	}
+	glBindTexture(textureTarget, GL_NONE);
+}
+
+void TextureCube::Create(const void* p_data, const TextureParameters& p_textureParameters)
+{
+	textureParameters = p_textureParameters;
+	glGenTextures(1, &m_ID);
+	Bind();
+	GLenum textureTarget = GL_TEXTURE_CUBE_MAP;
+	for (int i = 0; i < 6; i++)
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, (int)textureParameters.internalFormat, m_Width, m_Height, 0, (int)textureParameters.dataFormat, (GLenum)textureParameters.textureDataType, p_data);
+	if (textureParameters.setTextureParams)
+	{
+		glTexParameteri(textureTarget, GL_TEXTURE_MAG_FILTER, (int)textureParameters.magFilter);
+		glTexParameteri(textureTarget, GL_TEXTURE_MIN_FILTER, (int)textureParameters.minFilter);
+		glTexParameteri(textureTarget, GL_TEXTURE_WRAP_S, (int)textureParameters.wrap);
+		glTexParameteri(textureTarget, GL_TEXTURE_WRAP_T, (int)textureParameters.wrap);
+		glTexParameteri(textureTarget, GL_TEXTURE_WRAP_R, (int)textureParameters.wrap);
+	}
+
+	if (textureParameters.generateMips)
+	{
+		glGenerateMipmap(textureTarget);
+	}
+	glBindTexture(textureTarget, GL_NONE);
+}
+
+void TextureCube::Create(const TextureParameters& p_textureParameters)
+{
+	textureParameters = p_textureParameters;
+	glGenTextures(1, &m_ID);
+	Bind();
+
+	GLenum textureTarget = GL_TEXTURE_CUBE_MAP;
+	for (int i = 0; i < 6; i++)
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, (int)textureParameters.internalFormat, m_Width, m_Height, 0, (int)textureParameters.dataFormat, (GLenum)textureParameters.textureDataType, nullptr);
+
+	if (textureParameters.setTextureParams)
+	{
+		glTexParameteri(textureTarget, GL_TEXTURE_MAG_FILTER, (int)textureParameters.magFilter);
+		glTexParameteri(textureTarget, GL_TEXTURE_MIN_FILTER, (int)textureParameters.minFilter);
+		glTexParameteri(textureTarget, GL_TEXTURE_WRAP_S, (int)textureParameters.wrap);
+		glTexParameteri(textureTarget, GL_TEXTURE_WRAP_T, (int)textureParameters.wrap);
+		glTexParameteri(textureTarget, GL_TEXTURE_WRAP_R, (int)textureParameters.wrap);
+	}
+
+	if (textureParameters.generateMips)
+	{
+		glGenerateMipmap(textureTarget);
+	}
+	glBindTexture(textureTarget, GL_NONE);
+}
+
+void TextureCube::BufferData(const void* p_data)
+{
+	GLenum textureTarget = GL_TEXTURE_CUBE_MAP;
+	for (int i = 0; i < 6; i++)
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, (int)textureParameters.internalFormat, m_Width, m_Height, 0, (int)textureParameters.dataFormat, (GLenum)textureParameters.textureDataType, p_data);
+	if (textureParameters.generateMips)
+		glGenerateMipmap(textureTarget);
+	glBindTexture(textureTarget, GL_NONE);
+}
+
+void TextureCube::BufferData(const std::string& p_filePath)
+{
+	const uint8_t* imgData = stbi_load(p_filePath.c_str(), &m_Width, &m_Height, &m_Components, 0);
+	if (imgData == nullptr)
+	{
+		stbi_image_free((void*)imgData);
+		return;
+	}
+
+	if (m_Components == 3)
+	{
+		textureParameters.internalFormat = TextureFormat::RGB8;
+		textureParameters.dataFormat = TextureFormat::RGB;
+	}
+
+	if (m_Components == 4)
+	{
+		textureParameters.internalFormat = TextureFormat::RGBA8;
+		textureParameters.dataFormat = TextureFormat::RGBA;
+	}
+	GLenum textureTarget = GL_TEXTURE_CUBE_MAP;
+	
+	for (int i = 0; i < 6; i++)
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, (int)textureParameters.internalFormat, m_Width, m_Height, 0, (int)textureParameters.dataFormat, (GLenum)textureParameters.textureDataType, imgData);
+	if (textureParameters.generateMips)
+		glGenerateMipmap(textureTarget);
+	glBindTexture(textureTarget, GL_NONE);
+}
+
+void TextureCube::Delete()
+{
+	glDeleteTextures(1, &m_ID);
 }

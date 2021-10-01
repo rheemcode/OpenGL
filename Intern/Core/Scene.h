@@ -64,16 +64,17 @@ class Mesh;
 class UniformBuffer;
 class GBuffer;
 class Renderer;
-class FrameBuffer;
+class Framebuffer;
 class GLApplication;
 class SkyBox;
 class Shader;
 class Actor;
+class SSAO;
 
 GLIBSTORAGE template GLIB_API class std::shared_ptr<Camera>;
 GLIBSTORAGE template GLIB_API class std::shared_ptr<Shader>;
 GLIBSTORAGE template GLIB_API class std::unique_ptr<Light>;
-GLIBSTORAGE template GLIB_API class std::shared_ptr<FrameBuffer>;
+GLIBSTORAGE template GLIB_API class std::shared_ptr<Framebuffer>;
 GLIBSTORAGE template GLIB_API class std::shared_ptr<UniformBuffer>;
 GLIBSTORAGE template GLIB_API class std::shared_ptr<GBuffer>;
 GLIBSTORAGE template GLIB_API class std::shared_ptr<CameraData>;
@@ -115,12 +116,18 @@ class GLIB_API Scene
 	std::vector< Mesh> meshes;
 	bool meshDirty = false;
 
-	using ShadowBuffer = FrameBuffer;
+	using ShadowBuffer = Framebuffer;
 	std::shared_ptr<ShadowBuffer> m_shadowBuffer;
 	std::shared_ptr<UniformBuffer> m_LightsBuffer;
 	std::shared_ptr<UniformBuffer> m_MatrixBuffer;
+	std::shared_ptr<UniformBuffer> m_ssaoSamplesBuffer;
 	std::shared_ptr<GBuffer> m_Gbuffer;
+	
+	/* PostProcess */
+	std::shared_ptr<SSAO> m_ssaoEffect;
+
 	/* Scene Shaders */
+	std::shared_ptr<Shader> uniformsBufferShader; // For some reason all uniform bindings must be initilized with 1 shader
 	std::shared_ptr<Shader> sceneShader;
 	std::shared_ptr<Shader> shadowShader;
 	std::shared_ptr<Shader> aabbShader;

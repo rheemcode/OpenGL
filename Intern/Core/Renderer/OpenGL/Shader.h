@@ -2,6 +2,9 @@
 #include "Math/Vector2.h"
 #include <Math/Matrix4x4.h>
 #include "GLCore.h"
+
+
+
 struct ShaderCache
 {
 	std::unordered_map<std::string, int> uniformNamesLocation;
@@ -25,7 +28,7 @@ struct ShaderCache
 			return result->second;
 		}
 
-		return -1;
+		return 1;
 	}
 
 	void AddUniformBlockBinding(const std::string& name, int binding)
@@ -41,14 +44,7 @@ struct ShaderCache
 
 class GLIB_API  Shader
 {
-	ShaderCache cache;
-	std::vector<std::string> uniformNames;
-	std::string filePath;
-	std::string vertexSource, 
-				fragmentSource, 
-				geometrySource, 
-				tesselationSource, 
-				computeSource;
+	friend struct ShaderCompiler;
 
 	enum class  Type
 	{
@@ -60,13 +56,13 @@ class GLIB_API  Shader
 		COMPUTE,
 		MAX
 	};
-
 	Type shaderType = Type::NONE;
-	unsigned int program;
-	unsigned int CompileShader(const std::string& src, unsigned int type);
-	void CreateShader();
-	void CheckLinkErrors();
-	void ParseShader(const std::string& filepath);
+	
+	uint32_t program;
+	
+	std::string filePath;
+	std::vector<std::string> uniformNames;
+	ShaderCache cache;
 
 public:
 	void Bind() const;
@@ -91,7 +87,17 @@ public:
 	int GetUniformBlockBinding(const std::string& name) const { return cache.GetUniformBlockBinding(name); }
 	unsigned int GetProgram() const { return program; };
 
-	Shader() {}
+	Shader();
 	Shader(const std::string& filePath);
+	~Shader();
+};
+
+class ComputeShader : public Shader
+{
+public:
+	void DispatchIndirect();
+	void Dispatch(uint32_t x, uint32_t y, uint32_t z);
+	ComputeShader();
+	ComputeShader(const std::string& p_filePath);
 };
 

@@ -5,6 +5,7 @@
 #include "OpenGL/Renderer.h"
 #include "Buffers/FrameBuffer.h"
 #include "Buffers/UniformBuffer.h"
+#include "Effects/SSAO.h"
 #include "Renderer/SkyBox.h"
 #include "OpenGL/Renderer.h"
 #include "Buffers/FrameBuffer.h"
@@ -78,13 +79,18 @@ void Scene::Render()
 	m_MatrixBuffer->UploadData(shadowData->Bias * shadowData->Proj[3] * shadowData->View[3], 384);
 	m_MatrixBuffer->FlushBuffer();
 
+
+	Mesh* _culledMeshes = culledMeshes.data();
+	Mesh* _meshes = meshes.data();
+
 	{
 		// Depth Pass
 		RenderPass depthPass;
 		depthPass.Pass = RenderPass::DEPTH_PASS;
 		auto& renderData = depthPass.renderData;
 		renderData.cameraData = cameraData;
-		renderData.meshes = meshes;
+		renderData.meshes = _meshes;
+		renderData.meshCount = meshes.size();
 		renderData.shader = shadowShader;
 		renderData.shadowData = shadowData;
 		renderData.framebuffer = m_shadowBuffer;
@@ -97,7 +103,8 @@ void Scene::Render()
 		colorPass.Pass = RenderPass::COLOR_PASS;
 		auto& renderData = colorPass.renderData;
 		renderData.cameraData = cameraData;
-		renderData.meshes = culledMeshes;
+		renderData.meshes = _culledMeshes;
+		renderData.meshCount = culledMeshes.size();
 		renderData.shader = sceneShader;
 		renderData.shadowData = shadowData;
 		renderData.framebuffer = m_shadowBuffer;
@@ -115,17 +122,48 @@ void Scene::Render()
 	}
 
 	{
-		// Deffered Pass
-		RenderPass colorPass;
-		colorPass.Pass = RenderPass::DEFFERED;
-		auto& renderData = colorPass.renderData;
+		// GBuffer Pass
+		RenderPass gBufferPass;
+		gBufferPass.Pass = RenderPass::GBUFFER_PASS;
+		auto& renderData = gBufferPass.renderData;
 		renderData.cameraData = cameraData;
-		renderData.meshes = culledMeshes;
+		renderData.meshes = _culledMeshes;
+		renderData.meshCount = culledMeshes.size();
 		renderData.shader = sceneShader;
 		renderData.shadowData = shadowData;
 		renderData.framebuffer = m_shadowBuffer;
 		renderData.uniformBuffer = m_MatrixBuffer;
 		renderData.gBuffer = m_Gbuffer;
+		Renderer::PushPass(std::move(gBufferPass));
+	}
+
+	{
+		// SSAO Pass
+		RenderPass ssaoPass;
+		ssaoPass.Pass = RenderPass::POSTPROCESS_PASS;
+		auto& renderData = ssaoPass.renderData;
+		renderData.cameraData = cameraData;
+		renderData.meshes = _culledMeshes;
+		renderData.meshCount = culledMeshes.size();
+		renderData.gBuffer = m_Gbuffer;
+		renderData.postProcessEffect = m_ssaoEffect;
+		Renderer::PushPass(std::move(ssaoPass));
+	}
+
+	{
+		// Deffered Pass
+		RenderPass colorPass;
+		colorPass.Pass = RenderPass::DEFFERED_PASS;
+		auto& renderData = colorPass.renderData;
+		renderData.cameraData = cameraData;
+		renderData.meshes = _culledMeshes;
+		renderData.meshCount = culledMeshes.size();
+		renderData.shader = sceneShader;
+		renderData.shadowData = shadowData;
+		renderData.framebuffer = m_shadowBuffer;
+		renderData.uniformBuffer = m_MatrixBuffer;
+		renderData.gBuffer = m_Gbuffer;
+		renderData.postProcessEffect = m_ssaoEffect;
 		Renderer::PushPass(std::move(colorPass));
 	}
 
@@ -141,6 +179,7 @@ void Scene::Render()
 		//renderData.vertexBuffer = aabbVertexBuffer;
 	//	Renderer::PushPass(std::move(colorPass));
 	}
+
 	Renderer::FlushRenderQueue();
 }
 
@@ -202,7 +241,7 @@ void Scene::InitLightBuffer()
 {
 
 	// retrieves the index not binding
-	m_LightsBuffer->InitData(sceneShader.get(), "LightsUniform");
+	m_LightsBuffer->InitData(uniformsBufferShader.get(), "LightsUniform");
 	
 	LightData lightData;
 	lightData.LightType = 1;
@@ -288,14 +327,16 @@ void Scene::CreateSkyLight()
 void Scene::CreateBuffers()
 {
 	m_Gbuffer = std::make_shared<GBuffer>();
-	m_shadowBuffer = std::make_shared<FrameBuffer>();
-	m_shadowBuffer->CreateTexture(FrameBufferTexture::SHADOWMAP);
+	m_shadowBuffer = std::make_shared<Framebuffer>();
+	m_shadowBuffer->CreateTexture(FramebufferTexture::SHADOWMAPARRAY);
 	m_shadowBuffer->AttachArrayTexture(TEXTURE_MAX_SIZE / 2, TEXTURE_MAX_SIZE / 2, 4);
 	shadowData->ShadowSize = Vector2((float)TEXTURE_MAX_SIZE /2, (float)TEXTURE_MAX_SIZE /2);
 
 	m_LightsBuffer = std::make_shared<UniformBuffer>();
 	m_MatrixBuffer = std::make_shared<UniformBuffer>();
-	m_MatrixBuffer->InitData(sceneShader.get(), "Matrices");
+	m_ssaoSamplesBuffer = std::make_shared<UniformBuffer>();
+	m_MatrixBuffer->InitData(uniformsBufferShader.get(), "Matrices");
+	m_ssaoSamplesBuffer->InitData(uniformsBufferShader.get(), "SSAOSamples");
 
 	static uint32_t indices[] = { 0, 1, 1, 2, 2, 3, 3, 0, 0, 4, 4, 5, 5, 1, 5, 6, 2, 6, 6, 7, 7, 3, 7, 4 };
 	aabbVertexArray = std::make_shared<VertexArray>();
@@ -303,6 +344,11 @@ void Scene::CreateBuffers()
 	aabbVertexBuffer->SetLayout({ { AttribDataType::T_FLOAT, Attrib::VERTEXPOSITION, AttribCount::VEC3, false } });
 	aabbVertexArray->SetIndices(indices, 24);
 	aabbVertexArray->AddBuffer(*aabbVertexBuffer.get());
+	m_ssaoEffect = std::make_shared<SSAO>();
+	m_ssaoEffect->m_uniformBuffer = m_ssaoSamplesBuffer;
+	m_ssaoEffect->CreateFramebuffer();
+	m_ssaoEffect->GenerateKernel();
+	m_ssaoEffect->GenerateNoiseTexture();
 }
 
 
@@ -315,10 +361,11 @@ void Scene::InitRenderer()
 
 void Scene::InitSceneShaders()
 {
+	uniformsBufferShader = std::make_shared<Shader>("./Assets/Shaders/uniform_buffers.glsl");
 	sceneShader = std::make_shared<Shader>("Assets/Shaders/lighting.shader");
 	shadowShader = std::make_shared<Shader>("Assets/Shaders/depth.glsl");
 	aabbShader = std::make_shared<Shader>("./Assets/Shaders/aabb.glsl");
-	testShader = std::make_unique<Shader>("Assets/Shaders/envmap.glsl");
+	//testShader = std::make_unique<Shader>("Assets/Shaders/envmap.glsl");
 }
 
 void Scene::InitScene()

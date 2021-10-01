@@ -51,32 +51,22 @@ bool ModelLoader::LoadModel(MODEL_FORMAT modelFormat, const std::string& p_fileP
 		p_model->CreateDiffuseTextures(diffuseTextureCount);
 		//p_model->CreateSpecularTextures(textureCount);
 
+		TextureParameters texParam;
+		texParam.dataFormat = TextureFormat::RGB;
+		texParam.internalFormat = TextureFormat::RGB8;
+		texParam.magFilter = TextureFilter::NEAREST;
+		texParam.minFilter = TextureFilter::LINEAR;
+		texParam.wrap = TextureWrap::CLAMP_TO_EDGE;
 
 		for (int i = 0; i < int(diffuseTextureCount); i++)
 		{
+
 			auto tex = p_model->GetTexture(Model::TEX_DIFFUSE, i).lock();
-			tex->AddImage("./Assets/Textures/" + p_model->m_textureNames[i].name);
+			tex->CreateFromFile("./Assets/Textures/" + p_model->m_textureNames[i].name, texParam);
 			p_model->m_textureNames[i].loaded = true;
 			p_model->m_textureNames[i].id = i;
 		}
-		//for (int i = 0; i < materials.size(); i++)
-		//{
-		//	if (materials[i].diffuse_texname != "")
-		//	{
-		//		auto result = std::find(std::begin(p_model->m_textureNames), std::end(p_model->m_textureNames), materials[i].diffuse_texname);
-
-		//		if (result != p_model->m_textureNames.end() && !result->loaded)
-		//		{
-		//		//	auto tex = p_model->GetTexture().lock();
-		//			//result->id = tex->AddImage("./Assets/Textures/" + result->name);
-		//			//result->loaded = true;
-		//		}
-
-		//	}
-		//}
-
-
-
+		
 		for (size_t s = 0; s < shapes.size(); s++)
 		{
 			size_t indexOffset = 0;
@@ -415,7 +405,7 @@ void Model::CreateDiffuseTextures(uint32_t count)
 
 	while (count)
 	{
-		auto tex = std::make_shared<Texture>(1);
+		auto tex = std::make_shared<Texture2D>();
 		m_diffuseTextures.push_back(tex);
 		--count;
 	}
@@ -426,7 +416,7 @@ void Model::CreateSpecularTextures(uint32_t count)
 {
 	while (count)
 	{
-		auto tex = std::make_shared<Texture>(1);
+		auto tex = std::make_shared<Texture2D>();
 		m_specularTextures.push_back(tex);
 		--count;
 	}

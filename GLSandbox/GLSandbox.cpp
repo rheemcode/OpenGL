@@ -7,10 +7,10 @@
 
 void GLSandboxApplication::OnStart()
 {
-	auto* scene = CreateScene("GLSandboxApplication");                     
-	applicationName = std::string("GLSandboxApplication");
-
+	auto* scene = CreateScene("GLSandbox Scene");                     
+	
 	Display* display = Display::GetSingleton();
+	
 	CameraSettings cameraSettings;
 	cameraSettings.mode = CameraMode::PERSPECTIVE;
 	cameraSettings.fovY = 70.f;
@@ -19,12 +19,13 @@ void GLSandboxApplication::OnStart()
 	cameraSettings.winWidth = display->GetMainWindow()->GetWidth();
 	cameraSettings.winHeight = display->GetMainWindow()->GetHeight();
 	cameraSettings.ratio = cameraSettings.winWidth / cameraSettings.winHeight;
+
 	std::shared_ptr<Camera> camera = std::make_shared<SceneCamera>(cameraSettings);
 	std::shared_ptr<SceneCameraController> controller = std::make_shared<SceneCameraController>();
 	camera->AttachController(controller);
 	scene->SetMainCamera(camera);
 	AttachScene(scene);									
-	SetMainScene("GLSandboxApplication");
+	SetMainScene("GLSandbox Scene");
 
 	ERR_FAIL_COND_MSG(mainScene == nullptr, "Please Attach A Main Scene")
 	mainScene->CreateDefaultActor();

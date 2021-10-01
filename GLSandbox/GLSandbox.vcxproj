@@ -166,8 +166,12 @@
     </None>
     <ClCompile Include="GLSandbox.cpp" />
     <ClCompile Include="SandboxMain.cpp" />
+    <None Include="Assets\Shaders\deffered2.glsl" />
     <None Include="Assets\Shaders\shadow.glsl" />
+    <None Include="Assets\Shaders\ssao.glsl" />
+    <None Include="Assets\Shaders\ssao_compute.comp.glsl" />
     <None Include="Assets\Shaders\Standard.glsl" />
+    <None Include="Assets\Shaders\uniform_buffers.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GLSandbox.h" />

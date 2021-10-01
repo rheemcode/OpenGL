@@ -25,6 +25,13 @@
 		Console::Log( LogMode::ERROR, __FUNCTION__, __FILE__, std::to_string(__LINE__), "Condition \"" #m_cond "\" is true. Returning: " #val,  m_msg);    \
 		return val;																													\
 }
+
+#define ERR_CRASH_COND_V_MSG(m_cond, m_msg, val)                                                                                     \
+	if (unlikely(m_cond)) {                                                                                                         \
+		Console::Log( LogMode::ERROR, __FUNCTION__, __FILE__, std::to_string(__LINE__), "Condition \"" #m_cond "\" is true. Returning: " #val,  m_msg);    \
+		GL_CRASH\
+		return val;																													\
+}
 #define GL_DEBUG
 #ifdef GL_DEBUG
 

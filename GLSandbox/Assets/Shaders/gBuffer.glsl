@@ -30,7 +30,7 @@ void main()
     vec4 FragPos = model * vec4(vPos, 1.0);
     vs_out.FragPos = (view * FragPos).rgb;
     vs_out.TexCoord = texCoord;
-    vs_out.NormalInterp = (view * normalize((model * vec4(normal, 0.0)))).xyz; 
+    vs_out.NormalInterp = normalize((view * model * vec4(normal, 0.0))).xyz; 
     gl_Position = proj * view * FragPos;
 };
 
@@ -59,5 +59,6 @@ void main()
     gPosition = vec4(vs_out.FragPos, gl_FragCoord.z);
     gNormal = vs_out.NormalInterp;
     gAlbedoSpec.rgb = texDiff.rgb;
+ //   gAlbedoSpec.rgb = vec3(0.4, 0.4, 0.4);
     //gAlbedoSpec.a = texture(texture_specular1, vs_out.TexCoord).r;
 };

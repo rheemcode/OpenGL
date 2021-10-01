@@ -4,7 +4,7 @@
 class GLSandboxApplication : public GLApplication
 {
 public:
-	GL_APPLICATION(GLSandboxApplication)
+	GL_APPLICATION(GLSandboxApplication, "GLSanbox")
 
 	virtual void OnStart() override;
 };

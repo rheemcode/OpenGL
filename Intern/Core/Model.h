@@ -110,10 +110,10 @@ public:
 		switch (type)
 		{
 		case Model::TEX_DIFFUSE:
-			m_diffuseTextures[id]->Bind(0);
+			m_diffuseTextures[id]->Bind();
 			break;
 		case Model::TEX_SPECULAR:
-			m_specularTextures[id]->Bind(0);
+			m_specularTextures[id]->Bind();
 			break;
 		default:
 			BIND_DEFAULT_TEXTURE();
@@ -121,13 +121,6 @@ public:
 		}
 	}
 
-	void BindTextures()
-	{
-		m_diffuseTextures[0]->ActiveTexture(TEX_DIFFUSE);
-		m_diffuseTextures[0]->Bind(1);
-		m_specularTextures[0]->ActiveTexture(TEX_SPECULAR);
-		m_specularTextures[0]->Bind(1);
-	}
 	void SetTransform(const Transform& p_transform) { m_transform = &p_transform; }
 	
 	void CreateDiffuseTextures(uint32_t count);

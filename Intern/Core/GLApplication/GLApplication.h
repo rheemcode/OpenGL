@@ -4,10 +4,10 @@
 #include "GLCore.h"
 #include "Scene.h"
 
-#define GL_APPLICATION(X)                                       \
+#define GL_APPLICATION(X, S)                                       \
 		X()														\
 		{                                                       \
-																\
+			applicationName = S;									\
 		}                                                       \
 		~X()                                                    \
 		{                                                       \
