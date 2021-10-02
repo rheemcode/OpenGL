@@ -5,7 +5,7 @@
 #include "Buffers/UniformBuffer.h"
 #include <random>
 
-#define MAX_SSAO_SAMPLES 32
+#define MAX_SSAO_SAMPLES 166
 
 class PostProcess
 {
@@ -15,12 +15,12 @@ class PostProcess
 class SSAO : public PostProcess
 {
 	friend class Scene;
-	int m_samples = 32;
+	int m_samples = 16;
 	float m_radius = 0.5f;
 	float m_bias = 0.025f;
 
 	std::array<Vector3, MAX_SSAO_SAMPLES> m_kernel;
-	std::array<Vector3, 16> ssaoNoise;
+	std::array<Vector3, 1366 * 768> ssaoNoise;
 
 	std::shared_ptr<Texture> m_noiseTexture;
 	std::shared_ptr<Framebuffer> m_ssaoFbo;
@@ -56,7 +56,7 @@ public:
 
 		m_uniformBuffer->FlushBuffer();
 
-		for (uint32_t i = 0; i < 16; i++)
+		for (uint32_t i = 0; i < 1366 * 768; i++)
 		{
 			Vector3 noise
 			(
@@ -78,8 +78,8 @@ public:
 		texParam.minFilter = TextureFilter::NEAREST;
 		texParam.textureDataType = TextureDataType::FLOAT;
 		texParam.wrap = TextureWrap::REPEAT;
-		m_noiseTexture->SetHeight(4);
-		m_noiseTexture->SetWidth(4);
+		m_noiseTexture->SetHeight(1366);
+		m_noiseTexture->SetWidth(768);
 		m_noiseTexture->Create(ssaoNoise.data(), texParam);
 	}
 
@@ -130,7 +130,12 @@ public:
 		m_ssaoFbo->BindTexture(FramebufferTexture::COLOR);
 	}
 
-	Shader* GetShader() { return m_shader.get(); }
+	void BindFramebufferImageTexture()
+	{
+		m_ssaoFbo->BindImageTexture(FramebufferTexture::COLOR, 0);
+	}
+
+	Shader* GetShader() { return m_computeShader.get(); }
 
 	void SetSamples(int samples) 
 	{ 

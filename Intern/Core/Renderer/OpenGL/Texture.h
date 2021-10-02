@@ -77,7 +77,7 @@ enum class TextureCompareFunc
 enum class TextureAccess
 {
 	READ_ONLY  = GL_READ_ONLY,
-	WRITE      = GL_WRITE_ONLY,
+	WRITE_ONLY  = GL_WRITE_ONLY,
 	READ_WRITE = GL_READ_WRITE
 };
 

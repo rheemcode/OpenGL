@@ -291,6 +291,11 @@ public:
 		textures[name]->Bind();
 	}
 
+	void BindImageTexture(FramebufferTexture::Type name, uint32_t unit)
+	{
+		textures[name]->BindImageTexture(unit, TextureAccess::WRITE_ONLY);
+	}
+
 	void TextureLayer(FramebufferTexture::Type name, uint32_t layer)  const
 	{
 		GLCall(glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, textures[name]->m_ID, 0, layer));

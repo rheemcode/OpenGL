@@ -219,14 +219,16 @@ void Renderer::RenderDeffered(const RenderData& renderData)
 void Renderer::RenderSSAO(const RenderData& renderData)
 {
 	// RenderSSAO first;
-	
+	//PROFILE_FUNCTION
 	auto* ssaoEffect = (SSAO*)renderData.postProcessEffect.get();
 	ssaoEffect->BindFramebuffer();
 	RenderAPI::ClearBuffers();
 	const Size2& fboSize = Display::GetSingleton()->GetScreenSize(0);
 	RenderAPI::SetViewport(0, 0, (uint32_t)fboSize.x, (uint32_t)fboSize.y);
-	Shader* shader = ssaoEffect->GetShader();
+
+	ComputeShader* shader = (ComputeShader*)ssaoEffect->GetShader();
 	shader->Bind();
+
 	Texture::ActiveTexture(Texture::TEXTURE0);
 	renderData.gBuffer->BindTexture(FramebufferTexture::POSITION);
 	Texture::ActiveTexture(Texture::TEXTURE1);
@@ -234,10 +236,16 @@ void Renderer::RenderSSAO(const RenderData& renderData)
 	Texture::ActiveTexture(Texture::TEXTURE2);
 	ssaoEffect->BindTexture();
 
+	//shader->SetVec2("screenSize", fboSize);
+	ssaoEffect->BindFramebufferImageTexture();
+	Vector2 dispatchSize = Vector2(Math::Round(fboSize.x /8 ), Math::Round(fboSize.y / 8));
+	shader->Dispatch(dispatchSize.x, dispatchSize.y, 1);
+	//GLCall(glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT));
 
-	quadData.m_VertexArray->Bind();
+
+	//quadData.m_VertexArray->Bind();
 	
-	RenderCommand::DrawIndexed(6);
+	//RenderCommand::DrawIndexed(6);
 }
 
 void Renderer::RenderAABB(const RenderData& renderData)

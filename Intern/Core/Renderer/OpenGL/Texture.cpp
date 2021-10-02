@@ -44,7 +44,7 @@ void Texture::CreateDefaultTexture()
 
 void Texture::BindImageTexture(uint32_t unit, TextureAccess access)
 {
-	glBindImageTexture(unit, m_ID, 0, GL_FALSE, 0, (GLenum)access, (GLenum)textureParameters.internalFormat);
+	GLCall(glBindImageTexture(unit, m_ID, 0, GL_FALSE, 0, (GLenum)access, GL_R8));
 }
 
 void Texture2D::Bind()

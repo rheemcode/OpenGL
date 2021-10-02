@@ -129,7 +129,7 @@ Shader::~Shader()
 
 void ComputeShader::Dispatch(uint32_t x, uint32_t y, uint32_t z)
 {
-	glDispatchCompute(x, y, z);
+	GLCall(glDispatchCompute(x, y, z));
 }
 
 ComputeShader::ComputeShader()
