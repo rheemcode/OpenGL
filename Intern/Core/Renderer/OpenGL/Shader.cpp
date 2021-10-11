@@ -99,6 +99,16 @@ void Shader::UploadUniformIntArray(const std::string& name, int* p_val, uint32_t
 	glUniform1iv(location, count, p_val);
 }
 
+void Shader::UploadUniformFloatArray(const std::string& name, float* p_val, uint32_t count) const
+{
+	GLint location = cache.GetUniformLocation(name);
+	if (location == -1)
+		return;
+	
+	glUniform1fv(location, count, p_val);
+}
+
+
 Shader::Shader()
 {
 	program = glCreateProgram();

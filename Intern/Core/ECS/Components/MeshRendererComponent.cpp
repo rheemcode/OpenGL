@@ -3,7 +3,7 @@
 
 void MeshRendererComponent::AddModel(const std::string& p_modelFilePath)
 {
-	m_model = std::make_shared<Model>(p_modelFilePath, OBJ);
+	m_model = std::make_shared<Model>(p_modelFilePath, ModelFormat::OBJ);
 	m_model->SetTransform(m_actor->GetTransform());
 	for (auto& mesh : m_model->GetMeshesRef())
 	{

@@ -49,15 +49,18 @@ RenderQueue Renderer::renderQueue;
 
 Renderer::QuadData Renderer::quadData;
 
+//Framebuffer fbo;
+
+
 void Renderer::Init()
 {
 	RenderCommand::Init();
 	Texture::CreateDefaultTexture();
 
 	float quad[] = {
-	 -1.f, -1.f, 0.0f,  0.0f, 0.0f,
-	 1.f, -1.f, 0.0f, 1.0f, 0.0f,
-	 1.f,  1.f, 0.0f,  1.0f, 1.0f,
+	 -1.f, -1.f, 0.0f, 0.0f, 0.0f,
+	  1.f, -1.f, 0.0f, 1.0f, 0.0f,
+	  1.f,  1.f, 0.0f, 1.0f, 1.0f,
 	 -1.f,  1.f, 0.0f, 0.0f, 1.0f };
 
 	uint32_t quadIndices[] = { 0, 1, 2, 2, 3, 0 };
@@ -128,7 +131,8 @@ void Renderer::RenderDepth(const RenderData& renderData)
 	RenderAPI::SetViewport(0, 0, (uint32_t)shadowMapWidth.x, (uint32_t)shadowMapWidth.y);
 	//RenderAPI::CullFrontFace();
 
-	
+
+	const std::shared_ptr<UniformBuffer>& matricesBuffer = renderData.uniformBuffer;
 
 	//for (int i = 0; i < shadowData->splitCount; i++)
 	//{
@@ -143,7 +147,8 @@ void Renderer::RenderDepth(const RenderData& renderData)
 			//RenderAPI::DisableVertexAttribArray(Attrib::UV);
 			//RenderAPI::DisableVertexAttribArray(Attrib::NORMAL);
 			const auto& material = mesh.GetMaterial();
-			shader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
+			matricesBuffer->UploadData(mesh.GetTransform().GetWorldMatrix(), 128);
+			matricesBuffer->FlushBuffer();
 			RenderCommand::DrawIndexed(attribs);
 			//RenderAPI::EnableVertexAttribArray(Attrib::UV);
 			//RenderAPI::EnableVertexAttribArray(Attrib::NORMAL);
@@ -173,7 +178,8 @@ void Renderer::RenderGBuffer(const RenderData& renderData)
 		if (mesh.GetMaterial().Diffuse != -1)
 		{
 			glActiveTexture(GL_TEXTURE0);
-			mesh.GetModelInstance()->BindTexture(mesh.GetMaterial().Diffuse, Model::TEX_DIFFUSE);
+			BIND_DEFAULT_TEXTURE();
+			//mesh.GetModelInstance()->BindTexture(mesh.GetMaterial().Diffuse, Model::TEX_DIFFUSE);
 		}
 
 		else
@@ -292,11 +298,13 @@ void Renderer::RenderMeshes(const RenderData& renderData)
 
 	
 	renderData.shadowData->UpdateFarBounds(*renderData.cameraData->proj);
-	shader->UploadUniformVec4("farDistance", renderData.shadowData->farBound);
+	//shader->UploadUniformVec4("farDistance", renderData.shadowData->farBound);
+	shader->UploadUniformFloatArray("farDistance", reinterpret_cast<float*>(&renderData.shadowData->farBound), 4);
 	const std::shared_ptr<UniformBuffer>& matricesBuffer = renderData.uniformBuffer;
 	shader->UploadUniformInt("depthTexture", 0);
-	//shader->UploadUniformInt("diffuseTexture", 1);
-	renderData.framebuffer->BindTexture(FramebufferTexture::SHADOWMAP);
+	shader->UploadUniformInt("diffuseTexture", 1);
+	Texture::ActiveTexture(Texture::TEXTURE0);
+	renderData.framebuffer->BindTexture(FramebufferTexture::SHADOWMAPARRAY);
 	for (int i = 0; i < renderData.meshCount; ++i)
 	{
 		const auto& mesh = renderData.meshes[i];
@@ -304,16 +312,17 @@ void Renderer::RenderMeshes(const RenderData& renderData)
 		attribs.Bind();
 
 		const auto& material = mesh.GetMaterial();
-		glActiveTexture(GL_TEXTURE0);
-		//	BIND_DEFAULT_TEXTURE();
-			//shader->UploadUniformInt("texture_diffuse1", 0);
 		if (mesh.GetMaterial().Diffuse != -1)
 		{
+			Texture::ActiveTexture(Texture::TEXTURE1);
+			//BIND_DEFAULT_TEXTURE();
 			mesh.GetModelInstance()->BindTexture(mesh.GetMaterial().Diffuse, Model::TEX_DIFFUSE);
-			//shader->UploadUniformInt("diffuseTexture", Model::TEX_DIFFUSE);
-			//mesh.GetModelInstance()->ActiveTexture(mesh.GetMaterial().Diffuse, Model::TEX_DIFFUSE);
-			//mesh.GetModelInstance()->BindTexture(mesh.GetMaterial().Diffuse, Model::TEX_DIFFUSE);
-			//s/hader->UploadUniformInt("currentTex", mesh.GetMaterial().Diffuse);
+		}
+
+		else
+		{
+			Texture::ActiveTexture(Texture::TEXTURE1);
+			BIND_DEFAULT_TEXTURE();
 		}
 		matricesBuffer->UploadData(mesh.GetTransform().GetWorldMatrix(), 128);
 		matricesBuffer->FlushBuffer();

@@ -12,8 +12,10 @@ layout(std140, binding = 0) uniform Matrices
    mat4 shadowSpaceMatrix[4]; //  128
 };
 
+uniform mat4 maa = mat4(1);
 void main()
 {
+    vec4 msd = maa * vec4(1);
     gl_Position = model * vec4(aPos, 1.0);
 }
 
@@ -39,13 +41,13 @@ out vec4 FragPos;
 
 void main()
 {
-    for(int face = 0; face < 4; ++face)
+    for(int face = 3; face >= 0; --face)
     {
         gl_Layer = face;
         for(int i = 0; i < 3; ++i)
         {
             FragPos = gl_in[i].gl_Position;
-            gl_Position = shadowSpaceMatrix[face] * FragPos;
+            gl_Position = (shadowSpaceMatrix[face]) * FragPos;
             EmitVertex();
         }    
         EndPrimitive();

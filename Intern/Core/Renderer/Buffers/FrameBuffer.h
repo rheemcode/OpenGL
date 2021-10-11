@@ -90,7 +90,7 @@ public:
 	void AttachArrayTexture(int width = 2048, int height = 2048, uint32_t p_levels = 4)
 	{
 		TextureParameters texParam;
-		texParam.internalFormat = TextureFormat::DEPTH32;
+		texParam.internalFormat = TextureFormat::DEPTH24;
 		texParam.dataFormat = TextureFormat::DEPTH;
 		texParam.magFilter = TextureFilter::NEAREST;
 		texParam.minFilter = TextureFilter::NEAREST;

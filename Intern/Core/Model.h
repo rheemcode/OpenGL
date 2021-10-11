@@ -3,7 +3,7 @@
 #include "Console.h"
 
 
-enum MODEL_FORMAT
+enum class ModelFormat
 {
 	FBX,
 	OBJ,
@@ -15,10 +15,52 @@ class Model;
 
 class ModelLoader
 {
-public:
+	std::ofstream outputCacheStream;
+	std::ifstream inputCacheStream;
+	std::string modelName;
 
-	bool LoadModel(MODEL_FORMAT modelFormat, const std::string& p_filePath, Model* p_model);
-	bool LoadAsStaticModel(MODEL_FORMAT modelFormat, const std::string& p_filePath, Model* p_model);
+public:
+	template <typename T>
+	void WriteToCache(T* data, uint64_t count)
+	{
+		if (!outputCacheStream.is_open())
+			outputCacheStream = std::ofstream(modelName, std::ios::binary);
+
+		outputCacheStream.write(reinterpret_cast<char*>((void*)data), sizeof(T) * count);
+	}
+	
+	
+	void WriteToCache(uint64_t data, uint64_t count = 1)
+	{
+		if (!outputCacheStream.is_open())
+			outputCacheStream = std::ofstream(modelName, std::ios::binary);
+
+		outputCacheStream.write(reinterpret_cast<char*>(&data), sizeof(uint64_t) * count);
+	}
+
+	template <typename T>
+	void ReadFromCache(T* data, uint64_t count)
+	{
+		if (!inputCacheStream.is_open())
+			inputCacheStream = std::ifstream(modelName, std::ios::binary);
+
+		
+		inputCacheStream.read(reinterpret_cast<char*>(data), sizeof(T) * count);
+	}
+	
+	
+	void ReadFromCache(uint64_t* data, uint64_t count)
+	{
+		if (!inputCacheStream.is_open())
+			inputCacheStream = std::ifstream(modelName, std::ios::binary);
+
+		
+		inputCacheStream.read(reinterpret_cast<char*>(data), sizeof(uint64_t) * count);
+	}
+
+	bool LoadModelFromCache(Model* model);
+	bool LoadModel(ModelFormat modelFormat, const std::string& p_filePath, Model* p_model);
+	bool LoadAsStaticModel(ModelFormat modelFormat, const std::string& p_filePath, Model* p_model);
 	void ComputeTangentBasis(VertexAttrib* attrib);
 };
 
@@ -128,7 +170,7 @@ public:
 
 	Model();
 	Model(std::string p_modelFilePath);
-	Model(std::string p_modelFilePath, MODEL_FORMAT p_modelFormat);
+	Model(std::string p_modelFilePath, ModelFormat p_modelFormat);
 };
 
 class StaticModel : public Model
@@ -138,7 +180,7 @@ public:
 
 	StaticModel();
 	StaticModel(std::string p_modelFilePath);
-	StaticModel(std::string, MODEL_FORMAT p_modelFormat);
+	StaticModel(std::string, ModelFormat p_modelFormat);
 };
 
 class ProcMesh

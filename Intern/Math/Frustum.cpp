@@ -2,9 +2,10 @@
 #include "Frustum.h"
 #include <immintrin.h>
 #define USE_INTRINSIC
+
 void Frustum::SetFrustum(float p_fov, float p_aspect, float p_zoom, float p_zNear, float p_zFar, const Matrix4x4& p_transform)
 {
-	p_zNear = MAX(p_zNear, 0.0f);
+	p_zNear = MAX(p_zNear, 0.001f);
 	p_zFar = MAX(p_zFar, p_zNear);
 	float halfViewSize = Math::Tan(Math::Deg2Rad(p_fov)) / p_zoom;
 	Vector3 lNear, lFar;
@@ -21,16 +22,37 @@ void Frustum::SetFrustum(float p_fov, float p_aspect, float p_zoom, float p_zNea
 
 void Frustum::SetFrustum(const Vector3& lNear, const Vector3& lFar, const Matrix4x4& transform)
 {
-	//vertices[0] = transform * lNear;
-	//vertices[1] = transform * Vector3(lNear.x, -lNear.y, lNear.z);
-	//vertices[2] = transform * Vector3(-lNear.x, -lNear.y, lNear.z);
-	//vertices[3] = transform * Vector3(-lNear.x, lNear.y, lNear.z);
-	//vertices[4] = transform * lFar;
-	//vertices[5] = transform * Vector3(lFar.x, -lFar.y, lFar.z);
-	//vertices[6] = transform * Vector3(-lFar.x, -lFar.y, lFar.z);
-	//vertices[7] = transform * Vector3(-lFar.x, lFar.y, lFar.z);
+	vertices[0] = transform * lNear;
+	vertices[1] = transform * Vector3(lNear.x, -lNear.y, lNear.z);
+	vertices[2] = transform * Vector3(-lNear.x, -lNear.y, lNear.z);
+	vertices[3] = transform * Vector3(-lNear.x, lNear.y, lNear.z);
+	vertices[4] = transform * lFar;
+	vertices[5] = transform * Vector3(lFar.x, -lFar.y, lFar.z);
+	vertices[6] = transform * Vector3(-lFar.x, -lFar.y, lFar.z);
+	vertices[7] = transform * Vector3(-lFar.x, lFar.y, lFar.z);
 
-	//UpdatePlanes();
+	planes[FrustumPlane::Left] = Plane(vertices[3], vertices[7], vertices[6], 1);
+
+	planes[FrustumPlane::Right] = Plane(vertices[1], vertices[5], vertices[6], 1);
+
+	planes[FrustumPlane::Bottom] = Plane(vertices[6], vertices[5], vertices[1], 1);
+
+	planes[FrustumPlane::Top] = Plane(vertices[0], vertices[4], vertices[7], 1);
+
+	planes[FrustumPlane::Near] = Plane(vertices[2], vertices[1], vertices[0], 1);
+
+	planes[FrustumPlane::Far] = Plane(vertices[5], vertices[6], vertices[7], 1);
+
+	int i = 0;
+	for (auto& plane : planes)
+	{
+
+		plane.normal = -plane.normal;
+		plane.Normalize();
+		PlaneSign ps(plane);
+		planeSigns[i++] = ps;
+	}
+
 }
 
 void Frustum::SetFrustum(const Matrix4x4& p_projMatrix)

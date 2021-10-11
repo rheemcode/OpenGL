@@ -9,8 +9,8 @@ uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D texNoise;
 
-uniform int kernelSize = 16;
-uniform float radius = .5;
+uniform int kernelSize = 32;
+uniform float radius = 2.0;
 uniform float bias = 0.025;
 uniform vec2 screenSize = vec2(1366, 768);
 
@@ -24,7 +24,7 @@ layout(std140, binding = 0) uniform Matrices
 
 layout(std140, binding = 2) uniform SSAOSamples
 {
-    vec3 samples[16];
+    vec3 samples[32];
 };
 
 const vec2 noiseScale = screenSize / 4; 

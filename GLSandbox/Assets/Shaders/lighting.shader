@@ -12,6 +12,7 @@ layout(location = 4) in vec3 bitangent;
 
 out VS_OUT
 {
+    float FragDist;
     vec2 TexCoord;
     vec3 FragPos;
     vec3 NormalInterp;
@@ -29,13 +30,20 @@ layout(std140, binding = 0) uniform Matrices
    mat4 shadowSpaceMatrix[MAX_SPLIT]; //  128
 };
 
+uniform mat4 bias = mat4(vec4(0.5, 0.0, 0.0, 0),
+                        vec4(0.0, 0.5, 0.0, 0),
+                        vec4(0.0, 0.0, 0.5, 0),
+                        vec4(0.5, 0.5, 0.5, 1.0));
 void main()
 {
     vec4 FragPos = model * vec4(vPos, 1.0);
     vs_out.FragPos = FragPos.xyz;
 
+
+    vs_out.FragDist = abs(view * FragPos).z;
+
     for (int i = 0; i < MAX_SPLIT; i++)
-        vs_out.ShadowCoord[i] = shadowSpaceMatrix[i] * FragPos;
+        vs_out.ShadowCoord[i] = bias * shadowSpaceMatrix[i] * FragPos;
 
     //vs_out.Normal = (view * transpose(inverse(mat3(model))) * normal).xyz;
     vs_out.TexCoord = texCoord;
@@ -57,6 +65,7 @@ void main()
 
 in VS_OUT
 {
+    float FragDist;
     vec2 TexCoord;
     vec3 FragPos;
     vec3 NormalInterp;
@@ -97,7 +106,7 @@ struct MaterialProperties
 };
 uniform int currentTex;
 
-uniform vec4 farDistance;
+uniform float farDistance[4];
 uniform sampler2DArray depthTexture;
 uniform sampler2D diffuseTexture;
 
@@ -151,15 +160,31 @@ float random(vec3 seed, int i) {
 
 int getDepth()
 {
+    float fDistance = vs_out.FragDist;
+    ////return 0;
+    ////int count = 0;
+    //for (int i = 0; i < 4;  i++)
+    //{
+
+    //    if (fDistance < farDistance[i])
+    //    {
+    //        return i;
+    //    }
+
+    //    continue;
+    //}
+
+    return 0;
+    //return 0;
     int index = 3;
-
-    if (gl_FragCoord.z < farDistance.x)
+    //////return 1.;
+    if (fDistance < farDistance[0])
         index = 0;
-    else if (gl_FragCoord.z < farDistance.y)
+    else if (fDistance < farDistance[1])
         index = 1;
-    else if (gl_FragCoord.z < farDistance.z)
+    else if (fDistance < farDistance[2])
         index = 2;
-
+   
     return index;
 }
 
@@ -168,41 +193,35 @@ float ShadowCalculation(vec4 ShadowPos, int index)
 
     vec3 projCoords = ShadowPos.xyz / ShadowPos.w;
     //projCoords = clamp(projCoords, VEC3, VEC3_1);
-    if (projCoords.z > 1.0)
-        return 1.0;
+    if (projCoords.z >= 1.0 || projCoords.z < 0.0)
+        return 0.0;
 
     float currentDepth = projCoords.z;
-    float bias = max(0.002 * (1.0 - dot(vs_out.NormalInterp, lightDir)), 0.002);
+    float bias = max(0.001 * (1.0 - dot(vs_out.NormalInterp, lightDir)), 0.001);
     float shadow = 0.0;
-  
-    float pcfDepth = texture(depthTexture, vec3(projCoords.xy, index)).x;
-    
-    if (currentDepth > pcfDepth + bias)
-        shadow = 1.0;
-
     //for (int i = 0; i < samples; i++)
     //{
     //    float pcfDepth = texture(depthTexture, vec3(projCoords.xy + poissonDisk[i] / 700.0, index)).x;
     //    if (currentDepth > pcfDepth + bias)
     //        shadow += 1.0;
     //}
-    //vec2 offset;
-    //for (int x = -pcfCount; x <= pcfCount; ++x)
-    //{
-    //    for (int y = -pcfCount; y <= pcfCount; ++y)
-    //    {
-    //    //    int index = int(16.0 * random(floor(vs_out.FragPos.xyz * 1000.0), x + y * 4)) % 16;
+    vec2 offset;
+    for (int x = -pcfCount; x <= pcfCount; ++x)
+    {
+        for (int y = -pcfCount; y <= pcfCount; ++y)
+        {
+        //    int index = int(16.0 * random(floor(vs_out.FragPos.xyz * 1000.0), x + y * 4)) % 16;
 
-    //        offset.x = x; offset.y = y;
-    //        float pcfDepth = texture(depthTexture, vec3(projCoords.xy + offset * texelSize, index)).x;
-    //        //if (currentDepth  > pcfDepth + bias)
-    //    //        shadow += 1.0;
-    //        shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
-    //    }
-    //}
+            offset.x = x; offset.y = y;
+            float pcfDepth = texture(depthTexture, vec3(projCoords.xy + offset * texelSize, index)).r;
+            //if (currentDepth  > pcfDepth + bias)
+        //        shadow += 1.0;
+            shadow += currentDepth - 0.001 > pcfDepth ? 1.0 : 0.0;
+        }
+    }
 
-    //shadow /= totalTexels;
-    return shadow;
+    shadow /= totalTexels;
+    return shadow * 0.6f;
 }
 
 
@@ -243,6 +262,7 @@ void main()
    // vec3 color = min(Light, VEC3_1);
 
  //   color = pow(color, vec3(1.0 / 2.2));
+
     FragColor = vec4(color, 1.0);
 
  // FragColor = vec4(vec3(texCol), 1);

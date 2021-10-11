@@ -80,7 +80,7 @@ void main()
     if (NdotL > 0.0)
         Specular = pow(eyeLight, 2);
 
-    vec3 Ambient = (Lights.Ambient * AmbientOcclusion * Lights.AmbientEnergy) * 1.0;
+    vec3 Ambient = vec3(0.0) * 1.0;
     vec3 Diffuse = Lights.Color * NdotL * Lights.Energy * 1.0;
     vec3 Light = Ambient + Diffuse;
 

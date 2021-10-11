@@ -11,6 +11,7 @@ layout(location = 2) in vec2 texCoord;
 
 out VS_OUT
 {
+    float FragDepth;
     vec2 TexCoord;
     vec3 FragPos;
     vec3 NormalInterp;
@@ -28,6 +29,7 @@ layout(std140, binding = 0) uniform Matrices
 void main()
 {
     vec4 FragPos = model * vec4(vPos, 1.0);
+    vs_out.FragDepth = abs(view * FragPos).z;
     vs_out.FragPos = (view * FragPos).rgb;
     vs_out.TexCoord = texCoord;
     vs_out.NormalInterp = normalize((view * model * vec4(normal, 0.0))).xyz; 
@@ -45,6 +47,7 @@ layout (location = 2) out vec4 gAlbedoSpec;
 
 in VS_OUT
 {
+    float FragDepth;
     vec2 TexCoord;
     vec3 FragPos;
     vec3 NormalInterp;
@@ -56,9 +59,10 @@ uniform sampler2D texture_diffuse1;
 void main()
 {
     vec4 texDiff = texture(texture_diffuse1, vs_out.TexCoord);
-    gPosition = vec4(vs_out.FragPos, gl_FragCoord.z);
+    gPosition = vec4(vs_out.FragPos, vs_out.FragDepth);
     gNormal = vs_out.NormalInterp;
     gAlbedoSpec.rgb = texDiff.rgb;
+    gAlbedoSpec.a = vs_out.FragDepth;
  //   gAlbedoSpec.rgb = vec3(0.4, 0.4, 0.4);
     //gAlbedoSpec.a = texture(texture_specular1, vs_out.TexCoord).r;
 };

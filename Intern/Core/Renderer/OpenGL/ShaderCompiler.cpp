@@ -41,7 +41,7 @@ void ShaderCompiler::ParseShader(Shader* p_shader)
 	std::stringstream ss[static_cast<int>(ShaderType::MAX)];
 
 	ShaderMap* shaderMap = new ShaderMap[ShaderType::MAX];
-
+	
 	int index = -1;
 	while (getline(*stream, line))
 	{
@@ -135,6 +135,7 @@ void ShaderCompiler::ParseShader(Shader* p_shader)
 			size_t pos;
 			if ((pos = result.find('[')) != result.npos)
 			{
+				shader->uniformNames.push_back(result.substr(0, pos));
 				const std::string numstr = result.substr(pos + 1, (result.size() - pos) - 2);
 				int num = to_int(numstr);
 				for (int i = 0; i < num; i++)
@@ -166,6 +167,7 @@ void ShaderCompiler::ParseShader(Shader* p_shader)
 	delete[] geometry;
 	delete[] shaderMap;
 	delete[] compute;
+	delete[] stream;
 }
 
 void ShaderCompiler::CompileShader(const std::string& src, ShaderType type)

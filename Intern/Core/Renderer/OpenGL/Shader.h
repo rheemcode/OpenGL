@@ -73,6 +73,7 @@ public:
 	void UploadUniformInt(const std::string& name, int p_val) const;
 	void UploadUniformFloat(const std::string& name, float p_val) const;
 	void UploadUniformIntArray(const std::string& name, int* p_val, uint32_t count) const;
+	void UploadUniformFloatArray(const std::string& name, float* p_val, uint32_t count) const;
 
 public:
 

@@ -5,7 +5,7 @@
 #include "Buffers/UniformBuffer.h"
 #include <random>
 
-#define MAX_SSAO_SAMPLES 166
+#define MAX_SSAO_SAMPLES 32
 
 class PostProcess
 {
@@ -15,7 +15,7 @@ class PostProcess
 class SSAO : public PostProcess
 {
 	friend class Scene;
-	int m_samples = 16;
+	int m_samples = 32;
 	float m_radius = 0.5f;
 	float m_bias = 0.025f;
 

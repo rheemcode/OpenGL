@@ -9,7 +9,6 @@ namespace Math
 	#define EPSILON 0.00001
 	#define EPSILON2 (CMP_EPSILON * CMP_EPSILON)
 
-
 	#define SQRT12 0.7071067811865475244008443621048490
 	#define SQRT2 1.4142135623730950488016887242
 	#define TAU 6.2831853071795864769252867666
@@ -17,15 +16,15 @@ namespace Math
 	#define Math_INF INFINITY
 	#define Math_NAN NAN
 	
-	#ifdef _SWAP
 	#define SWAP(m_x, m_y) Math::__swap_tmpl((m_x), (m_y))
-	template <class T>
+	
+	template<typename T>
 	inline void __swap_tmpl(T& x, T& y) {
 		T aux = x;
 		x = y;
 		y = aux;
 	}
-	#endif
+
 
 	#define MIN(m_a, m_b) (((m_a) < (m_b)) ? (m_a) : (m_b))
 	#define MAX(m_a, m_b) (((m_a) > (m_b)) ? (m_a) : (m_b))

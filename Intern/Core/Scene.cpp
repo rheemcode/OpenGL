@@ -64,19 +64,22 @@ void Scene::PrepareMeshes()
 	meshDirty = false;
 }
 
+
 void Scene::Render()
 {
 	PrepareMeshes();
 	shadowData->shadowBounds.Update();
 	shadowData->UpdateView(GetSkyLightDirection());
 	shadowData->UpdateProjection();
-	
+
+	const std::vector<Mesh> shadowCasters;
+	shadowData->CalculateCropMatrix(culledMeshes, meshes);
 	m_MatrixBuffer->UploadData(sceneCamera->GetViewMatrix(), 0);
 	m_MatrixBuffer->UploadData(sceneCamera->GetProjectionMatrix(), 64);
-	m_MatrixBuffer->UploadData(shadowData->Bias * shadowData->Proj[0] * shadowData->View[0], 128 + 64);
-	m_MatrixBuffer->UploadData(shadowData->Bias * shadowData->Proj[1] * shadowData->View[1], 256);
-	m_MatrixBuffer->UploadData(shadowData->Bias * shadowData->Proj[2] * shadowData->View[2], 320);
-	m_MatrixBuffer->UploadData(shadowData->Bias * shadowData->Proj[3] * shadowData->View[3], 384);
+	m_MatrixBuffer->UploadData(shadowData->CropMatrix[0] * shadowData->Proj[0] * shadowData->View, 128 + 64);
+	m_MatrixBuffer->UploadData(shadowData->CropMatrix[1] * shadowData->Proj[1] * shadowData->View, 256);
+	m_MatrixBuffer->UploadData(shadowData->CropMatrix[2] * shadowData->Proj[2] * shadowData->View, 320);
+	m_MatrixBuffer->UploadData(shadowData->CropMatrix[3] * shadowData->Proj[3] * shadowData->View, 384);
 	m_MatrixBuffer->FlushBuffer();
 
 
@@ -94,6 +97,7 @@ void Scene::Render()
 		renderData.shader = shadowShader;
 		renderData.shadowData = shadowData;
 		renderData.framebuffer = m_shadowBuffer;
+		renderData.uniformBuffer = m_MatrixBuffer;
 		Renderer::PushPass(std::move(depthPass));
 	}
 
@@ -109,7 +113,7 @@ void Scene::Render()
 		renderData.shadowData = shadowData;
 		renderData.framebuffer = m_shadowBuffer;
 		renderData.uniformBuffer = m_MatrixBuffer;
-	//	Renderer::PushPass(std::move(colorPass));
+		Renderer::PushPass(std::move(colorPass));
 	}
 
 	{
@@ -134,7 +138,7 @@ void Scene::Render()
 		renderData.framebuffer = m_shadowBuffer;
 		renderData.uniformBuffer = m_MatrixBuffer;
 		renderData.gBuffer = m_Gbuffer;
-		Renderer::PushPass(std::move(gBufferPass));
+	//	Renderer::PushPass(std::move(gBufferPass));
 	}
 
 	{
@@ -147,7 +151,7 @@ void Scene::Render()
 		renderData.meshCount = culledMeshes.size();
 		renderData.gBuffer = m_Gbuffer;
 		renderData.postProcessEffect = m_ssaoEffect;
-		Renderer::PushPass(std::move(ssaoPass));
+	//	Renderer::PushPass(std::move(ssaoPass));
 	}
 
 	{
@@ -164,7 +168,7 @@ void Scene::Render()
 		renderData.uniformBuffer = m_MatrixBuffer;
 		renderData.gBuffer = m_Gbuffer;
 		renderData.postProcessEffect = m_ssaoEffect;
-		Renderer::PushPass(std::move(colorPass));
+	//	Renderer::PushPass(std::move(colorPass));
 	}
 
 	{
@@ -247,7 +251,7 @@ void Scene::InitLightBuffer()
 	lightData.LightType = 1;
 	lightData.Ambient = Vector4(.4f, .4f, .4f, 1.f);
 	lightData.Color = {1.f, 1.f, 1.f, 1.f};
-	lightData.Direction = { 0, -0.3f, -1.f, 1.f };
+	lightData.Direction = { 0.f, -0.9f, -.2f, 1.f };
 	lightData.AmbientEnergy = 1.f;
 	lightData.Energy = .69f;
 
@@ -269,7 +273,7 @@ void Scene::CreateDefaultActor()
 {
 	std::shared_ptr<Actor> actor = std::make_shared<Actor>();
 	std::shared_ptr<TransformComponent> tComponent = std::make_shared<TransformComponent>(actor);
-	std::shared_ptr<MeshRendererComponent> renderComponent = std::make_shared<MeshRendererComponent>(actor, "./Assets/Madara_Uchiha.obj");
+	std::shared_ptr<MeshRendererComponent> renderComponent = std::make_shared<MeshRendererComponent>(actor, "./Assets/sponza.obj");
 	actor->AddComponent(tComponent);
 	actor->AddComponent(renderComponent);
 	meshDirty = true;
@@ -296,7 +300,7 @@ void Scene::InitSceneCamera()
 	cameraData->proj.reset(&sceneCamera->m_ProjectionMatrix);
 	cameraData->view.reset(&sceneCamera->m_ViewMatrix);
 	shadowData = std::make_shared<ShadowData>();
-	shadowData->shadowBounds = ShadowBox(shadowData->View, sceneCamera->transform, sceneCamera->m_cameraSettings);
+	shadowData->shadowBounds = ShadowBox(&shadowData->View, sceneCamera->transform, sceneCamera->m_cameraSettings);
 	auto Bias = Matrix4x4::CreateTranslation({ 0.5f, 0.5f, 0.5f });
 	Bias = Matrix4x4::Scale(Bias, { 0.5f, 0.5f, 0.5f });
 	shadowData->Bias = Bias;
@@ -313,7 +317,7 @@ void Scene::CreateSkyLight()
 	auto pLight = std::make_unique<DirectionalLight>();
 	pLight->LightColor = { 1.0f, 1.f, 1.0f };
 	pLight->Energy = 1.5f;
-	pLight->Direction = { 0, -.1f, -0.3f };
+	pLight->Direction = { 0.f, -0.9f, -.2f, 1.f };
 	pLight->LightSource = Light::DIRECTIONAL_LIGHT;
 	pLight->Position = { 0, .7f, -1.f };
 	pLight->LightAttenuation = { 1.f, 1.f };
