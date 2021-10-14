@@ -22,6 +22,7 @@ struct ShaderCompiler
 		ShaderType type = ShaderType::MAX;
 	};
 	Shader* shader;
+	std::istream* GetLine(std::istream* stream, std::string& str);
 	void ParseShader(Shader* shader);
 	void LinkShader();
 	int CheckLinkErrors(uint32_t program);

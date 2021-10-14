@@ -5,7 +5,9 @@
 #define TEXTURE_MAX_SIZE 0x1000
 #define MAX_TEXTURES 32
 
+#define DEFAULT_TEX 1
 #define BIND_DEFAULT_TEXTURE() Texture::s_defaultTexture->Bind()
+#define BIND_DEFUALT_NORMALTEXTURE()
 
 enum class TextureWrap : int32_t
 {
@@ -40,7 +42,11 @@ enum class TextureFormat
 {
 	NONE      = GL_NONE,
 	R8        = GL_R8,
+	R         = GL_R,
 	RED        = GL_RED,
+	RG		  = GL_RG,
+	RG8       = GL_RG8,
+	RG16      = GL_RGB16F,
 	RGB8      = GL_RGB8,
 	RGBA8     = GL_RGBA8,
 	RGBA16    = GL_RGBA16,
@@ -114,7 +120,9 @@ protected:
 	std::string filePath;
 	TextureParameters textureParameters;
 	
-	static Texture* s_defaultTexture;
+	static std::shared_ptr<Texture> s_defaultTexture;
+	static std::shared_ptr<Texture> s_defaultSpecularTexture;
+	static std::shared_ptr<Texture> s_defaultNormalTexture;
 
 public:
 	enum : uint32_t
@@ -146,7 +154,7 @@ public:
 	void BindImageTexture(uint32_t unit, TextureAccess access);
 
 	static void ActiveTexture(uint32_t p_texture) { glActiveTexture(p_texture); }
-	static void CreateDefaultTexture();
+	static void CreateDefaultTextures();
 
 	int GetWidth() { return m_Width; }
 	int GetHeight() { return m_Height; }

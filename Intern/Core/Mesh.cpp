@@ -33,8 +33,8 @@ Mesh::Mesh(VertexAttrib* p_vAttribs, uint32_t* p_indices, uint32_t count, Materi
 		{AttribDataType::T_FLOAT, Attrib::VERTEXPOSITION, AttribCount::VEC3, false},
 		{AttribDataType::T_FLOAT, Attrib::NORMAL, AttribCount::VEC3, false},
 		{AttribDataType::T_FLOAT, Attrib::UV, AttribCount::VEC2, false},
-		{AttribDataType::T_FLOAT, Attrib::TANGENT, AttribCount::VEC3, false, false},
-		{AttribDataType::T_FLOAT, Attrib::BITANGENT, AttribCount::VEC3, false, false}
+		{AttribDataType::T_FLOAT, Attrib::TANGENT, AttribCount::VEC3, false},
+		{AttribDataType::T_FLOAT, Attrib::BITANGENT, AttribCount::VEC3, false}
 
 	});
 
@@ -54,8 +54,8 @@ Mesh::Mesh(const std::vector<VertexAttrib>& p_vAttribs, uint32_t* p_indices, uin
 		{AttribDataType::T_FLOAT, Attrib::VERTEXPOSITION, AttribCount::VEC3, false},
 		{AttribDataType::T_FLOAT, Attrib::NORMAL, AttribCount::VEC3, false},
 		{AttribDataType::T_FLOAT, Attrib::UV, AttribCount::VEC2, false},
-		{AttribDataType::T_FLOAT, Attrib::TANGENT, AttribCount::VEC3, false, false},
-		{AttribDataType::T_FLOAT, Attrib::BITANGENT, AttribCount::VEC3, false, false}
+		{AttribDataType::T_FLOAT, Attrib::TANGENT, AttribCount::VEC3, false},
+		{AttribDataType::T_FLOAT, Attrib::BITANGENT, AttribCount::VEC3, false}
 
 	});
 

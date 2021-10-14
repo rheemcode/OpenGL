@@ -66,6 +66,7 @@ struct RenderData
 	std::shared_ptr<struct ShadowData> shadowData;
 	std::shared_ptr<class Framebuffer> framebuffer;
 	std::shared_ptr<class UniformBuffer> uniformBuffer;
+	std::shared_ptr<class UniformBuffer> materialsBuffer;
 	std::shared_ptr<class GBuffer> gBuffer;
 	std::shared_ptr<class PostProcess> postProcessEffect;
 	std::shared_ptr<VertexArray> vertexArray;

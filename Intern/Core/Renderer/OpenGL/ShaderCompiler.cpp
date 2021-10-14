@@ -23,6 +23,37 @@ int64_t to_int(const std::string& str)
 }
 
 
+std::istream* ShaderCompiler::GetLine(std::istream* stream, std::string& str) 
+{
+	str.clear();
+
+	std::istream::sentry se(*stream, true);
+	std::streambuf* sb = stream->rdbuf();
+
+	if (se)
+	{
+		for (;;)
+		{
+			int c = sb->sbumpc();
+			switch (c)
+			{
+			case '\n':
+				return stream;
+			case '\r':
+				if (sb->sgetc() == '\n') sb->sbumpc();
+				return stream;
+			case EOF:
+				if (str.empty()) stream->setstate(std::ios::eofbit);
+				return stream;
+			default:
+				str += static_cast<char>(c);
+			}
+		}
+	}
+
+	return stream;
+}
+
 // Compiling all types of shader in one file
 void ShaderCompiler::ParseShader(Shader* p_shader)
 {
@@ -35,6 +66,7 @@ void ShaderCompiler::ParseShader(Shader* p_shader)
 	const char* compute = new char[8]{ "compute" };
 
 	std::ifstream* stream = new std::ifstream(shader->filePath);
+	
 	ERR_FAIL_COND_MSG(!*stream, "Cannot Find Shader File at : " + shader->filePath);
 
 	std::string line;
@@ -43,8 +75,10 @@ void ShaderCompiler::ParseShader(Shader* p_shader)
 	ShaderMap* shaderMap = new ShaderMap[ShaderType::MAX];
 	
 	int index = -1;
-	while (getline(*stream, line))
+
+	while (stream->peek() != -1)
 	{
+		GetLine(stream, line);
 		if (line.find(shaderVar) != std::string::npos && line.find("//", 0, 2) == std::string::npos)
 		{
 			if (line.find(vertex) != std::string::npos)

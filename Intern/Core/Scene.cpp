@@ -113,6 +113,7 @@ void Scene::Render()
 		renderData.shadowData = shadowData;
 		renderData.framebuffer = m_shadowBuffer;
 		renderData.uniformBuffer = m_MatrixBuffer;
+		renderData.materialsBuffer = m_materialsBuffer;
 		Renderer::PushPass(std::move(colorPass));
 	}
 
@@ -137,6 +138,7 @@ void Scene::Render()
 		renderData.shadowData = shadowData;
 		renderData.framebuffer = m_shadowBuffer;
 		renderData.uniformBuffer = m_MatrixBuffer;
+
 		renderData.gBuffer = m_Gbuffer;
 	//	Renderer::PushPass(std::move(gBufferPass));
 	}
@@ -273,7 +275,7 @@ void Scene::CreateDefaultActor()
 {
 	std::shared_ptr<Actor> actor = std::make_shared<Actor>();
 	std::shared_ptr<TransformComponent> tComponent = std::make_shared<TransformComponent>(actor);
-	std::shared_ptr<MeshRendererComponent> renderComponent = std::make_shared<MeshRendererComponent>(actor, "./Assets/sponza.obj");
+	std::shared_ptr<MeshRendererComponent> renderComponent = std::make_shared<MeshRendererComponent>(actor, "./Assets/sponza_blender.obj");
 	actor->AddComponent(tComponent);
 	actor->AddComponent(renderComponent);
 	meshDirty = true;
@@ -339,20 +341,34 @@ void Scene::CreateBuffers()
 	m_LightsBuffer = std::make_shared<UniformBuffer>();
 	m_MatrixBuffer = std::make_shared<UniformBuffer>();
 	m_ssaoSamplesBuffer = std::make_shared<UniformBuffer>();
-	m_MatrixBuffer->InitData(uniformsBufferShader.get(), "Matrices");
-	m_ssaoSamplesBuffer->InitData(uniformsBufferShader.get(), "SSAOSamples");
+	m_materialsBuffer = std::make_shared<UniformBuffer>();
 
-	static uint32_t indices[] = { 0, 1, 1, 2, 2, 3, 3, 0, 0, 4, 4, 5, 5, 1, 5, 6, 2, 6, 6, 7, 7, 3, 7, 4 };
+	m_MatrixBuffer->InitData(uniformsBufferShader.get(), "Matrices");
+	//m_ssaoSamplesBuffer->InitData(uniformsBufferShader.get(), "SSAOSamples");
+	m_materialsBuffer->InitData(uniformsBufferShader.get(), "MaterialUniform");
+
+	static uint32_t indices[] = 
+	{	
+		0, 1, 1,
+		2, 2, 3,
+		3, 0, 0,
+		4, 4, 5,
+		5, 1, 5,
+		6, 2, 6,
+		6, 7, 7,
+		3, 7, 4 
+	};
+
 	aabbVertexArray = std::make_shared<VertexArray>();
 	aabbVertexBuffer = std::make_shared<VertexBuffer>(sizeof(Vector3) * 24);
 	aabbVertexBuffer->SetLayout({ { AttribDataType::T_FLOAT, Attrib::VERTEXPOSITION, AttribCount::VEC3, false } });
 	aabbVertexArray->SetIndices(indices, 24);
 	aabbVertexArray->AddBuffer(*aabbVertexBuffer.get());
-	m_ssaoEffect = std::make_shared<SSAO>();
-	m_ssaoEffect->m_uniformBuffer = m_ssaoSamplesBuffer;
-	m_ssaoEffect->CreateFramebuffer();
-	m_ssaoEffect->GenerateKernel();
-	m_ssaoEffect->GenerateNoiseTexture();
+	//m_ssaoEffect = std::make_shared<SSAO>();
+	//m_ssaoEffect->m_uniformBuffer = m_ssaoSamplesBuffer;
+	//m_ssaoEffect->CreateFramebuffer();
+	//m_ssaoEffect->GenerateKernel();
+	//m_ssaoEffect->GenerateNoiseTexture();
 }
 
 
@@ -369,7 +385,12 @@ void Scene::InitSceneShaders()
 	sceneShader = std::make_shared<Shader>("Assets/Shaders/lighting.shader");
 	shadowShader = std::make_shared<Shader>("Assets/Shaders/depth.glsl");
 	aabbShader = std::make_shared<Shader>("./Assets/Shaders/aabb.glsl");
-	//testShader = std::make_unique<Shader>("Assets/Shaders/envmap.glsl");
+
+	sceneShader->Bind();
+	sceneShader->UploadUniformInt("depthTexture", 0);
+	sceneShader->UploadUniformInt("albedoTexture", 1);
+	sceneShader->UploadUniformInt("specularTexture", 2);
+	sceneShader->UploadUniformInt("normalTexture", 3);
 }
 
 void Scene::InitScene()

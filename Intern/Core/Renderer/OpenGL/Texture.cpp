@@ -5,27 +5,22 @@
 #define STBI_WINDOWS_UTF8
 
 #include <stb_image.h>
+#include "Math/Vector3.h"
 #include <Debug.h>
 
-Texture* Texture::s_defaultTexture = nullptr;
+std::shared_ptr<Texture> Texture::s_defaultTexture;
+std::shared_ptr<Texture> Texture::s_defaultSpecularTexture;
+std::shared_ptr<Texture> Texture::s_defaultNormalTexture;
 
-void Texture::CreateDefaultTexture()
+
+// TODO: Updating Textures
+void Texture::CreateDefaultTextures()
 {
 	stbi_set_flip_vertically_on_load(true);
 	if (s_defaultTexture == nullptr)
 	{
-		float (*textureData)[3] = new float[4 * 4][3];
-		for (int x = 0; x < 4; x++)
-		{
-			for (int y = 0; y < 4; y++)
-			{
-				textureData[x + y * 4][0] = 255.f;
-				textureData[x + y * 4][1] = 255.f;
-				textureData[x + y * 4][2] = 255.f;
+		Vector3* texData = new Vector3[4 * 4];
 
-			}
-		}
-		
 		TextureParameters texParam;
 		texParam.dataFormat = TextureFormat::RGB;
 		texParam.internalFormat = TextureFormat::RGB8;
@@ -33,12 +28,47 @@ void Texture::CreateDefaultTexture()
 		texParam.minFilter = TextureFilter::NEAREST;
 		texParam.textureDataType = TextureDataType::FLOAT;
 		texParam.wrap = TextureWrap::REPEAT;
-		s_defaultTexture = new Texture2D();
+
+		s_defaultTexture = std::make_shared<Texture2D>();
+		s_defaultSpecularTexture = std::make_shared<Texture2D>();
+		s_defaultNormalTexture = std::make_shared<Texture2D>();
+
 		s_defaultTexture->SetHeight(4);
 		s_defaultTexture->SetWidth(4);
-		s_defaultTexture->Create(textureData, texParam);
+		s_defaultNormalTexture->SetHeight(4);
+		s_defaultNormalTexture->SetWidth(4);
+		s_defaultSpecularTexture->SetHeight(4);
+		s_defaultSpecularTexture->SetWidth(4);
 
-		delete[] textureData;
+		for (int x = 0; x < 4; x++)
+		{
+			for (int y = 0; y < 4; y++)
+			{
+				texData[x + y * 4] = Vector3(255.f, 255.f, 255.f);
+			}
+		}
+
+		s_defaultTexture->Create(texData, texParam);
+
+		for (int x = 0; x < 4; x++)
+		{
+			for (int y = 0; y < 4; y++)
+			{
+				texData[x + y * 4] = Vector3(0.f, 0.f, 0.f);
+			}
+		}
+
+		s_defaultSpecularTexture->Create(texData, texParam);
+		for (int x = 0; x < 4; x++)
+		{
+			for (int y = 0; y < 4; y++)
+			{
+				texData[x + y * 4] = Vector3(255.f / 2.f, 255.f / 2.f, 255.f);
+			}
+		}
+		s_defaultNormalTexture->Create(texData, texParam);
+
+		delete[] texData;
 	}
 }
 
@@ -64,10 +94,17 @@ void Texture2D::CreateFromFile(const std::string& p_filePath, const TextureParam
 	glGenTextures(1, &m_ID);
 
 	const uint8_t* imgData = stbi_load(p_filePath.c_str(), &m_Width, &m_Height, &m_Components, 0);
-	if (imgData == nullptr)
+	if (imgData == NULL)
 	{
 		stbi_image_free((void*)imgData);
+		m_ID = DEFAULT_TEX;
 		return;
+	}
+
+	if (m_Components == 1)
+	{
+		textureParameters.internalFormat = TextureFormat::R8;
+		textureParameters.dataFormat = TextureFormat::RED;
 	}
 
 	if (m_Components == 3)

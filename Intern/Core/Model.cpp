@@ -6,20 +6,106 @@
 #include <filesystem>
 #include <Profiler.h>
 
-void CreateModelCache()
-{
 
+std::ostream& operator<<(std::ostream& os, Material& mat)
+{
+	std::ostream::sentry s(os);
+	if (s)
+	{
+		int t = 0;
+		os.write("Albedo", 7);
+		os.write((char*)&mat.Albedo, sizeof(Vector3));
+		os.write("Diffuse", 8);
+		os.write((char*)&mat.Diffuse, sizeof(Vector3));
+		os.write("Specular", 9);
+		os.write((char*)&mat.Specular, sizeof(Vector3));
+		os.write("Albedo_Texture", 15).write((char*)&mat.AlbedoTexture, 4);
+		os.write("Specular_Texture",17 ).write((char*)& mat.SpecularTexture, 4);
+		os.write("Normal_Texture" , 15).write((char*)&mat.NormalTexture, 4);
+		os.write("NormalMap_Enabled", 18).write((char*)&mat.NormalMapEnabled, 1);
+		os.write("Shininess", 10).write((char*)& mat.Shininess, 4);
+		os.write("Specular_Highlight", 19).write((char*)&mat.SpecularHighlight, 4);
+		os.write("Use_SSAO", 9).write( (char*)&mat.useSSAO, 1);
+
+		t = mat.AlbedoTexName.size() + 1;
+		std::string st = mat.AlbedoTexName + '\0';
+		os .write( "AlbedoTexture_Name", 19).write((char*)&t, 4).write((char*)st.c_str(), mat.AlbedoTexName.size() + 1);
+		t = mat.SpecularTexName.size() + 1;
+		st = mat.SpecularTexName + '\0';
+		os .write( "SpecularTexture_Name", 21).write((char*)&t, 4).write((char*)st.c_str(), mat.SpecularTexName.size() + 1);
+		st = mat.NormalTexName + '\0';
+		t = mat.NormalTexName.size() + 1;
+		os .write( "NormalTexture_Name", 19).write((char*)&t, 4).write((char*)st.c_str(), mat.NormalTexName.size() + 1);
+	}
+
+	return os;
 }
+
+std::istream& operator>>(std::istream& is, Material& mat)
+{
+	std::istream::sentry s(is);
+	if (s)
+	{
+		char* t = new char[25];
+		is.read(t, 7);
+		is.read((char*)&mat.Albedo, sizeof(Vector3));
+		is.read(t, 8);
+		is.read((char*)&mat.Diffuse, sizeof(Vector3));
+		is.read(t, 9);
+		is.read((char*)&mat.Specular, sizeof(Vector3));
+		is.read(t, 15).read((char*)&mat.AlbedoTexture, 4);
+		is.read(t, 17).read((char*)&mat.SpecularTexture, 4);
+		is.read(t, 15).read((char*)&mat.NormalTexture, 4);
+		is.read(t, 18).read((char*)&mat.NormalMapEnabled, 1);
+		is.read(t, 10).read((char*)&mat.Shininess, 4);
+		is.read(t, 19).read((char*)&mat.SpecularHighlight, 4);
+		is.read(t, 9).read((char*)&mat.useSSAO, 1);
+
+		int st = 0;
+		is.read(t, 19).read((char*)&(st), 4);
+		char* str = new char[st];
+		is.read(str, st);
+		mat.AlbedoTexName = str;
+		delete[] str;
+
+		is.read(t, 21).read((char*)&(st), 4);
+		str = new char[st];
+		is.read(str, st);
+		mat.SpecularTexName = str;
+		delete[] str;
+
+		is.read(t, 19).read((char*)&(st), 4);
+		str = new char[st];
+		is.read(str, st);
+		mat.NormalTexName = str;
+		delete[] str;
+	}
+
+	return is;
+}
+
 
 bool ModelLoader::LoadModelFromCache(Model* p_model)
 {
+
+	// TODO: Reading just Vertex Attribs is probably better and then creating AABB and materials
+	// programatically
+
 		uint64_t meshCount = 0;
+
 		ReadFromCache(&meshCount, 1);
 
-		uint64_t texCount = 0;
-		ReadFromCache(&texCount, 1);
+		uint64_t albedoTexCount = 0;
+		uint64_t specularTexCount = 0;
+		uint64_t normalTexCount = 0;
+		
+		ReadFromCache(&albedoTexCount, 1);
+		ReadFromCache(&specularTexCount, 1);
+		ReadFromCache(&normalTexCount, 1);
 
-		p_model->CreateDiffuseTextures(texCount);
+		p_model->CreateAlbedoTextures(albedoTexCount);
+		p_model->CreateSpecularTextures(specularTexCount);
+		p_model->CreateNormalTextures(normalTexCount);
 
 
 		TextureParameters texParam;
@@ -29,42 +115,100 @@ bool ModelLoader::LoadModelFromCache(Model* p_model)
 		texParam.minFilter = TextureFilter::LINEAR_MIPMAP_LINEAR;
 		texParam.wrap = TextureWrap::REPEAT;
 
-
-		for (int i = 0; i < texCount; i++)
+		std::string texDir = "./Assets/Textures/";
+		for (int i = 1; i < albedoTexCount + 1; i++)
 		{
 			uint64_t texSize = 0;
 			ReadFromCache(&texSize, 1);
 			char* texPath = new char[texSize];
 			ReadFromCache(texPath, texSize);
 
-			auto tex = p_model->GetTexture(Model::TEX_DIFFUSE, i).lock();
+			auto tex = p_model->GetTexture(Model::TextureType::TEX_DIFFUSE, i).lock();
 			tex->CreateFromFile(texPath, texParam);
+			p_model->m_textureNames.push_back({ i, true, texPath });
+			delete[] texPath;
+		}
+		
+		for (int i = 1; i < specularTexCount + 1; i++)
+		{
+			uint64_t texSize = 0;
+			ReadFromCache(&texSize, 1);
+			char* texPath = new char[texSize];
+			ReadFromCache(texPath, texSize);
+
+			auto tex = p_model->GetTexture(Model::TextureType::TEX_SPECULAR, i).lock();
+			tex->CreateFromFile(texPath, texParam);
+			p_model->m_specularTextureNames.push_back({ i, true, texPath });
+			delete[] texPath;
+		}
+		
+		for (int i = 1; i < normalTexCount + 1; i++)
+		{
+			uint64_t texSize = 0;
+			ReadFromCache(&texSize, 1);
+			char* texPath = new char[texSize];
+			ReadFromCache(texPath, texSize);
+
+			auto tex = p_model->GetTexture(Model::TextureType::TEX_NORMAL, i).lock();
+			tex->CreateFromFile(texPath, texParam);
+			p_model->m_normalTextureNames.push_back({ i, true, texPath });
 			delete[] texPath;
 		}
 
+		Material* material = new Material[meshCount];
+		ReadFromCache(material, meshCount);
 		for (uint64_t i = 0; i < meshCount; i++)
 		{
+			// Read number of vertex Attributes
 			uint64_t vertexAttribCount = 0;
 			ReadFromCache(&vertexAttribCount, 1);
 			VertexAttrib* vertexAttrib = new VertexAttrib[vertexAttribCount];
 			ReadFromCache(vertexAttrib, vertexAttribCount);
-			uint64_t count = 0;
-			ReadFromCache(&count, 1);
-			uint32_t* indices = new uint32_t[count];
-			ReadFromCache(indices, count);
-			AABB* aabb = new AABB;
-			Material* material = new Material;
-			ReadFromCache(aabb, 1);
-			ReadFromCache(material, 1);
 
-			Mesh mesh(vertexAttrib, indices, vertexAttribCount, *material, *aabb);
+			uint64_t indicesCount = 0;
+			ReadFromCache(&indicesCount, 1);
+			uint32_t* indices = new uint32_t[indicesCount];
+			ReadFromCache(indices, indicesCount);
+
+			
+			AABB* aabb = new AABB;
+			ReadFromCache(aabb, 1);
+
+			if (material[i].AlbedoTexName != "")
+			{
+				const auto& result = std::find(p_model->m_textureNames.begin(), p_model->m_textureNames.end(),  texDir + material[i].AlbedoTexName);
+				if (result != std::end(p_model->m_textureNames))
+				{
+					material[i].AlbedoTexture = result->id;
+				}
+			}
+
+			if (material[i].SpecularTexName != "")
+			{
+				const auto& result = std::find(p_model->m_specularTextureNames.begin(), p_model->m_specularTextureNames.end(), texDir + material[i].SpecularTexName);
+				if (result != std::end(p_model->m_specularTextureNames))
+				{
+					material[i].SpecularTexture = result->id;
+				}
+			}
+
+			if (material[i].NormalTexName != "")
+			{
+				const auto& result = std::find(p_model->m_normalTextureNames.begin(), p_model->m_normalTextureNames.end(), texDir + material[i].NormalTexName);
+				if (result != std::end(p_model->m_normalTextureNames))
+				{
+					material[i].NormalTexture = result->id;
+				}
+			}
+
+			Mesh mesh(vertexAttrib, indices, vertexAttribCount, material[i], *aabb);
 			p_model->AddMesh(std::forward<Mesh>(mesh));
 
 			delete[] vertexAttrib;
 			delete[] indices;
 			delete aabb;
-			delete material;
 		}
+		delete[] material;
 
 		return true;
 }
@@ -75,15 +219,15 @@ bool ModelLoader::LoadModel(ModelFormat modelFormat, const std::string& p_filePa
 	uint64_t start_pos;
 	if ((start_pos = p_filePath.find_last_of("/\\")) != p_filePath.npos)
 	{
-		modelName = p_filePath.substr(start_pos + 1, p_filePath.size()) + ".bin";
+		modelName = p_filePath.substr(start_pos + 1, p_filePath.size());
 	}
 	else
 	{
-		modelName = p_filePath + ".bin";
+		modelName = p_filePath;
 	}
 
 	{
-		if (std::filesystem::exists(modelName))
+		if (std::filesystem::exists(modelName + ".bin"))
 		{
 			return LoadModelFromCache(p_model);
 		}
@@ -118,10 +262,11 @@ bool ModelLoader::LoadModel(ModelFormat modelFormat, const std::string& p_filePa
 		
 		WriteToCache(shapes.size());
 
-		uint32_t diffuseTextureCount = 0;
-		uint32_t specularTextureCount = 0;
+		uint16_t albedoTextureCount = 0;
+		uint16_t specularTextureCount = 0;
+		uint16_t normalTextureCount = 0;
 
-		// TODO: not just diffuse textures;
+		// Load Textures
 		for (int i = 0; i < materials.size(); i++)
 		{
 			if (materials[i].diffuse_texname != "")
@@ -131,33 +276,83 @@ bool ModelLoader::LoadModel(ModelFormat modelFormat, const std::string& p_filePa
 				if (result != p_model->m_textureNames.end())
 					continue;
 
-				diffuseTextureCount++;
+				albedoTextureCount++;
 				p_model->m_textureNames.push_back({ -1, false, materials[i].diffuse_texname });
 			}
+
+			if (materials[i].specular_texname != "")
+			{
+				auto result = std::find(std::begin(p_model->m_specularTextureNames), std::end(p_model->m_specularTextureNames), materials[i].specular_texname);
+				if (result != p_model->m_specularTextureNames.end())
+					continue;
+
+				specularTextureCount++;
+				p_model->m_specularTextureNames.push_back({ -1, false, materials[i].specular_texname });
+			}
+			
+			if (materials[i].bump_texname != "")
+			{
+				auto result = std::find(std::begin(p_model->m_normalTextureNames), std::end(p_model->m_normalTextureNames), materials[i].bump_texname);
+				if (result != p_model->m_normalTextureNames.end())
+					continue;
+
+				normalTextureCount++;
+				p_model->m_normalTextureNames.push_back({ -1, false, materials[i].bump_texname });
+			}
 		}
-		WriteToCache(diffuseTextureCount, 1);
-		p_model->CreateDiffuseTextures(diffuseTextureCount);
-		//p_model->CreateSpecularTextures(textureCount);
+
+		WriteToCache(albedoTextureCount, 1);
+		p_model->CreateAlbedoTextures(albedoTextureCount);
+		WriteToCache(specularTextureCount, 1);
+		p_model->CreateSpecularTextures(specularTextureCount);
+		WriteToCache(normalTextureCount);
+		p_model->CreateNormalTextures(normalTextureCount);
+		
 
 		TextureParameters texParam;
 		texParam.dataFormat = TextureFormat::RGB;
 		texParam.internalFormat = TextureFormat::RGB8;
 		texParam.magFilter = TextureFilter::LINEAR_MIPMAP_LINEAR;
-		texParam.minFilter = TextureFilter::NEAREST;
+		texParam.minFilter = TextureFilter::LINEAR_MIPMAP_LINEAR;
 		texParam.wrap = TextureWrap::REPEAT;
 
-		for (int i = 0; i < int(diffuseTextureCount); i++)
+		
+		for (int i = 0; i < int(albedoTextureCount); i++)
 		{
-			auto tex = p_model->GetTexture(Model::TEX_DIFFUSE, i).lock();
+			auto tex = p_model->GetTexture(Model::TextureType::TEX_DIFFUSE, i).lock();
 			std::string texPath = "./Assets/Textures/" + p_model->m_textureNames[i].name;
-			WriteToCache(texPath.size() + 1, 1);
+			WriteToCache(uint16_t(texPath.size() + 1), 1);
 			WriteToCache((texPath + "\0").c_str(), texPath.size() + 1);
 			tex->CreateFromFile(texPath, texParam);
 			p_model->m_textureNames[i].loaded = true;
 			p_model->m_textureNames[i].id = i;
 		}
 		
-		//WriteToCache("Mesh_Count", 10);
+
+		for (int i = 0; i < int(specularTextureCount); i++)
+		{
+			int index = i;
+			auto tex = p_model->GetTexture(Model::TextureType::TEX_SPECULAR, i).lock();
+			std::string texPath = "./Assets/Textures/" + p_model->m_specularTextureNames[index].name;
+			WriteToCache(uint16_t(texPath.size() + 1), 1);
+			WriteToCache((texPath + "\0").c_str(), texPath.size() + 1);
+			tex->CreateFromFile(texPath, texParam);
+			p_model->m_specularTextureNames[index].loaded = true;
+			p_model->m_specularTextureNames[index].id = i;
+		}
+
+		
+		for (int i = 0; i < int(normalTextureCount); i++)
+		{
+			int index = i;
+			auto tex = p_model->GetTexture(Model::TextureType::TEX_NORMAL, i).lock();
+			std::string texPath = "./Assets/Textures/" + p_model->m_normalTextureNames[index].name;
+			WriteToCache(uint16_t(texPath.size() + 1), 1);
+			WriteToCache((texPath + "\0").c_str(), texPath.size() + 1);
+			tex->CreateFromFile(texPath, texParam);
+			p_model->m_normalTextureNames[index].loaded = true;
+			p_model->m_normalTextureNames[index].id = i;
+		}
 
 		for (size_t s = 0; s < shapes.size(); s++)
 		{
@@ -185,12 +380,12 @@ bool ModelLoader::LoadModel(ModelFormat modelFormat, const std::string& p_filePa
 					tinyobj::index_t idx = shapes[s].mesh.indices[indexOffset + v];
 
 					vAttrib[v].vertices = { attribs.vertices[3 * size_t(idx.vertex_index) + 0], attribs.vertices[3 * size_t(idx.vertex_index) + 1], attribs.vertices[3 * size_t(idx.vertex_index) + 2] };
-					//vAttrib[v].vertices /= 10.f;
+					
 					if (f == 0)
 						boundindBox.position = vAttrib[v].vertices;
 					boundindBox.ExpandTo(vAttrib[v].vertices);
 
-
+					
 					if (idx.normal_index >= 0)
 					{
 						vAttrib[v].normals = { attribs.normals[3 * size_t(idx.normal_index) + 0], attribs.normals[3 * size_t(idx.normal_index) + 1], attribs.normals[3 * size_t(idx.normal_index) + 2] };
@@ -204,13 +399,14 @@ bool ModelLoader::LoadModel(ModelFormat modelFormat, const std::string& p_filePa
 					if (v == fv - 1)
 					{
 						ComputeTangentBasis(vAttrib.data());
+						vertexAttribs.push_back(vAttrib[0]);
+						vertexAttribs.push_back(vAttrib[1]);
+						vertexAttribs.push_back(vAttrib[2]);
 					}
 
 
-					vertexAttribs.push_back(vAttrib[v]);
 					if (uniqueVertices.count(vAttrib[v]) == 0)
 					{
-			
 						uniqueVertices[vAttrib[v]] = (uint32_t)(indexOffset + v);
 					}
 
@@ -236,41 +432,52 @@ bool ModelLoader::LoadModel(ModelFormat modelFormat, const std::string& p_filePa
 			material.Diffuse = -1;
 			if (shapes[s].mesh.material_ids[0] >= 0)
 			{
-				const auto& diffuseTex = materials[shapes[s].mesh.material_ids[0]].diffuse_texname;
-				if (diffuseTex != "")
+				const auto& albedoTex = materials[shapes[s].mesh.material_ids[0]].diffuse_texname;
+				const auto& specularTex = materials[shapes[s].mesh.material_ids[0]].specular_texname;
+				const auto& normalTex = materials[shapes[s].mesh.material_ids[0]].bump_texname;
+				
+				if (albedoTex != "")
 				{
-					auto result = std::find(std::begin(p_model->m_textureNames), std::end(p_model->m_textureNames), diffuseTex);
+					auto result = std::find(std::begin(p_model->m_textureNames), std::end(p_model->m_textureNames), albedoTex);
 					if (result != std::end(p_model->m_textureNames) && result->loaded)
 					{
-						material.Diffuse = result->id;
-						material.Color = { materials[shapes[s].mesh.material_ids[0]].diffuse[0], materials[shapes[s].mesh.material_ids[0]].diffuse[1], materials[shapes[s].mesh.material_ids[0]].diffuse[2], 1.f };
+						material.AlbedoTexture = result->id;
+						material.AlbedoTexName = albedoTex;
+					}
+				}
+				
+				if (specularTex != "")
+				{
+					auto result = std::find(std::begin(p_model->m_specularTextureNames), std::end(p_model->m_specularTextureNames), specularTex);
+					if (result != std::end(p_model->m_specularTextureNames) && result->loaded)
+					{
+						material.SpecularTexture = result->id;
+						material.SpecularTexName = specularTex;
+					}
+				}
+				
+				if (normalTex != "")
+				{
+					auto result = std::find(std::begin(p_model->m_normalTextureNames), std::end(p_model->m_normalTextureNames), normalTex);
+					if (result != std::end(p_model->m_normalTextureNames) && result->loaded)
+					{
+						material.NormalTexture = result->id;
+						material.NormalTexName = normalTex;
+						material.NormalMapEnabled = true;
 					}
 				}
 
-				else
-				{
-					material.Diffuse = -1;
-					material.Color = { materials[shapes[s].mesh.material_ids[0]].diffuse[0], materials[shapes[s].mesh.material_ids[0]].diffuse[1], materials[shapes[s].mesh.material_ids[0]].diffuse[2], 1.f };
-				}
+				material.Diffuse = { materials[shapes[s].mesh.material_ids[0]].diffuse[0], materials[shapes[s].mesh.material_ids[0]].diffuse[1], materials[shapes[s].mesh.material_ids[0]].diffuse[2], 1.f };
+				material.Albedo = { materials[shapes[s].mesh.material_ids[0]].ambient[0], materials[shapes[s].mesh.material_ids[0]].ambient[1], materials[shapes[s].mesh.material_ids[0]].ambient[2], 1.f };
 				material.Shininess = materials[shapes[s].mesh.material_ids[0]].shininess;
-				material.SpecularHighlights = materials[shapes[s].mesh.material_ids[0]].specular[0];
+				material.SpecularHighlight = materials[shapes[s].mesh.material_ids[0]].specular[0];
 			}
 
-			else
-			{
-				material.Diffuse = -1;
-			}
-
-
-		//	WriteToCache("vertex_attrib", 13);
 			WriteToCache(vertexAttribs.size());
 			WriteToCache(vertexAttribs.data(), vertexAttribs.size());
-		//	WriteToCache("indices", 7);
 			WriteToCache(vertexAttribCount);
 			WriteToCache(indices, vertexAttribCount);
-		//	WriteToCache("boundind_box", 12);
 			WriteToCache(&boundindBox, 1);
-		//	WriteToCache("material", 8);
 			WriteToCache(&material, 1);
 			Mesh mesh(vertexAttribs, indices, vertexAttribCount, material, boundindBox);
 
@@ -298,17 +505,26 @@ void ModelLoader::ComputeTangentBasis(VertexAttrib* attrib)
 	Vector3 deltaPos1 = attrib[1].vertices - attrib[0].vertices;
 	Vector3 deltaPos2 = attrib[2].vertices - attrib[0].vertices;
 
-	Vector3 deltaUV1 = attrib[1].uv - attrib[0].uv;
-	Vector3 deltaUV2 = attrib[2].uv - attrib[0].uv;
+	Vector2 deltaUV1 = attrib[1].uv - attrib[0].uv;
+	Vector2 deltaUV2 = attrib[2].uv - attrib[0].uv;
 
 	float r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
 
 	
 	if (isinf(r))
+	{
+		Vector3 tan = Vector3(-1.f, 0, 0);
+		Vector3 bitan = Vector3(1.f, 0, 0);
+		for (int i = 0; i < 3; i++)
+		{
+			attrib[i].tangent = tan;
+			attrib[i].bitangent = bitan;
+		}
 		return;
+	}
 
-	Vector3 tangent = (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y) * r;
-	Vector3 bitangent = (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x) * r;
+	Vector3 tangent = Vector3::Normalize((deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y) * r);
+	Vector3 bitangent = Vector3::Normalize((deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x) * r);
 	
 	
 	for (int i = 0; i < 3; i++)
@@ -347,7 +563,7 @@ bool ModelLoader::LoadAsStaticModel(ModelFormat modelFormat, const std::string& 
 
 		uint32_t textureCount = 0;
 
-		// TODO: not just diffuse textures;
+		// TODO: not just albedo textures;
 		for (int i = 0; i < materials.size(); i++)
 		{
 			if (materials[i].diffuse_texname != "")
@@ -447,21 +663,21 @@ bool ModelLoader::LoadAsStaticModel(ModelFormat modelFormat, const std::string& 
 
 			if (shapes[s].mesh.material_ids[0] >= 0)
 			{
-				const auto& diffuseTex = materials[shapes[s].mesh.material_ids[0]].diffuse_texname;
-				if (diffuseTex != "")
+				const auto& albedoTex = materials[shapes[s].mesh.material_ids[0]].diffuse_texname;
+				if (albedoTex != "")
 				{
-					auto result = std::find(std::begin(p_model->m_textureNames), std::end(p_model->m_textureNames), diffuseTex);
+					auto result = std::find(std::begin(p_model->m_textureNames), std::end(p_model->m_textureNames), albedoTex);
 					if (result != std::end(p_model->m_textureNames) && result->loaded)
 					{
 						//material->Diffuse = result->id;
-						//material->Color = { materials[shapes[s].mesh.material_ids[0]].diffuse[0], materials[shapes[s].mesh.material_ids[0]].diffuse[1], materials[shapes[s].mesh.material_ids[0]].diffuse[2], 1.f };
+						//material->Color = { materials[shapes[s].mesh.material_ids[0]].albedo[0], materials[shapes[s].mesh.material_ids[0]].albedo[1], materials[shapes[s].mesh.material_ids[0]].albedo[2], 1.f };
 					}
 				}
 
 				else
 				{
 					//	material->Diffuse = -1;
-					//	material->Color = { materials[shapes[s].mesh.material_ids[0]].diffuse[0], materials[shapes[s].mesh.material_ids[0]].diffuse[1], materials[shapes[s].mesh.material_ids[0]].diffuse[2], 1.f };
+					//	material->Color = { materials[shapes[s].mesh.material_ids[0]].albedo[0], materials[shapes[s].mesh.material_ids[0]].albedo[1], materials[shapes[s].mesh.material_ids[0]].albedo[2], 1.f };
 					//}
 					//material->Shininess = materials[shapes[s].mesh.material_ids[0]].shininess;
 					//material->SpecularHighlights = materials[shapes[s].mesh.material_ids[0]].specular[0];
@@ -502,13 +718,13 @@ void Model::AddMesh(Mesh&& p_mesh)
 }
 
 
-void Model::CreateDiffuseTextures(uint32_t count)
+void Model::CreateAlbedoTextures(uint32_t count)
 {
-
+	m_albedoTextures.push_back(Texture::s_defaultTexture);
 	while (count)
 	{
 		auto tex = std::make_shared<Texture2D>();
-		m_diffuseTextures.push_back(tex);
+		m_albedoTextures.push_back(tex);
 		--count;
 	}
 }
@@ -516,10 +732,22 @@ void Model::CreateDiffuseTextures(uint32_t count)
 
 void Model::CreateSpecularTextures(uint32_t count)
 {
+	m_specularTextures.push_back(Texture::s_defaultSpecularTexture);
 	while (count)
 	{
 		auto tex = std::make_shared<Texture2D>();
 		m_specularTextures.push_back(tex);
+		--count;
+	}
+}
+
+void Model::CreateNormalTextures(uint32_t count)
+{
+	m_normalMapTextures.push_back(Texture::s_defaultNormalTexture);
+	while (count)
+	{
+		auto tex = std::make_shared<Texture2D>();
+		m_normalMapTextures.push_back(tex);
 		--count;
 	}
 }

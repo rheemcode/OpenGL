@@ -38,7 +38,6 @@ struct LightProperties
     //vec3 Position;
 };
 
-
 layout(std140, binding = 0) uniform Matrices
 {
    mat4 view;
@@ -52,11 +51,27 @@ layout(std140, binding = 1) uniform LightsUniform
     LightProperties Lights;
 };
 
-
-layout(std140, binding = 2) uniform SSAOSamples
+//
+//layout(std140, binding = 2) uniform SSAOSamples
+//{
+//    vec3 samples[32];
+//};
+//
+//
+struct MaterialProperties
 {
-    vec3 samples[64];
+   int NormalEnabled;
+    float Shininess;
+    float SpecularHighlight;
+    vec3 Diffuse;
+    vec3 Ambient;
 };
+
+layout(std140, binding = 2) uniform MaterialUniform
+{
+    MaterialProperties Material;
+};
+
 
 out vec4 FragColor;
 

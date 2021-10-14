@@ -8,7 +8,7 @@ void UniformBuffer::InitData(Shader* shader, const std::string& name)
 {
 	Bind();
 	m_index = glGetUniformBlockIndex(shader->GetProgram(), name.c_str());
-	GLCall(glUniformBlockBinding(shader->GetProgram(), m_index, shader->GetUniformBlockBinding(name)));
+//	GLCall(glUniformBlockBinding(shader->GetProgram(), m_index, shader->GetUniformBlockBinding(name)));
 	glGetActiveUniformBlockiv(shader->GetProgram(), m_index, GL_UNIFORM_BLOCK_DATA_SIZE, &m_size);
 	m_data = new uint8_t[m_size];
 	GLCall(glBufferData(GL_UNIFORM_BUFFER, m_size, nullptr, GL_DYNAMIC_DRAW));

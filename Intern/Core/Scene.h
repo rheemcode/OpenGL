@@ -121,6 +121,8 @@ class GLIB_API Scene
 	std::shared_ptr<UniformBuffer> m_LightsBuffer;
 	std::shared_ptr<UniformBuffer> m_MatrixBuffer;
 	std::shared_ptr<UniformBuffer> m_ssaoSamplesBuffer;
+	std::shared_ptr<UniformBuffer> m_materialsBuffer;
+
 	std::shared_ptr<GBuffer> m_Gbuffer;
 	
 	/* PostProcess */
