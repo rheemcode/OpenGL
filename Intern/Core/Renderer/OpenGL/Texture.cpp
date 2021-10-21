@@ -23,7 +23,7 @@ void Texture::CreateDefaultTextures()
 
 		TextureParameters texParam;
 		texParam.dataFormat = TextureFormat::RGB;
-		texParam.internalFormat = TextureFormat::RGB8;
+		texParam.internalFormat = TextureFormat::RGB16F;
 		texParam.magFilter = TextureFilter::NEAREST;
 		texParam.minFilter = TextureFilter::NEAREST;
 		texParam.textureDataType = TextureDataType::FLOAT;
@@ -63,7 +63,7 @@ void Texture::CreateDefaultTextures()
 		{
 			for (int y = 0; y < 4; y++)
 			{
-				texData[x + y * 4] = Vector3(255.f / 2.f, 255.f / 2.f, 255.f);
+				texData[x + y * 4] = Vector3(51.8f, 51.f, 100.f);
 			}
 		}
 		s_defaultNormalTexture->Create(texData, texParam);

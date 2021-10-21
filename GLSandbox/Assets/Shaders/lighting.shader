@@ -226,7 +226,7 @@ void main()
         Spec = 1.0 * pow(eyeLight, Material.Shininess);
 
     vec3 Ambient = vec3(Lights.Ambient) * Lights.AmbientEnergy;
-    vec3 Diffuse = vec3(Lights.Color) * NdotL * Lights.Energy;
+    vec3 Diffuse = vec3(Lights.Color) * NdotL * (Lights.Energy * 1.3);
     vec3 Specular = Lights.Color * Spec * SpecularCol * Material.SpecularHighlight;
 
     int shadowIndex = getDepth();

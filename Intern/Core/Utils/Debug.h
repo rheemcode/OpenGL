@@ -33,7 +33,7 @@
 		return val;																													\
 }
 #define GL_DEBUG
-#ifdef GL_DEBUG
+#ifndef GL_DEBUG
 
 #define GLCall(x) GLClearError();\
     x;\
