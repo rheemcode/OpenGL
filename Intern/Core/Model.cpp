@@ -111,8 +111,8 @@ bool ModelLoader::LoadModelFromCache(Model* p_model)
 		TextureParameters texParam;
 		texParam.dataFormat = TextureFormat::RGB;
 		texParam.internalFormat = TextureFormat::RGB8;
-		texParam.magFilter = TextureFilter::LINEAR_MIPMAP_LINEAR;
-		texParam.minFilter = TextureFilter::LINEAR_MIPMAP_LINEAR;
+		texParam.magFilter = TextureFilter::NEAREST;
+		texParam.minFilter = TextureFilter::NEAREST;
 		texParam.wrap = TextureWrap::REPEAT;
 
 		std::string texDir = "./Assets/Textures/";

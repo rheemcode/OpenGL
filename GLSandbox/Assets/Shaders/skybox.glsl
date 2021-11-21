@@ -81,8 +81,8 @@ vec4 color;
      //color = texture(cubeMap, TexCoord);
     vec3 colour;
 
-	int cubeMapOnly = 0;
-	if(cubeMapOnly > 0.0)
+	int cubeMapOnly = 1;
+	if(cubeMapOnly == 1)
 	{
 		colour = textureLod(cubeMap, TexCoord.xyz, blurLevel).xyz;
 	}
@@ -92,7 +92,7 @@ vec4 color;
 	}
 
 	//outFrag = vec4(colour, 1.0);
-  //  color = vec4(brightnessContrast(color.xyz, 1.15f, 1.15f), color.w);
-  //  color = vec4(gamma(color.xyz, 4.8f),color.w);
+	//color = vec4(brightnessContrast(color.xyz, 1.15f, 1.15f), color.w);
+	//color = vec4(gamma(color.xyz, 4.8f),color.w);
 	FragColor = vec4(colour, 1.0);
  };

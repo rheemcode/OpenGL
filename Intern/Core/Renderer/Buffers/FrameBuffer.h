@@ -89,6 +89,8 @@ public:
 
 	void AttachArrayTexture(int width = 2048, int height = 2048, uint32_t p_levels = 4)
 	{
+		fboWidth = width;
+		fboHeight = height;
 		TextureParameters texParam;
 		texParam.internalFormat = TextureFormat::DEPTH24;
 		texParam.dataFormat = TextureFormat::DEPTH;

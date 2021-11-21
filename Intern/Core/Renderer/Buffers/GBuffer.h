@@ -20,7 +20,16 @@ public:
 		m_framebuffer->CreateTexture(FramebufferTexture::NORMAL);
 		m_framebuffer->AttachGBufferTextures();
 		m_bufferGenShader = std::make_unique<Shader>("./Assets/Shaders/gBuffer.glsl");
-		m_bufferRenderShader = std::make_unique<Shader>("./Assets/Shaders/deffered2.glsl");
+		m_bufferRenderShader = std::make_unique<Shader>("./Assets/Shaders/deffered.glsl");
+
+		
+		m_bufferGenShader->Bind();
+		
+		m_bufferGenShader->SetInt("albedoTex", 0);
+		m_bufferGenShader->SetInt("specularTex", 1);
+		m_bufferGenShader->SetInt("normalTex", 2);
+		
+		m_bufferRenderShader->Bind();
 
 		m_bufferRenderShader->SetInt("gPosition", 0);
 		m_bufferRenderShader->SetInt("gNormal", 1);

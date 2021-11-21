@@ -47,15 +47,15 @@ void Scene::PrepareMeshes()
 		{
 			const auto meshRenderer = (MeshRendererComponent*) cmp;
 			meshRenderer->UpdateTransform();
-			for (const auto& mesh : meshRenderer->GetMeshes())
+			for (auto& mesh : meshRenderer->GetMeshes())
 			{
 				if (meshDirty)
 				{
-					meshes.push_back(mesh);
+					meshes.push_back(const_cast<Mesh*>(&mesh));
 				}
 				if (mesh.GetInstanceBound().InFrustum(frustum))
 				{
-					culledMeshes.push_back(mesh);
+					culledMeshes.push_back(const_cast<Mesh*>(&mesh));
 				}
 			}
 		}
@@ -68,23 +68,31 @@ void Scene::PrepareMeshes()
 void Scene::Render()
 {
 	PrepareMeshes();
-	shadowData->shadowBounds.Update();
-	shadowData->UpdateView(GetSkyLightDirection());
-	shadowData->UpdateProjection();
+	shadowData->LightDir = GetSkyLightDirection();
+	shadowData->Update();
 
 	const std::vector<Mesh> shadowCasters;
-	shadowData->CalculateCropMatrix(culledMeshes, meshes);
+	
 	m_MatrixBuffer->UploadData(sceneCamera->GetViewMatrix(), 0);
 	m_MatrixBuffer->UploadData(sceneCamera->GetProjectionMatrix(), 64);
-	m_MatrixBuffer->UploadData(shadowData->CropMatrix[0] * shadowData->Proj[0] * shadowData->View, 128 + 64);
-	m_MatrixBuffer->UploadData(shadowData->CropMatrix[1] * shadowData->Proj[1] * shadowData->View, 256);
-	m_MatrixBuffer->UploadData(shadowData->CropMatrix[2] * shadowData->Proj[2] * shadowData->View, 320);
-	m_MatrixBuffer->UploadData(shadowData->CropMatrix[3] * shadowData->Proj[3] * shadowData->View, 384);
+	m_MatrixBuffer->UploadData(shadowData->TextureMatrix[0], 128 + 64);
+	m_MatrixBuffer->UploadData(shadowData->TextureMatrix[1], 256);
+	m_MatrixBuffer->UploadData(shadowData->TextureMatrix[2], 320);
+	m_MatrixBuffer->UploadData(shadowData->TextureMatrix[3], 384);
 	m_MatrixBuffer->FlushBuffer();
 
 
-	Mesh* _culledMeshes = culledMeshes.data();
-	Mesh* _meshes = meshes.data();
+	Mesh** _culledMeshes = culledMeshes.data();
+	Mesh** _meshes = meshes.data();
+
+	{
+		//		Skybox Pass
+		RenderPass skyboxPass;
+		skyboxPass.Pass = RenderPass::SKYBOX;
+		auto& renderData = skyboxPass.renderData;
+		renderData.cameraData = cameraData;
+		Renderer::PushPass(std::move(skyboxPass));
+	}
 
 	{
 		// Depth Pass
@@ -95,7 +103,6 @@ void Scene::Render()
 		renderData.meshes = _meshes;
 		renderData.meshCount = meshes.size();
 		renderData.shader = shadowShader;
-		renderData.shadowData = shadowData;
 		renderData.framebuffer = m_shadowBuffer;
 		renderData.uniformBuffer = m_MatrixBuffer;
 		Renderer::PushPass(std::move(depthPass));
@@ -110,21 +117,12 @@ void Scene::Render()
 		renderData.meshes = _culledMeshes;
 		renderData.meshCount = culledMeshes.size();
 		renderData.shader = sceneShader;
-		renderData.shadowData = shadowData;
 		renderData.framebuffer = m_shadowBuffer;
 		renderData.uniformBuffer = m_MatrixBuffer;
 		renderData.materialsBuffer = m_materialsBuffer;
 		Renderer::PushPass(std::move(colorPass));
 	}
 
-	{
-		// Skybox Pass
-		//RenderPass skyboxPass;
-		//skyboxPass.Pass = RenderPass::SKYBOX;
-		//auto& renderData = skyboxPass.renderData;
-		//renderData.cameraData = cameraData;
-	//	Renderer::PushPass(std::move(skyboxPass));
-	}
 
 	{
 		// GBuffer Pass
@@ -135,10 +133,9 @@ void Scene::Render()
 		renderData.meshes = _culledMeshes;
 		renderData.meshCount = culledMeshes.size();
 		renderData.shader = sceneShader;
-		renderData.shadowData = shadowData;
 		renderData.framebuffer = m_shadowBuffer;
 		renderData.uniformBuffer = m_MatrixBuffer;
-
+		renderData.materialsBuffer = m_materialsBuffer;
 		renderData.gBuffer = m_Gbuffer;
 	//	Renderer::PushPass(std::move(gBufferPass));
 	}
@@ -165,12 +162,12 @@ void Scene::Render()
 		renderData.meshes = _culledMeshes;
 		renderData.meshCount = culledMeshes.size();
 		renderData.shader = sceneShader;
-		renderData.shadowData = shadowData;
 		renderData.framebuffer = m_shadowBuffer;
 		renderData.uniformBuffer = m_MatrixBuffer;
+		renderData.materialsBuffer = m_materialsBuffer;
 		renderData.gBuffer = m_Gbuffer;
 		renderData.postProcessEffect = m_ssaoEffect;
-	//	Renderer::PushPass(std::move(colorPass));
+		//Renderer::PushPass(std::move(colorPass));
 	}
 
 	{
@@ -190,10 +187,10 @@ void Scene::Render()
 }
 
 
-const std::vector<Mesh>& Scene::GetCulledMeshes()
-{
-	return culledMeshes;
-}
+//const std::vector<Mesh>& Scene::GetCulledMeshes()
+//{
+//	return culledMeshes;
+//}
 
 void Scene::OnUpdate(float p_delta)
 {
@@ -275,7 +272,7 @@ void Scene::CreateDefaultActor()
 {
 	std::shared_ptr<Actor> actor = std::make_shared<Actor>();
 	std::shared_ptr<TransformComponent> tComponent = std::make_shared<TransformComponent>(actor);
-	std::shared_ptr<MeshRendererComponent> renderComponent = std::make_shared<MeshRendererComponent>(actor, "./Assets/sponza_blender.obj");
+	std::shared_ptr<MeshRendererComponent> renderComponent = std::make_shared<MeshRendererComponent>(actor, "./Assets/house.obj");
 	actor->AddComponent(tComponent);
 	actor->AddComponent(renderComponent);
 	meshDirty = true;
@@ -302,10 +299,6 @@ void Scene::InitSceneCamera()
 	cameraData->proj.reset(&sceneCamera->m_ProjectionMatrix);
 	cameraData->view.reset(&sceneCamera->m_ViewMatrix);
 	shadowData = std::make_shared<ShadowData>();
-	shadowData->shadowBounds = ShadowBox(&shadowData->View, sceneCamera->transform, sceneCamera->m_cameraSettings);
-	auto Bias = Matrix4x4::CreateTranslation({ 0.5f, 0.5f, 0.5f });
-	Bias = Matrix4x4::Scale(Bias, { 0.5f, 0.5f, 0.5f });
-	shadowData->Bias = Bias;
 }
 
 void Scene::CreateSkyLight()
@@ -319,7 +312,7 @@ void Scene::CreateSkyLight()
 	auto pLight = std::make_unique<DirectionalLight>();
 	pLight->LightColor = { 1.0f, 1.f, 1.0f };
 	pLight->Energy = 1.5f;
-	pLight->Direction = { 0.f, -0.9f, -.2f, 1.f };
+	pLight->Direction = { -0.6f, -0.6453f, -.2f, 1.f };
 	pLight->LightSource = Light::DIRECTIONAL_LIGHT;
 	pLight->Position = { 0, .7f, -1.f };
 	pLight->LightAttenuation = { 1.f, 1.f };

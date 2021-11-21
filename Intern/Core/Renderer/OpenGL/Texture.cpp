@@ -415,9 +415,12 @@ void TextureCube::Bind(uint32_t p_texture)
 void TextureCube::CreateFromFile(const std::string& p_filePath, const TextureParameters& p_textureParameters)
 {
 	textureParameters = p_textureParameters;
+	textureParameters.textureDataType = TextureDataType::UBYTE;
+	stbi_set_flip_vertically_on_load(false);
 	glGenTextures(1, &m_ID);
 
 	const uint8_t* imgData = stbi_load(p_filePath.c_str(), &m_Width, &m_Height, &m_Components, 0);
+
 	if (imgData == nullptr)
 	{
 		stbi_image_free((void*)imgData);
@@ -439,7 +442,10 @@ void TextureCube::CreateFromFile(const std::string& p_filePath, const TexturePar
 	Bind();
 	GLenum textureTarget = GL_TEXTURE_CUBE_MAP;
 	for (int i = 0; i < 6; i++)
+	{
+
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, (int)textureParameters.internalFormat, m_Width, m_Height, 0, (int)textureParameters.dataFormat, (GLenum)textureParameters.textureDataType, imgData);
+	}
 
 	if (textureParameters.setTextureParams)
 	{
@@ -479,6 +485,62 @@ void TextureCube::Create(const void* p_data, const TextureParameters& p_textureP
 		glGenerateMipmap(textureTarget);
 	}
 	glBindTexture(textureTarget, GL_NONE);
+}
+
+void TextureCube::CreateFromFile(const std::string* p_filePath, const TextureParameters& p_textureParameters)
+{
+	textureParameters = p_textureParameters;
+	textureParameters.textureDataType = TextureDataType::UBYTE;
+	stbi_set_flip_vertically_on_load(false);
+	glGenTextures(1, &m_ID);
+
+	const uint8_t* imgData[6] = { nullptr };
+	for (int i = 0; i < 6; i++)
+	{
+		imgData[i] = stbi_load(p_filePath[i].c_str(), &m_Width, &m_Height, &m_Components, 0);
+	}
+	if (imgData == nullptr)
+	{
+		stbi_image_free((void*)imgData);
+		return;
+	}
+
+	if (m_Components == 3)
+	{
+		textureParameters.internalFormat = TextureFormat::RGB8;
+		textureParameters.dataFormat = TextureFormat::RGB;
+	}
+
+	if (m_Components == 4)
+	{
+		textureParameters.internalFormat = TextureFormat::RGBA8;
+		textureParameters.dataFormat = TextureFormat::RGBA;
+	}
+
+	Bind();
+	GLenum textureTarget = GL_TEXTURE_CUBE_MAP;
+	for (int i = 0; i < 6; i++)
+	{
+
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, (int)textureParameters.internalFormat, m_Width, m_Height, 0, (int)textureParameters.dataFormat, (GLenum)textureParameters.textureDataType, imgData[i]);
+	}
+
+	if (textureParameters.setTextureParams)
+	{
+		glTexParameteri(textureTarget, GL_TEXTURE_MAG_FILTER, (int)textureParameters.magFilter);
+		glTexParameteri(textureTarget, GL_TEXTURE_MIN_FILTER, (int)textureParameters.minFilter);
+		glTexParameteri(textureTarget, GL_TEXTURE_WRAP_S, (int)textureParameters.wrap);
+		glTexParameteri(textureTarget, GL_TEXTURE_WRAP_T, (int)textureParameters.wrap);
+		glTexParameteri(textureTarget, GL_TEXTURE_WRAP_R, (int)textureParameters.wrap);
+	}
+
+	if (textureParameters.generateMips)
+	{
+		glGenerateMipmap(textureTarget);
+	}
+	glBindTexture(textureTarget, GL_NONE);
+	stbi_set_flip_vertically_on_load(true);
+
 }
 
 void TextureCube::Create(const TextureParameters& p_textureParameters)

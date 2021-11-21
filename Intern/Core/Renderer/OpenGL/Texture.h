@@ -222,6 +222,7 @@ public:
 	virtual void Bind();
 	virtual void Bind(uint32_t p_texture);
 	virtual void CreateFromFile(const std::string& p_filePath, const TextureParameters& p_textureParameters);
+	void CreateFromFile(const std::string* p_filePath, const TextureParameters& p_textureParameters);
 	virtual void Create(const TextureParameters& p_textureParameters);
 	virtual void Create(const void* p_data, const TextureParameters& p_textureParameters);
 	virtual void BufferData(const void* p_data);

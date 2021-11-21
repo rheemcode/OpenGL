@@ -59,11 +59,10 @@ struct GLIB_API CameraData
 
 struct RenderData
 {
-	class Mesh* meshes;
+	class Mesh** meshes;
 	int meshCount;
 	std::shared_ptr<Shader> shader;
 	std::shared_ptr<CameraData> cameraData;
-	std::shared_ptr<struct ShadowData> shadowData;
 	std::shared_ptr<class Framebuffer> framebuffer;
 	std::shared_ptr<class UniformBuffer> uniformBuffer;
 	std::shared_ptr<class UniformBuffer> materialsBuffer;
@@ -116,7 +115,7 @@ public:
 
 	static void SetClearColor(float r, float g, float b, float a);
 	static void PushPass(RenderPass&& renderPass);
-	static void BeginScene(const RenderData& p_renderData);
+	static void BeginScene();
 	static void RenderSkybox(const RenderData& p_renderData);
 	static void RenderDepth(const RenderData& p_renderData);
 	static void RenderGBuffer(const RenderData& renderData);

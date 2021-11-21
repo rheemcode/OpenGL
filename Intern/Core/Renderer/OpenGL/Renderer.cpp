@@ -19,6 +19,8 @@ void RenderCommand::Init()
 	GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
 	GLCall(glEnable(GL_DEPTH_TEST));
 	GLCall(glDepthFunc(GL_LESS));
+	
+	//glEnable(GL_FRAMEBUFFER_SRGB);
 	//GLCall(glEnable(GL_MULTISAMPLE));
 	GLCall(glEnable(GL_CULL_FACE));
 
@@ -98,8 +100,6 @@ void Renderer::ShutDown()
 
 void Renderer::RenderSkybox(const RenderData& renderData)
 {
-	// this so wrong but it'll go away later
-//	RenderAPI::ClearBuffers();
 	RenderAPI::DisableCullFace();
 	SkyBox* skybox = SkyBox::GetSingleton();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -111,8 +111,9 @@ void Renderer::RenderSkybox(const RenderData& renderData)
 	RenderAPI::EnableCullFace();
 }
 
-void Renderer::BeginScene(const RenderData& renderData)
+void Renderer::BeginScene()
 {
+	RenderAPI::ClearBuffers();
 }
 
 
@@ -120,40 +121,29 @@ void Renderer::RenderDepth(const RenderData& renderData)
 {
 	//PROFILE_FUNCTION
 	const auto& shader = renderData.shader;
-	std::shared_ptr<ShadowData> shadowData = renderData.shadowData;
-	const auto& shadowBox = shadowData->shadowBounds;
+	
 	
 	shader->Bind();
-	//shader->UploadUniformMat4("lightSpaceMatrix", shadowData->ProjView);
-
+	
 	renderData.framebuffer->Bind(FramebufferName::DEPTH);
-	const Vector2& shadowMapWidth = shadowData->ShadowSize;
+	const Vector2& shadowMapWidth = renderData.framebuffer->GetFramebufferSize();
 	RenderAPI::SetViewport(0, 0, (uint32_t)shadowMapWidth.x, (uint32_t)shadowMapWidth.y);
 	//RenderAPI::CullFrontFace();
 
-	
 	const std::shared_ptr<UniformBuffer>& matricesBuffer = renderData.uniformBuffer;
 
-	//for (int i = 0; i < shadowData->splitCount; i++)
-	//{
-	//	shader->UploadUniformMat4("lightSpaceMatrix", shadowData->Proj[i] * shadowData->View[i]);
-		//renderData.framebuffer->BindTexture(FramebufferTexture::SHADOWMAPARRAY, i);
-		RenderAPI::ClearDepthBuffer();
-		for (int i = 0; i < renderData.meshCount; ++i)
-		{
-			const auto& mesh = renderData.meshes[i];
-			const auto& attribs = mesh.GetVertexAttribs();
-			attribs.Bind();
-			//RenderAPI::DisableVertexAttribArray(Attrib::UV);
-			//RenderAPI::DisableVertexAttribArray(Attrib::NORMAL);
-			const auto& material = mesh.GetMaterial();
-			matricesBuffer->UploadData(mesh.GetTransform().GetWorldMatrix(), 128);
-			matricesBuffer->FlushBuffer();
-			RenderCommand::DrawIndexed(attribs);
-			//RenderAPI::EnableVertexAttribArray(Attrib::UV);
-			//RenderAPI::EnableVertexAttribArray(Attrib::NORMAL);
-		}
-	//}
+	RenderAPI::ClearDepthBuffer();
+	for (int i = 0; i < renderData.meshCount; ++i)
+	{
+		const auto& mesh = renderData.meshes[i];
+		const auto& attribs = mesh->GetVertexAttribs();
+		attribs.Bind();
+		
+		const auto& material = mesh->GetMaterial();
+		matricesBuffer->UploadData(mesh->GetTransform().GetWorldMatrix(), 128);
+		matricesBuffer->FlushBuffer();
+		RenderCommand::DrawIndexed(attribs);
+	}
 
 	//RenderAPI::CullBackFace();
 }
@@ -172,14 +162,24 @@ void Renderer::RenderGBuffer(const RenderData& renderData)
 	for (int i = 0; i < renderData.meshCount; ++i)
 	{
 		const auto& mesh = renderData.meshes[i];
-		const auto& attribs = mesh.GetVertexAttribs();
+		const auto& attribs = mesh->GetVertexAttribs();
 		attribs.Bind();
+		const auto& material = mesh->GetMaterial();
+		renderData.materialsBuffer->UploadData(int(material.NormalMapEnabled), 0);
+		renderData.materialsBuffer->UploadData(material.Shininess, 4);
+		renderData.materialsBuffer->UploadData(material.SpecularHighlight, 8);
+		renderData.materialsBuffer->UploadData(material.Diffuse, 16);
+		renderData.materialsBuffer->UploadData(material.Albedo, 32);
+		renderData.materialsBuffer->FlushBuffer();
 
-		glActiveTexture(GL_TEXTURE0);
-		mesh.GetModelInstance()->BindTexture(mesh.GetMaterial().AlbedoTexture, Model::TextureType::TEX_DIFFUSE);
-	
+		Texture::ActiveTexture(Texture::TEXTURE0);
+		mesh->GetModelInstance()->BindTexture(mesh->GetMaterial().AlbedoTexture, Model::TextureType::TEX_DIFFUSE);
+		Texture::ActiveTexture(Texture::TEXTURE1);
+		mesh->GetModelInstance()->BindTexture(mesh->GetMaterial().SpecularTexture, Model::TextureType::TEX_SPECULAR);
+		Texture::ActiveTexture(Texture::TEXTURE2);
+		mesh->GetModelInstance()->BindTexture(mesh->GetMaterial().NormalTexture, Model::TextureType::TEX_NORMAL);
 
-		renderData.uniformBuffer->UploadData(mesh.GetTransform().GetWorldMatrix(), 128);
+		renderData.uniformBuffer->UploadData(mesh->GetTransform().GetWorldMatrix(), 128);
 		renderData.uniformBuffer->FlushBuffer();
 		RenderCommand::DrawIndexed(attribs);
 	}
@@ -193,14 +193,14 @@ void Renderer::RenderDeffered(const RenderData& renderData)
 		const Size2& fboSize = Display::GetSingleton()->GetWindowSize(MAIN_WINDOW_ID);
 		RenderAPI::SetViewport(0, 0, (uint32_t)fboSize.x, (uint32_t)fboSize.y);
 	}
-	RenderAPI::ClearBuffers();
+	//RenderAPI::ClearBuffers();
 	
 	renderData.gBuffer->BindShader(GBuffer::USE);
 	quadData.m_VertexArray->Bind();
 	renderData.gBuffer->BindAllTextures();
-	auto* ssaoEffect = (SSAO*)renderData.postProcessEffect.get();
-	Texture::ActiveTexture(Texture::TEXTURE3);
-	ssaoEffect->BindFrambufferTexture();
+	//auto* ssaoEffect = (SSAO*)renderData.postProcessEffect.get();
+	//Texture::ActiveTexture(Texture::TEXTURE3);
+	//ssaoEffect->BindFrambufferTexture();
 
 	RenderCommand::DrawIndexed(6);
 
@@ -259,7 +259,7 @@ void Renderer::RenderAABB(const RenderData& renderData)
 		int d = 1;
 		for (int i = 0; i < 12; i++)
 		{
-			mesh.GetAABB().GetEdge(i, a, b);
+			mesh->GetAABB().GetEdge(i, a, b);
 			aabbVertices[c] = a;
 			aabbVertices[d] = b;
 			c += 2;
@@ -270,7 +270,7 @@ void Renderer::RenderAABB(const RenderData& renderData)
 		renderData.vertexArray->Bind();
 		renderData.vertexBuffer->BufferSubData(aabbVertices, 0, sizeof(aabbVertices));
 		renderData.shader->UploadUniformMat4("projView", *renderData.cameraData->proj * *renderData.cameraData->view);
-		renderData.shader->UploadUniformMat4("model", mesh.GetTransform().GetWorldMatrix());
+		renderData.shader->UploadUniformMat4("model", mesh->GetTransform().GetWorldMatrix());
 		RenderCommand::RenderLines(*renderData.vertexArray.get());
 	}
 }
@@ -278,7 +278,7 @@ void Renderer::RenderAABB(const RenderData& renderData)
 void Renderer::RenderMeshes(const RenderData& renderData)
 {
 	RenderAPI::BindFrameBuffer(0);
-	RenderAPI::ClearBuffers();
+	//RenderAPI::ClearBuffers();
 	{
 		const Size2& fboSize = Display::GetSingleton()->GetWindowSize(MAIN_WINDOW_ID);
 		RenderAPI::SetViewport(0, 0, (uint32_t)fboSize.x, (uint32_t)fboSize.y);
@@ -287,9 +287,8 @@ void Renderer::RenderMeshes(const RenderData& renderData)
 	const auto& shader = renderData.shader;
 	shader->Bind();
 
-	
-	renderData.shadowData->UpdateFarBounds(*renderData.cameraData->proj);
-	shader->UploadUniformFloatArray("farDistance", reinterpret_cast<float*>(&renderData.shadowData->farBound), 4);
+	Vector4 depthSplits = Scene::GetActiveScene()->GetDepthSplits();
+	shader->UploadUniformFloatArray("farDistance", reinterpret_cast<float*>(&depthSplits), 4);
 	const std::shared_ptr<UniformBuffer>& matricesBuffer = renderData.uniformBuffer;
 
 
@@ -298,11 +297,11 @@ void Renderer::RenderMeshes(const RenderData& renderData)
 	for (int i = 0; i < renderData.meshCount; ++i)
 	{
 		const auto& mesh = renderData.meshes[i];
-		const auto& attribs = mesh.GetVertexAttribs();
+		const auto& attribs = mesh->GetVertexAttribs();
 		attribs.Bind();
 		RenderAPI::EnableVertexAttribArray(Attrib::TANGENT);
 		RenderAPI::EnableVertexAttribArray(Attrib::BITANGENT);
-		const auto& material = mesh.GetMaterial();
+		const auto& material = mesh->GetMaterial();
 		renderData.materialsBuffer->UploadData(int(material.NormalMapEnabled), 0);
 		renderData.materialsBuffer->UploadData(material.Shininess, 4);
 		renderData.materialsBuffer->UploadData(material.SpecularHighlight, 8);
@@ -311,17 +310,17 @@ void Renderer::RenderMeshes(const RenderData& renderData)
 		renderData.materialsBuffer->FlushBuffer();
 
 		Texture::ActiveTexture(Texture::TEXTURE1);
-		mesh.GetModelInstance()->BindTexture(mesh.GetMaterial().AlbedoTexture, Model::TextureType::TEX_DIFFUSE);
+		mesh->GetModelInstance()->BindTexture(mesh->GetMaterial().AlbedoTexture, Model::TextureType::TEX_DIFFUSE);
 		Texture::ActiveTexture(Texture::TEXTURE2);
-		mesh.GetModelInstance()->BindTexture(mesh.GetMaterial().SpecularTexture, Model::TextureType::TEX_SPECULAR);
+		mesh->GetModelInstance()->BindTexture(mesh->GetMaterial().SpecularTexture, Model::TextureType::TEX_SPECULAR);
 		Texture::ActiveTexture(Texture::TEXTURE3);
-		mesh.GetModelInstance()->BindTexture(mesh.GetMaterial().NormalTexture, Model::TextureType::TEX_NORMAL);
+		mesh->GetModelInstance()->BindTexture(mesh->GetMaterial().NormalTexture, Model::TextureType::TEX_NORMAL);
 		if (material.NormalMapEnabled)
 		{
 		}
 
 
-		matricesBuffer->UploadData(mesh.GetTransform().GetWorldMatrix(), 128);
+		matricesBuffer->UploadData(mesh->GetTransform().GetWorldMatrix(), 128);
 		matricesBuffer->FlushBuffer();
 		RenderCommand::DrawIndexed(attribs);
 	}
@@ -329,13 +328,14 @@ void Renderer::RenderMeshes(const RenderData& renderData)
 
 void Renderer::FlushRenderQueue()
 {
+	Renderer::BeginScene();
 	for (const auto& renderPass : renderQueue.renderPasses)
 	{
 		switch (renderPass.Pass)
 		{
 		case RenderPass::SKYBOX:
 		{
-			//Renderer::RenderSkybox(renderPass.renderData);
+			Renderer::RenderSkybox(renderPass.renderData);
 			break;
 		}
 		case RenderPass::DEPTH_PASS:
