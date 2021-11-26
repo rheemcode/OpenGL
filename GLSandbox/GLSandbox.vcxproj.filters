@@ -21,9 +21,6 @@
     <ClCompile Include="SandboxMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="glpch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GLSandbox.h">
@@ -32,5 +29,18 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Shaders\depth.glsl" />
+    <None Include="Assets\Shaders\skybox-procedural.glsl" />
+    <None Include="Assets\Shaders\skybox-procedural2.glsl" />
+    <None Include="Assets\Shaders\gBuffer.glsl" />
+    <None Include="Assets\Shaders\deffered.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="Assets\Shaders\Standard.glsl" />
+    <None Include="Assets\Shaders\postprocess_bloom_glsl.glsl" />
+    <None Include="Assets\Shaders\shadow.glsl" />
+    <None Include="Assets\Shaders\deffered2.glsl" />
+    <None Include="Assets\Shaders\ssao.glsl" />
+    <None Include="Assets\Shaders\uniform_buffers.glsl" />
+    <None Include="Assets\Shaders\ssao_compute.comp.glsl" />
   </ItemGroup>
 </Project>

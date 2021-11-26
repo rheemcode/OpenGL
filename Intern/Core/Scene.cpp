@@ -1,8 +1,15 @@
 #include <glpch.h> 
 #include "Scene.h"
 #include "Actor.h"
-#include "Renderer/Renderer.h"
+#include "OpenGL/VertexArray.h"
+#include "OpenGL/Renderer.h"
 #include "Buffers/FrameBuffer.h"
+#include "Buffers/UniformBuffer.h"
+#include "Effects/SSAO.h"
+#include "Renderer/SkyBox.h"
+#include "OpenGL/Renderer.h"
+#include "Buffers/FrameBuffer.h"
+#include "Buffers/GBuffer.h"
 #include "Window/Window.h"
 #include "Events/MouseEvent.h"
 #include "Components/TransformComponent.h"
@@ -32,22 +39,23 @@ void Scene::PrepareMeshes()
 	culledMeshes.clear();
 	if (meshDirty)
 		meshes.clear();
+	const auto& frustum = sceneCamera->GetFrustum();
 	for (auto& actor : m_actors)
 	{
 
-		if (const std::shared_ptr<Component> cmp = actor->GetComponent("Renderer Component").lock())
+		if (const Component* cmp = actor->GetComponent("Renderer Component"))
 		{
-			auto meshRenderer = std::dynamic_pointer_cast<MeshRendererComponent, Component>(cmp);
+			const auto meshRenderer = (MeshRendererComponent*) cmp;
 			meshRenderer->UpdateTransform();
-			for (const auto& mesh : meshRenderer->GetMeshes())
+			for (auto& mesh : meshRenderer->GetMeshes())
 			{
 				if (meshDirty)
 				{
-					meshes.push_back(mesh);
+					meshes.push_back(const_cast<Mesh*>(&mesh));
 				}
-				if (mesh.GetInstanceBound().InFrustum(sceneCamera->GetFrustum()))
+				if (mesh.GetInstanceBound().InFrustum(frustum))
 				{
-					culledMeshes.push_back(mesh);
+					culledMeshes.push_back(const_cast<Mesh*>(&mesh));
 				}
 			}
 		}
@@ -56,24 +64,47 @@ void Scene::PrepareMeshes()
 	meshDirty = false;
 }
 
+
 void Scene::Render()
 {
 	PrepareMeshes();
-	shadowData->shadowBounds.UpdateBounds();
-	shadowData->UpdateView(GetSkyLightDirection());
-	shadowData->UpdateProjection();
-	shadowData->ProjView = shadowData->Proj * shadowData->View;
+	shadowData->LightDir = GetSkyLightDirection();
+	shadowData->Update();
 
+	const std::vector<Mesh> shadowCasters;
 	
+	m_MatrixBuffer->UploadData(sceneCamera->GetViewMatrix(), 0);
+	m_MatrixBuffer->UploadData(sceneCamera->GetProjectionMatrix(), 64);
+	m_MatrixBuffer->UploadData(shadowData->TextureMatrix[0], 128 + 64);
+	m_MatrixBuffer->UploadData(shadowData->TextureMatrix[1], 256);
+	m_MatrixBuffer->UploadData(shadowData->TextureMatrix[2], 320);
+	m_MatrixBuffer->UploadData(shadowData->TextureMatrix[3], 384);
+	m_MatrixBuffer->FlushBuffer();
+
+
+	Mesh** _culledMeshes = culledMeshes.data();
+	Mesh** _meshes = meshes.data();
+
+	{
+		//		Skybox Pass
+		RenderPass skyboxPass;
+		skyboxPass.Pass = RenderPass::SKYBOX;
+		auto& renderData = skyboxPass.renderData;
+		renderData.cameraData = cameraData;
+		Renderer::PushPass(std::move(skyboxPass));
+	}
+
 	{
 		// Depth Pass
 		RenderPass depthPass;
 		depthPass.Pass = RenderPass::DEPTH_PASS;
 		auto& renderData = depthPass.renderData;
 		renderData.cameraData = cameraData;
-		renderData.meshes = meshes;
+		renderData.meshes = _meshes;
+		renderData.meshCount = meshes.size();
 		renderData.shader = shadowShader;
-		renderData.shadowData = shadowData;
+		renderData.framebuffer = m_shadowBuffer;
+		renderData.uniformBuffer = m_MatrixBuffer;
 		Renderer::PushPass(std::move(depthPass));
 	}
 
@@ -83,30 +114,83 @@ void Scene::Render()
 		colorPass.Pass = RenderPass::COLOR_PASS;
 		auto& renderData = colorPass.renderData;
 		renderData.cameraData = cameraData;
-		renderData.meshes = culledMeshes;
+		renderData.meshes = _culledMeshes;
+		renderData.meshCount = culledMeshes.size();
 		renderData.shader = sceneShader;
-		renderData.shadowData = shadowData;
+		renderData.framebuffer = m_shadowBuffer;
+		renderData.uniformBuffer = m_MatrixBuffer;
+		renderData.materialsBuffer = m_materialsBuffer;
 		Renderer::PushPass(std::move(colorPass));
 	}
 
 
 	{
-		// Skybox Pass
-		RenderPass skyboxPass;
-		skyboxPass.Pass = RenderPass::SKYBOX;
-		auto& renderData = skyboxPass.renderData;
+		// GBuffer Pass
+		RenderPass gBufferPass;
+		gBufferPass.Pass = RenderPass::GBUFFER_PASS;
+		auto& renderData = gBufferPass.renderData;
 		renderData.cameraData = cameraData;
-		Renderer::PushPass(std::move(skyboxPass));
+		renderData.meshes = _culledMeshes;
+		renderData.meshCount = culledMeshes.size();
+		renderData.shader = sceneShader;
+		renderData.framebuffer = m_shadowBuffer;
+		renderData.uniformBuffer = m_MatrixBuffer;
+		renderData.materialsBuffer = m_materialsBuffer;
+		renderData.gBuffer = m_Gbuffer;
+	//	Renderer::PushPass(std::move(gBufferPass));
+	}
+
+	{
+		// SSAO Pass
+		RenderPass ssaoPass;
+		ssaoPass.Pass = RenderPass::POSTPROCESS_PASS;
+		auto& renderData = ssaoPass.renderData;
+		renderData.cameraData = cameraData;
+		renderData.meshes = _culledMeshes;
+		renderData.meshCount = culledMeshes.size();
+		renderData.gBuffer = m_Gbuffer;
+		renderData.postProcessEffect = m_ssaoEffect;
+	//	Renderer::PushPass(std::move(ssaoPass));
+	}
+
+	{
+		// Deffered Pass
+		RenderPass colorPass;
+		colorPass.Pass = RenderPass::DEFFERED_PASS;
+		auto& renderData = colorPass.renderData;
+		renderData.cameraData = cameraData;
+		renderData.meshes = _culledMeshes;
+		renderData.meshCount = culledMeshes.size();
+		renderData.shader = sceneShader;
+		renderData.framebuffer = m_shadowBuffer;
+		renderData.uniformBuffer = m_MatrixBuffer;
+		renderData.materialsBuffer = m_materialsBuffer;
+		renderData.gBuffer = m_Gbuffer;
+		renderData.postProcessEffect = m_ssaoEffect;
+		//Renderer::PushPass(std::move(colorPass));
+	}
+
+	{
+		//// AABB Pass
+		//RenderPass colorPass;
+		//colorPass.Pass = RenderPass::AABB;
+		//auto& renderData = colorPass.renderData;
+		//renderData.cameraData = cameraData;
+		//renderData.meshes = culledMeshes;
+		//renderData.shader = aabbShader;
+		//renderData.vertexArray = aabbVertexArray;
+		//renderData.vertexBuffer = aabbVertexBuffer;
+	//	Renderer::PushPass(std::move(colorPass));
 	}
 
 	Renderer::FlushRenderQueue();
 }
 
 
-const std::vector<Mesh>& Scene::GetCulledMeshes()
-{
-	return culledMeshes;
-}
+//const std::vector<Mesh>& Scene::GetCulledMeshes()
+//{
+//	return culledMeshes;
+//}
 
 void Scene::OnUpdate(float p_delta)
 {
@@ -156,57 +240,27 @@ struct LightData
 	float Energy;
 };
 
-void Scene::BindFBO(FrameBufferName::Type name)
+void Scene::InitLightBuffer()
 {
-	m_shadowBuffer->Bind(name); 
-}
 
-void Scene::BindFBOTex(FrameBufferTexture::Type name) 
-{
-	m_shadowBuffer->BindTexture(name); 
-}
-
-void Scene::InitLightUniforms()
-{
-	const uint32_t NumUniforms = 6;
-	GLuint indices[NumUniforms];
-	GLint offset[NumUniforms];
-
-	const char* names[NumUniforms] = {
-	"Lights.LightType",
-	 "Lights.Ambient",
-	 "Lights.Color",
-	 "Lights.Direction",
-	 "Lights.AmbientEnergy",
-	 "Lights.Energy",
-	};
-	uint32_t uboIndex = glGetUniformBlockIndex(sceneShader->GetProgram(), "LightsUniform");
-	int32_t uboSize = sizeof(GLboolean);;
-	m_LightsBuffer = std::make_unique<UniformBuffer>(80, uboIndex);
-	glGetActiveUniformBlockiv(sceneShader->GetProgram(), uboIndex,
-		GL_UNIFORM_BLOCK_DATA_SIZE, &uboSize);
+	// retrieves the index not binding
+	m_LightsBuffer->InitData(uniformsBufferShader.get(), "LightsUniform");
 	
-	glGetUniformIndices(sceneShader->GetProgram(), NumUniforms, names, indices);
-	glGetActiveUniformsiv(sceneShader->GetProgram(), NumUniforms, indices, GL_UNIFORM_OFFSET, offset);
-
 	LightData lightData;
 	lightData.LightType = 1;
 	lightData.Ambient = Vector4(.4f, .4f, .4f, 1.f);
 	lightData.Color = {1.f, 1.f, 1.f, 1.f};
-	lightData.Direction = { 0, -0.3f, -1.f, 1.f };
+	lightData.Direction = { 0.f, -0.9f, -.2f, 1.f };
 	lightData.AmbientEnergy = 1.f;
-	lightData.Energy = .69;
-	if (1 and 2)
-		auto i = 2;
-	auto* buffer = malloc(uboSize);
-	memcpy((char*)buffer + offset[0], &lightData.LightType, 4);
-	memcpy((char*)buffer + offset[1], &lightData.Ambient, 16);
-	memcpy((char*)buffer + offset[2], &lightData.Color, 16);
-	memcpy((char*)buffer + offset[3], &lightData.Direction, 16);
-	memcpy((char*)buffer + offset[4], &lightData.AmbientEnergy, 4);
-	memcpy((char*)buffer + offset[5], &lightData.Energy, 4);
-	m_LightsBuffer->SetData(80, buffer, 0);
-	free(buffer);
+	lightData.Energy = .69f;
+
+	m_LightsBuffer->UploadData(lightData.LightType, 0);
+	m_LightsBuffer->UploadData(lightData.AmbientEnergy, 4);
+	m_LightsBuffer->UploadData(lightData.Energy, 8);
+	m_LightsBuffer->UploadData(lightData.Ambient, 16);
+	m_LightsBuffer->UploadData(lightData.Color, 32);
+	m_LightsBuffer->UploadData(lightData.Direction, 48);
+	m_LightsBuffer->FlushBuffer();
 }
 
 void Scene::CreateActor()
@@ -245,16 +299,12 @@ void Scene::InitSceneCamera()
 	cameraData->proj.reset(&sceneCamera->m_ProjectionMatrix);
 	cameraData->view.reset(&sceneCamera->m_ViewMatrix);
 	shadowData = std::make_shared<ShadowData>();
-	shadowData->shadowBounds = ShadowBox(shadowData->View, sceneCamera->transform, sceneCamera->m_cameraSettings);
-	auto Bias = Matrix4x4::CreateTranslation({ 0.5f, 0.5f, 0.5f });
-	Bias = Matrix4x4::Scale(Bias, { 0.5f, 0.5f, 0.5f });
-	shadowData->Bias = Bias;
 }
 
 void Scene::CreateSkyLight()
 {
 
-	sceneShader->Bind();
+	//sceneShader->Bind();
 
 	m_EnviromentLight.Ambient = { 1.f, 1.f, 1.f };
 	m_EnviromentLight.Energy = .19f;
@@ -262,29 +312,61 @@ void Scene::CreateSkyLight()
 	auto pLight = std::make_unique<DirectionalLight>();
 	pLight->LightColor = { 1.0f, 1.f, 1.0f };
 	pLight->Energy = 1.5f;
-	pLight->Direction = { 0, -.1f, -0.3f };
+	pLight->Direction = { -0.6f, -0.6453f, -.2f, 1.f };
 	pLight->LightSource = Light::DIRECTIONAL_LIGHT;
 	pLight->Position = { 0, .7f, -1.f };
 	pLight->LightAttenuation = { 1.f, 1.f };
 
 	pLight->Use = true;
 	m_lights[0] = std::move(pLight);
-	InitLightUniforms();
+	InitLightBuffer();
 }
 
 
 void Scene::CreateBuffers()
 {
+	m_Gbuffer = std::make_shared<GBuffer>();
+	m_shadowBuffer = std::make_shared<Framebuffer>();
+	m_shadowBuffer->CreateTexture(FramebufferTexture::SHADOWMAPARRAY);
+	m_shadowBuffer->AttachArrayTexture(TEXTURE_MAX_SIZE / 2, TEXTURE_MAX_SIZE / 2, 4);
+	shadowData->ShadowSize = Vector2((float)TEXTURE_MAX_SIZE /2, (float)TEXTURE_MAX_SIZE /2);
 
-	m_shadowBuffer = std::make_unique<FrameBuffer>();
-	m_shadowBuffer->CreateTexture();
-	m_shadowBuffer->AttachDepthTexture(4096, 4096);
+	m_LightsBuffer = std::make_shared<UniformBuffer>();
+	m_MatrixBuffer = std::make_shared<UniformBuffer>();
+	m_ssaoSamplesBuffer = std::make_shared<UniformBuffer>();
+	m_materialsBuffer = std::make_shared<UniformBuffer>();
+
+	m_MatrixBuffer->InitData(uniformsBufferShader.get(), "Matrices");
+	//m_ssaoSamplesBuffer->InitData(uniformsBufferShader.get(), "SSAOSamples");
+	m_materialsBuffer->InitData(uniformsBufferShader.get(), "MaterialUniform");
+
+	static uint32_t indices[] = 
+	{	
+		0, 1, 1,
+		2, 2, 3,
+		3, 0, 0,
+		4, 4, 5,
+		5, 1, 5,
+		6, 2, 6,
+		6, 7, 7,
+		3, 7, 4 
+	};
+
+	aabbVertexArray = std::make_shared<VertexArray>();
+	aabbVertexBuffer = std::make_shared<VertexBuffer>(sizeof(Vector3) * 24);
+	aabbVertexBuffer->SetLayout({ { AttribDataType::T_FLOAT, Attrib::VERTEXPOSITION, AttribCount::VEC3, false } });
+	aabbVertexArray->SetIndices(indices, 24);
+	aabbVertexArray->AddBuffer(*aabbVertexBuffer.get());
+	//m_ssaoEffect = std::make_shared<SSAO>();
+	//m_ssaoEffect->m_uniformBuffer = m_ssaoSamplesBuffer;
+	//m_ssaoEffect->CreateFramebuffer();
+	//m_ssaoEffect->GenerateKernel();
+	//m_ssaoEffect->GenerateNoiseTexture();
 }
 
 
 void Scene::InitRenderer()
 {
-
 	Renderer::Init();
 	/*Renderer2D renderer2D;
 	renderer2D.Init();*/
@@ -292,9 +374,16 @@ void Scene::InitRenderer()
 
 void Scene::InitSceneShaders()
 {
-	sceneShader = std::make_unique<Shader>("Assets/Shaders/lighting.shader");
-	shadowShader = std::make_unique<Shader>("Assets/Shaders/depth.glsl");
-	testShader = std::make_unique<Shader>("Assets/Shaders/envmap.glsl");
+	uniformsBufferShader = std::make_shared<Shader>("./Assets/Shaders/uniform_buffers.glsl");
+	sceneShader = std::make_shared<Shader>("Assets/Shaders/lighting.shader");
+	shadowShader = std::make_shared<Shader>("Assets/Shaders/depth.glsl");
+	aabbShader = std::make_shared<Shader>("./Assets/Shaders/aabb.glsl");
+
+	sceneShader->Bind();
+	sceneShader->UploadUniformInt("depthTexture", 0);
+	sceneShader->UploadUniformInt("albedoTexture", 1);
+	sceneShader->UploadUniformInt("specularTexture", 2);
+	sceneShader->UploadUniformInt("normalTexture", 3);
 }
 
 void Scene::InitScene()

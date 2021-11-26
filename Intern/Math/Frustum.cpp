@@ -1,10 +1,11 @@
 #include <glpch.h>
 #include "Frustum.h"
 #include <immintrin.h>
+#define USE_INTRINSIC
 
 void Frustum::SetFrustum(float p_fov, float p_aspect, float p_zoom, float p_zNear, float p_zFar, const Matrix4x4& p_transform)
 {
-	p_zNear = MAX(p_zNear, 0.0f);
+	p_zNear = MAX(p_zNear, 0.001f);
 	p_zFar = MAX(p_zFar, p_zNear);
 	float halfViewSize = Math::Tan(Math::Deg2Rad(p_fov)) / p_zoom;
 	Vector3 lNear, lFar;
@@ -21,20 +22,42 @@ void Frustum::SetFrustum(float p_fov, float p_aspect, float p_zoom, float p_zNea
 
 void Frustum::SetFrustum(const Vector3& lNear, const Vector3& lFar, const Matrix4x4& transform)
 {
-	//vertices[0] = transform * lNear;
-	//vertices[1] = transform * Vector3(lNear.x, -lNear.y, lNear.z);
-	//vertices[2] = transform * Vector3(-lNear.x, -lNear.y, lNear.z);
-	//vertices[3] = transform * Vector3(-lNear.x, lNear.y, lNear.z);
-	//vertices[4] = transform * lFar;
-	//vertices[5] = transform * Vector3(lFar.x, -lFar.y, lFar.z);
-	//vertices[6] = transform * Vector3(-lFar.x, -lFar.y, lFar.z);
-	//vertices[7] = transform * Vector3(-lFar.x, lFar.y, lFar.z);
+	vertices[0] = transform * lNear;
+	vertices[1] = transform * Vector3(lNear.x, -lNear.y, lNear.z);
+	vertices[2] = transform * Vector3(-lNear.x, -lNear.y, lNear.z);
+	vertices[3] = transform * Vector3(-lNear.x, lNear.y, lNear.z);
+	vertices[4] = transform * lFar;
+	vertices[5] = transform * Vector3(lFar.x, -lFar.y, lFar.z);
+	vertices[6] = transform * Vector3(-lFar.x, -lFar.y, lFar.z);
+	vertices[7] = transform * Vector3(-lFar.x, lFar.y, lFar.z);
 
-	//UpdatePlanes();
+	planes[FrustumPlane::Left] = Plane(vertices[3], vertices[7], vertices[6], 1);
+
+	planes[FrustumPlane::Right] = Plane(vertices[1], vertices[5], vertices[6], 1);
+
+	planes[FrustumPlane::Bottom] = Plane(vertices[6], vertices[5], vertices[1], 1);
+
+	planes[FrustumPlane::Top] = Plane(vertices[0], vertices[4], vertices[7], 1);
+
+	planes[FrustumPlane::Near] = Plane(vertices[2], vertices[1], vertices[0], 1);
+
+	planes[FrustumPlane::Far] = Plane(vertices[5], vertices[6], vertices[7], 1);
+
+	int i = 0;
+	for (auto& plane : planes)
+	{
+
+		plane.normal = -plane.normal;
+		plane.Normalize();
+		PlaneSign ps(plane);
+		planeSigns[i++] = ps;
+	}
+
 }
 
 void Frustum::SetFrustum(const Matrix4x4& p_projMatrix)
 {
+#ifdef USE_INTRINSIC
 	__m256 a = _mm256_set_ps(p_projMatrix[0][3], p_projMatrix[1][3], p_projMatrix[2][3], p_projMatrix[3][3], p_projMatrix[0][3], p_projMatrix[1][3], p_projMatrix[2][3], p_projMatrix[3][3]);
 	__m256 b = _mm256_set_ps(p_projMatrix[0][0], p_projMatrix[1][0], p_projMatrix[2][0], p_projMatrix[3][0], p_projMatrix[0][1], p_projMatrix[1][1], p_projMatrix[2][1], p_projMatrix[3][1]);
 	__m256 c = _mm256_set_ps(p_projMatrix[0][2], p_projMatrix[1][2], p_projMatrix[2][2], p_projMatrix[3][2], 0, 0, 0, 0);
@@ -50,7 +73,7 @@ void Frustum::SetFrustum(const Matrix4x4& p_projMatrix)
 	float* top_f = b_add.m256_f32;
 	float* bottom_f = b_sub.m256_f32;
 
-#ifndef USE_INTRIN
+
 	planes[FrustumPlane::Left].normal.x = left_f[7];
 	planes[FrustumPlane::Left].normal.y = left_f[6];
 	planes[FrustumPlane::Left].normal.z = left_f[5];
@@ -82,6 +105,7 @@ void Frustum::SetFrustum(const Matrix4x4& p_projMatrix)
 	planes[FrustumPlane::Far].normal.z = bottom_f[5];
 	planes[FrustumPlane::Far].d = bottom_f[4];
 #else
+	planes[FrustumPlane::Left].normal.x = p_projMatrix[0][3] + p_projMatrix[0][0];
 	planes[FrustumPlane::Left].normal.y = p_projMatrix[1][3] + p_projMatrix[1][0];
 	planes[FrustumPlane::Left].normal.z = p_projMatrix[2][3] + p_projMatrix[2][0];
 	planes[FrustumPlane::Left].d = p_projMatrix[3][3] + p_projMatrix[3][0];

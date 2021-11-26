@@ -1,15 +1,12 @@
 #pragma once
-#include "Thread.h"
-#include "Renderer/Renderer.h"
-#include "CommandBuffer.h"
-#include "Buffers/FrameBuffer.h"
-#include "Buffers/UniformBuffer.h"
-#include "Renderer/SkyBox.h"
+#include "Utils/Thread.h"
 #include "Math/Transform.h"
 #include "Events/Event.h"
-#include "Console.h"
+#include "Utils/Console.h"
 #include "ShadowBox.h"
-#include "Timestep.h"
+#include "Utils/Timestep.h"
+#include "Utils/CommandBuffer.h"
+#include "Camera.h"
 
 struct GLIB_API Light
 {
@@ -60,64 +57,39 @@ struct LightUniformBuffer
 	bool Use;
 };
 
-using namespace FrameBufferName;
-
 
 struct ShaderTest;
+struct ShadowData;
+struct CameraData;
+class Mesh;
+class UniformBuffer;
+class GBuffer;
 class Renderer;
-class FrameBuffer;
+class Framebuffer;
 class GLApplication;
+class SkyBox;
+class Shader;
+class Actor;
+class SSAO;
 
+GLIBSTORAGE template GLIB_API class std::shared_ptr<Camera>;
+GLIBSTORAGE template GLIB_API class std::shared_ptr<Shader>;
+GLIBSTORAGE template GLIB_API class std::unique_ptr<Light>;
+GLIBSTORAGE template GLIB_API class std::shared_ptr<Framebuffer>;
+GLIBSTORAGE template GLIB_API class std::shared_ptr<UniformBuffer>;
+GLIBSTORAGE template GLIB_API class std::shared_ptr<GBuffer>;
+GLIBSTORAGE template GLIB_API class std::shared_ptr<CameraData>;
+GLIBSTORAGE template GLIB_API class std::shared_ptr<Actor>;
+GLIBSTORAGE template GLIB_API class std::shared_ptr<ShadowData>;
+GLIBSTORAGE template GLIB_API class std::shared_ptr<Mesh>;
 
-struct GLIB_API ShadowData
-{
-	ShadowBox shadowBounds;
-	Vector2 ShadowSize;
-	Vector3 LightDir;
-	Matrix4x4 View;
-	Matrix4x4 Proj;
-	Matrix4x4 Bias;
-	Matrix4x4 ProjView;
-
-	void UpdateView(Vector3 direction)
-	{
-		direction = Vector3::Normalize(direction);
-		const auto& center = -shadowBounds.GetCenter();
-		View = Matrix4x4();
-
-		float pitch = Math::ACos(Vector2::Length(Vector2(direction.x, direction.z)));
-
-		View = Matrix4x4::Rotate(View, Vector3(1, 0, 0), pitch);
-		float yaw = Math::Rad2deg((Math::ATan(direction.x / direction.z)));
-		yaw = direction.z > 0 ? yaw - 180 : yaw;
-		View = Matrix4x4::Rotate(View, Vector3(0, 1, 0), -Math::Deg2Rad(yaw));
-
-		View = Matrix4x4::Translate(View, center);
-	}
-
-	void UpdateProjection()
-	{
-		//float width = shadowBounds.GetWidth(), height = shadowBounds.GetHeight(), length = shadowBounds.GetLength();
-		//Proj = Matrix4x4();
-		Proj = Matrix4x4::CreateOrtho(shadowBounds.minX, shadowBounds.maxX, shadowBounds.minY, shadowBounds.maxY, shadowBounds.minZ, shadowBounds.maxZ);
-		//Proj[0][0] = 2.f / width;
-		//Proj[1][1] = 2.f / height;
-		//Proj[2][2] = -2.f / length;
-		//Proj[3][3] = 1.f;
-		//auto alt = Matrix4x4::CreateOrtho()
-	}
-};
-
-
+#define MAX_SPLIT 4
 class GLIB_API Scene
 {
 	friend Renderer;
 	friend GLApplication;
 	static Scene* s_activeScene;
-
 	static std::shared_ptr<Camera> sceneCamera;
-	std::shared_ptr<CameraData> cameraData;
-	std::shared_ptr<ShadowData> shadowData;
 
 	std::string sceneName;
 
@@ -135,25 +107,160 @@ class GLIB_API Scene
 		float Energy;
 	};
 
+	
+
+	struct GLIB_API ShadowData
+	{
+		uint32_t splitCount = MAX_SPLIT;
+		AABB bounds[MAX_SPLIT];
+
+		Camera* camera;
+
+		Vector4 farBound;
+		Vector2 ShadowSize;
+		Vector3 LightDir;
+
+		Matrix4x4 TextureMatrix[MAX_SPLIT];
+		Vector4 depthSplits;
+		Vector4 splitDistances;
+
+		void Update()
+		{
+			float nearClip = 0.1f;
+			float farClip = 500.f;
+			float clipRange = farClip - nearClip;
+
+			float minZ = nearClip;
+			float maxZ = nearClip + clipRange;
+			float range = maxZ - minZ;
+			float ratio = maxZ / minZ;
+
+			depthSplits[0] = minZ;
+			splitDistances[0] = minZ;
+			for (uint32_t i = 1; i < 4; i++)
+			{
+				float p = static_cast<float>(i + 1) / static_cast<float>(4);
+				float log = minZ * std::pow(ratio, p);
+				float uniform = minZ + range * p;
+				float d = 0.5f * (log - uniform) + uniform;
+				depthSplits[i] = (d - nearClip) / clipRange;
+				splitDistances[i] = log * 0.5f + uniform * (1 - 0.5f);
+			}
+
+			splitDistances[3] = maxZ;
+
+			Matrix4x4 modifiedProj = sceneCamera->GetProjectionMatrix();
+			Matrix4x4 invCam = Matrix4x4::Inverse(modifiedProj * sceneCamera->GetViewMatrix());
+			Matrix4x4 View;
+			Matrix4x4 Proj;
+
+			float lastSplitDist = 0.0f;
+			for (int c = 0; c < (int)4; ++c)
+			{
+				float splitDist = depthSplits[c];
+
+				Vector3 frustumCorners[8] = {
+					{ -1.0f,  1.0f, -1.0f },
+					{  1.0f,  1.0f, -1.0f },
+					{  1.0f, -1.0f, -1.0f },
+					{ -1.0f, -1.0f, -1.0f },
+					{ -1.0f,  1.0f,  1.0f },
+					{  1.0f,  1.0f,  1.0f },
+					{  1.0f, -1.0f,  1.0f },
+					{ -1.0f, -1.0f,  1.0f },
+				};
+
+				// Transform frustum corners from clip space to world space
+				for (Vector3& frustumCorner : frustumCorners)
+				{
+					Vector4 invCorner = invCam * Vector4(frustumCorner, 1.0f);
+					frustumCorner = invCorner / invCorner.w;
+				}
+
+				for (int i = 0; i < 4; ++i)
+				{
+					Vector3 dist = frustumCorners[i + 4] - frustumCorners[i];
+					frustumCorners[i + 4] = frustumCorners[i] + (dist * splitDist);
+					frustumCorners[i] = frustumCorners[i] + (dist * lastSplitDist);
+				}
+
+				Vector3 frustumCenter;
+				for (const Vector3& frustumCorner : frustumCorners)
+				{
+					bounds[c].Expand(frustumCorner);
+					frustumCenter += frustumCorner;
+
+
+					frustumCenter /= 8.0f;
+
+					float radius = 0.0f;
+					for (const Vector3& frustumCorner : frustumCorners)
+					{
+						float distance = Vector3::Length(frustumCorner - frustumCenter);
+						radius = MAX(radius, distance);
+					}
+					radius = std::ceil(radius * 16.0f) / 16.0f;
+
+					Vector3 maxExtents = Vector3(radius, radius, radius);
+					Vector3 minExtents = -maxExtents;
+					float zFar = sceneCamera->GetCameraSettings().zfar;
+				
+					float pitch = Math::ACos(Vector2::Length(Vector2(LightDir.x, LightDir.z)));
+					float yaw = Math::Rad2deg((Math::ATan(LightDir.x / LightDir.z)));
+					float yawRad = Math::Deg2Rad(yaw);
+
+					Matrix4x4 View = Matrix4x4::Identity;
+					View = Matrix4x4::Rotate(View, Vector3(1, 0, 0), pitch);
+
+					yaw = LightDir.z > 0 ? yaw - 180 : yaw;
+					View = Matrix4x4::Rotate(View, Vector3(0, 1, 0), -yawRad);
+					View = Matrix4x4::Translate(View, -frustumCenter);
+					Proj = Matrix4x4::CreateOrtho(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, -(maxExtents.z - minExtents.z), maxExtents.z - minExtents.z);
+
+					TextureMatrix[c] = Proj * View;
+
+					lastSplitDist = depthSplits[c];
+				}
+			}
+		}
+	};
+
+
 	/* Lights */
 	uint32_t lightCount;
 	std::array<std::unique_ptr<Light>, 10> m_lights;
 	EnviromentLight m_EnviromentLight;
 
 	/* Render-ables */
-	std::vector<std::shared_ptr<class Actor>> m_actors;
-	std::vector<class Mesh> culledMeshes;
-	std::vector<class Mesh> meshes;
+	std::vector<std::shared_ptr<Actor>> m_actors;
+	std::vector<Mesh*> culledMeshes;
+	std::vector<Mesh*> meshes;
 	bool meshDirty = false;
 
-	using ShadowBuffer = FrameBuffer;
-	std::unique_ptr<ShadowBuffer> m_shadowBuffer;
-	std::unique_ptr<class UniformBuffer> m_LightsBuffer;
+	using ShadowBuffer = Framebuffer;
+	std::shared_ptr<ShadowBuffer> m_shadowBuffer;
+	std::shared_ptr<UniformBuffer> m_LightsBuffer;
+	std::shared_ptr<UniformBuffer> m_MatrixBuffer;
+	std::shared_ptr<UniformBuffer> m_ssaoSamplesBuffer;
+	std::shared_ptr<UniformBuffer> m_materialsBuffer;
+
+	std::shared_ptr<GBuffer> m_Gbuffer;
+	
+	/* PostProcess */
+	std::shared_ptr<SSAO> m_ssaoEffect;
 
 	/* Scene Shaders */
-	std::shared_ptr<class Shader> sceneShader;
-	std::shared_ptr<class Shader> shadowShader;
-	std::shared_ptr<class Shader> testShader;
+	std::shared_ptr<Shader> uniformsBufferShader; // For some reason all uniform bindings must be initilized with 1 shader
+	std::shared_ptr<Shader> sceneShader;
+	std::shared_ptr<Shader> shadowShader;
+	std::shared_ptr<Shader> aabbShader;
+	std::shared_ptr<Shader> testShader;
+
+	std::shared_ptr<class VertexArray> aabbVertexArray;
+	std::shared_ptr<class VertexBuffer> aabbVertexBuffer;
+
+	std::shared_ptr<CameraData> cameraData;
+	std::shared_ptr<ShadowData> shadowData;
 
 	/* Threading */
 	Thread::ID threadID;
@@ -167,10 +274,6 @@ class GLIB_API Scene
 	static void ThreadCallback(void* p_instance);
 
 private:
-	
-	void BindFBO(FrameBufferName::Type name);
-	void BindFBOTex(FrameBufferTexture::Type name);
-
 	void PrepareMeshes();
 
 	void Render();
@@ -183,7 +286,7 @@ private:
 	void InitSceneShaders();
 	void InitRenderer();
 	void InitSceneCamera();
-	void InitLightUniforms();
+	void InitLightBuffer();
 	void CreateBuffers();
 	void CreateTests();
 	void InitScene();
@@ -202,92 +305,10 @@ public:
 	const EnviromentLight& GetEnviromentLight();
 	const std::array<std::unique_ptr<Light>, 10>& GetLight();
 
+	const Vector4& GetDepthSplits() { return shadowData->splitDistances; }
+
 	void AddActor(std::shared_ptr<class Actor>& p_actor);
 
 	Scene(const std::string& p_name);
 	~Scene();
-};
-
-
-struct ShaderTest
-{
-	struct ShaderParams
-	{
-		float iTime;
-
-	};
-
-	static const int MAX_TEST_SHADERS = 5;
-	std::unique_ptr<VertexArray> vertexArray;
-	std::unique_ptr<VertexBuffer> vertexBuffer;
-	std::unique_ptr<FrameBuffer> frameBuffer;
-	
-	std::unique_ptr<Shader> fboShader;
-	std::array<std::unique_ptr<Shader>, MAX_TEST_SHADERS> shaders;
-
-	void CreateShader(const std::string& filePath, int index)
-	{
-		shaders[index] = std::make_unique<Shader>(filePath);
-	}
-
-	void InitTest()
-	{
-		/*float vAttrib[] = 
-		{
-		   -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
-			0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
-			0.5f,  0.5f, 0.0f, 1.0f, 1.0f,
-		   -0.5f,  0.5f, 0.0f, 0.0f, 1.0f
-		};
-
-		uint32_t quadIndices[] = { 0, 1, 2, 2, 3, 0 };
-
-
-		vertexArray = std::make_unique<VertexArray>();
-		vertexBuffer = std::make_unique<VertexBuffer>(vAttrib, sizeof(vAttrib));
-		vertexBuffer->SetLayout({ { GL_FLOAT, 0, 3, 0 }, { GL_FLOAT, 1, 2, 0 } });
-		vertexArray->SetIndices(quadIndices, 6);
-		vertexArray->AddBuffer(*vertexBuffer.get());
-
-		frameBuffer = std::make_unique<FrameBuffer>();
-		frameBuffer->CreateTexture();
-		frameBuffer->AttachColorTexture();
-		frameBuffer->AttachRenderBuffer();*/
-
-	//	fboShader = std::make_unique<Shader>("./Assets/Shaders/fboTest.glsl");
-	}
-
-	void RenderTests(float deltaTime)
-	{
-		for (const auto& shader : shaders)
-		{
-			if (shader == nullptr)
-				return;
-
-			shader->Bind();
-			shader->UploadUniformFloat("iTime", deltaTime);
-			vertexArray->Bind();
-			RenderCommand::DrawIndexed(vertexArray->GetIndicies());
-		}
-	}
-
-	void RenderTest(float deltaTime, int id)
-	{
-		const auto& shader = shaders[id];
-
-		//frameBuffer->Bind(FrameBufferName::COLORBUFFER);
-		glViewport(0, 0, Display::GetSingleton()->GetMainWindow()->GetWidth(), Display::GetSingleton()->GetMainWindow()->GetHeight());
-		//fboShader->Bind();
-
-		shader->Bind();
-		shader->UploadUniformFloat("iTime", Time::GetSingleton()->GetElapsedTime());
-		frameBuffer->BindTexture(FrameBufferTexture::COLOR);
-		vertexArray->Bind();
-		RenderCommand::DrawIndexed(vertexArray->GetIndicies());
-	}
-};
-
-class SDFTest : public ShaderTest
-{
-
 };

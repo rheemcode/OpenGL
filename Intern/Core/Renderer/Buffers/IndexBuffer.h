@@ -1,5 +1,5 @@
 #pragma once
-#include "GLCore.h"
+#include "GLApplication/GLCore.h"
 
 class GLIB_API IndexBuffer
 {

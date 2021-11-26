@@ -9,7 +9,6 @@ namespace Math
 	#define EPSILON 0.00001
 	#define EPSILON2 (CMP_EPSILON * CMP_EPSILON)
 
-
 	#define SQRT12 0.7071067811865475244008443621048490
 	#define SQRT2 1.4142135623730950488016887242
 	#define TAU 6.2831853071795864769252867666
@@ -17,21 +16,21 @@ namespace Math
 	#define Math_INF INFINITY
 	#define Math_NAN NAN
 	
-	#ifdef _SWAP
 	#define SWAP(m_x, m_y) Math::__swap_tmpl((m_x), (m_y))
-	template <class T>
+	
+	template<typename T>
 	inline void __swap_tmpl(T& x, T& y) {
 		T aux = x;
 		x = y;
 		y = aux;
 	}
-	#endif
+
 
 	#define MIN(m_a, m_b) (((m_a) < (m_b)) ? (m_a) : (m_b))
 	#define MAX(m_a, m_b) (((m_a) > (m_b)) ? (m_a) : (m_b))
 
 	template<typename T>
-	static T Cos(T p_x) {}
+	static T Cos(T p_x) { return p_x; }
 	
 	template<>
 	static float Cos(float p_x) { return cosf(p_x); }
@@ -51,7 +50,7 @@ namespace Math
 	static T ATan2(T p_y, T p_x) { return static_cast<T>(atan2(p_y, p_x)); }
 	
 	template<typename T>
-	static T Sin(T p_x) {}
+	static T Sin(T p_x) { return p_x; }
 	template<>
 	static float Sin(float p_x) { return sinf(p_x); }
 	template<>
@@ -81,8 +80,15 @@ namespace Math
 	template<typename T>
 	static T Exp(T p_x) { return static_cast<T>(exp(p_x)); }
 	
+	template<typename T>
+	static T Abs(T g) { return g; }
+	template<>
 	static int Abs(int g) { return ::abs(g); }
+	template<>
 	static float Abs(float g) { return ::fabs(g); }
+	template<>
+	static double Abs(double g) { return ::fabs(g); }
+
 	template<typename T>
 	static T Sign(T p_val)
 	{
@@ -136,14 +142,13 @@ namespace Math
 		T distance = static_cast<T>(fmod(2.0 * difference, TAU) - difference);
 		return p_from + distance * p_weight;
 	}
-	 
-	static  double InverseLerp(double p_from, double p_to, double p_value) { return (p_value - p_from) / (p_to - p_from); }
-	static  float InverseLerp(float p_from, float p_to, float p_value) { return (p_value - p_from) / (p_to - p_from); }
-
-	static  double RangeLerp(double p_value, double p_istart, double p_istop, double p_ostart, double p_ostop) { return Lerp(p_ostart, p_ostop, InverseLerp(p_istart, p_istop, p_value)); }
-	static  float RangeLerp(float p_value, float p_istart, float p_istop, float p_ostart, float p_ostop) { return Lerp(p_ostart, p_ostop,  InverseLerp(p_istart, p_istop, p_value)); }
-
-	static  float MoveTowards(float p_current, float p_target, float p_maxdelta)
+	
+	template<typename T>
+	static T InverseLerp(T p_from, T p_to, T p_value) { return (p_value - p_from) / (p_to - p_from); }
+	template<typename T>
+	static T RangeLerp(T p_value, T p_istart, T p_istop, T p_ostart, T p_ostop) { return Lerp<T>(p_ostart, p_ostop, InverseLerp<T>(p_istart, p_istop, p_value)); }
+	template<typename T>
+	static T MoveTowards(T p_current, T p_target, T p_maxdelta)
 	 {
 		 if (Abs(p_target - p_current) <= p_maxdelta)
 			 return p_target;
@@ -151,8 +156,8 @@ namespace Math
 		 return p_current + Sign(p_target - p_current) * p_maxdelta;
 	 }
 
-	static double Round(double p_val) { return (p_val >= 0) ? Floor(p_val + 0.5) : -Floor(-p_val + 0.5); }
-	static float Round(float p_val) { return (p_val >= 0.f) ? Floor(p_val + 0.5f) : -Floor(-p_val + 0.5f); }
+	template<typename T>
+	static T Round(T p_val) { return (p_val >= 0) ? Floor<T>(p_val + static_cast<T>(0.5)) : -Floor(-p_val + static_cast<T>(0.5)); }
 
 	static float Clamp(float p_val, float p_min, float p_max)
 	 {

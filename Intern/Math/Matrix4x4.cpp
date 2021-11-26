@@ -6,7 +6,7 @@
 #include <cassert>
 #include <iostream>
 
-
+#define USE_INTRINSIC
 
 const Matrix4x4 Matrix4x4::Identity = Matrix4x4(1.f, 0.f, 0.f, 0.f,
 	0.f, 1.f, 0.f, 0.f,
@@ -74,7 +74,7 @@ SimpleVec4& Matrix4x4::operator[](const int& p_index)
 
 Vector4 operator*(const Matrix4x4& p_mat, const Vector4& p_vec)
 {
-
+#ifndef USE_INTRINSIC
 	Vector4 const Mov0(p_vec[0]);
 	Vector4 const Mov1(p_vec[1]);
 	Vector4 const Mul0 = p_mat[0] * Mov0;
@@ -87,11 +87,33 @@ Vector4 operator*(const Matrix4x4& p_mat, const Vector4& p_vec)
 	Vector4 const Add1 = Mul2 + Mul3;
 	Vector4 const Add2 = Add0 + Add1;
 	return Add2;
+#else
+	Vector4 res;
+	__m128 v0 = _mm_shuffle_ps(p_vec.vec_comp, p_vec.vec_comp, _MM_SHUFFLE(0, 0, 0, 0));
+	__m128 v1 = _mm_shuffle_ps(p_vec.vec_comp, p_vec.vec_comp, _MM_SHUFFLE(1, 1, 1, 1));
+	__m128 v2 = _mm_shuffle_ps(p_vec.vec_comp, p_vec.vec_comp, _MM_SHUFFLE(2, 2, 2, 2));
+	__m128 v3 = _mm_shuffle_ps(p_vec.vec_comp, p_vec.vec_comp, _MM_SHUFFLE(3, 3, 3, 3));
 
+	__m128 m0 = _mm_mul_ps(p_mat[0].vec_comp, v0);
+	__m128 m1 = _mm_mul_ps(p_mat[1].vec_comp, v1);
+	__m128 m2 = _mm_mul_ps(p_mat[2].vec_comp, v2);
+	__m128 m3 = _mm_mul_ps(p_mat[3].vec_comp, v3);
+
+	__m128 a0 = _mm_add_ps(m0, m1);
+	__m128 a1 = _mm_add_ps(m2, m3);
+	__m128 a2 = _mm_add_ps(a0, a1);
+	
+	res.vec_comp = a2;
+	return res;
+#endif
 }
 
 Matrix4x4 operator*(const Matrix4x4& p_mat, const Matrix4x4& p_mat2)
 {
+	Matrix4x4 res(0);
+
+#ifndef USE_INTRINSIC
+
 	const SimpleVec4 SrcA0 = p_mat[0];
 	const SimpleVec4 SrcA1 = p_mat[1];
 	const SimpleVec4 SrcA2 = p_mat[2];
@@ -102,13 +124,89 @@ Matrix4x4 operator*(const Matrix4x4& p_mat, const Matrix4x4& p_mat2)
 	const SimpleVec4 SrcB2 = p_mat2[2];
 	const SimpleVec4 SrcB3 = p_mat2[3];
 
-	Matrix4x4 res(0);
 	auto ss = SrcB0[0];
 	auto s = SrcA0 * SrcB0[0] + SrcA1 * SrcB0[1] + SrcA2 * SrcB0[2] + SrcA3 * SrcB0[3];
 	res[0] = SrcA0 * SrcB0[0] + SrcA1 * SrcB0[1] + SrcA2 * SrcB0[2] + SrcA3 * SrcB0[3];
 	res[1] = SrcA0 * SrcB1[0] + SrcA1 * SrcB1[1] + SrcA2 * SrcB1[2] + SrcA3 * SrcB1[3];
 	res[2] = SrcA0 * SrcB2[0] + SrcA1 * SrcB2[1] + SrcA2 * SrcB2[2] + SrcA3 * SrcB2[3];
 	res[3] = SrcA0 * SrcB3[0] + SrcA1 * SrcB3[1] + SrcA2 * SrcB3[2] + SrcA3 * SrcB3[3];
+
+
+#else
+
+	{
+		__m128 e0 = _mm_shuffle_ps(p_mat2[0].vec_comp, p_mat2[0].vec_comp, _MM_SHUFFLE(0, 0, 0, 0));
+		__m128 e1 = _mm_shuffle_ps(p_mat2[0].vec_comp, p_mat2[0].vec_comp, _MM_SHUFFLE(1, 1, 1, 1));
+		__m128 e2 = _mm_shuffle_ps(p_mat2[0].vec_comp, p_mat2[0].vec_comp, _MM_SHUFFLE(2, 2, 2, 2));
+		__m128 e3 = _mm_shuffle_ps(p_mat2[0].vec_comp, p_mat2[0].vec_comp, _MM_SHUFFLE(3, 3, 3, 3));
+
+		__m128 m0 = _mm_mul_ps(p_mat[0].vec_comp, e0);
+		__m128 m1 = _mm_mul_ps(p_mat[1].vec_comp, e1);
+		__m128 m2 = _mm_mul_ps(p_mat[2].vec_comp, e2);
+		__m128 m3 = _mm_mul_ps(p_mat[3].vec_comp, e3);
+
+		__m128 a0 = _mm_add_ps(m0, m1);
+		__m128 a1 = _mm_add_ps(m2, m3);
+		__m128 a2 = _mm_add_ps(a0, a1);
+
+		res[0].vec_comp = a2;
+	}
+
+	{
+		__m128 e0 = _mm_shuffle_ps(p_mat2[1].vec_comp, p_mat2[1].vec_comp, _MM_SHUFFLE(0, 0, 0, 0));
+		__m128 e1 = _mm_shuffle_ps(p_mat2[1].vec_comp, p_mat2[1].vec_comp, _MM_SHUFFLE(1, 1, 1, 1));
+		__m128 e2 = _mm_shuffle_ps(p_mat2[1].vec_comp, p_mat2[1].vec_comp, _MM_SHUFFLE(2, 2, 2, 2));
+		__m128 e3 = _mm_shuffle_ps(p_mat2[1].vec_comp, p_mat2[1].vec_comp, _MM_SHUFFLE(3, 3, 3, 3));
+
+		__m128 m0 = _mm_mul_ps(p_mat[0].vec_comp, e0);
+		__m128 m1 = _mm_mul_ps(p_mat[1].vec_comp, e1);
+		__m128 m2 = _mm_mul_ps(p_mat[2].vec_comp, e2);
+		__m128 m3 = _mm_mul_ps(p_mat[3].vec_comp, e3);
+
+		__m128 a0 = _mm_add_ps(m0, m1);
+		__m128 a1 = _mm_add_ps(m2, m3);
+		__m128 a2 = _mm_add_ps(a0, a1);
+
+		res[1].vec_comp = a2;
+	}
+
+	{
+		__m128 e0 = _mm_shuffle_ps(p_mat2[2].vec_comp, p_mat2[2].vec_comp, _MM_SHUFFLE(0, 0, 0, 0));
+		__m128 e1 = _mm_shuffle_ps(p_mat2[2].vec_comp, p_mat2[2].vec_comp, _MM_SHUFFLE(1, 1, 1, 1));
+		__m128 e2 = _mm_shuffle_ps(p_mat2[2].vec_comp, p_mat2[2].vec_comp, _MM_SHUFFLE(2, 2, 2, 2));
+		__m128 e3 = _mm_shuffle_ps(p_mat2[2].vec_comp, p_mat2[2].vec_comp, _MM_SHUFFLE(3, 3, 3, 3));
+
+		__m128 m0 = _mm_mul_ps(p_mat[0].vec_comp, e0);
+		__m128 m1 = _mm_mul_ps(p_mat[1].vec_comp, e1);
+		__m128 m2 = _mm_mul_ps(p_mat[2].vec_comp, e2);
+		__m128 m3 = _mm_mul_ps(p_mat[3].vec_comp, e3);
+
+		__m128 a0 = _mm_add_ps(m0, m1);
+		__m128 a1 = _mm_add_ps(m2, m3);
+		__m128 a2 = _mm_add_ps(a0, a1);
+
+		res[2].vec_comp = a2;
+	}
+
+	{
+		//(__m128&)_mm_shuffle_epi32(__m128i&)p_mat2[0].vec_comp, _MM_SHUFFLE(3, 3, 3, 3))
+		__m128 e0 = _mm_shuffle_ps(p_mat2[3].vec_comp, p_mat2[3].vec_comp, _MM_SHUFFLE(0, 0, 0, 0));
+		__m128 e1 = _mm_shuffle_ps(p_mat2[3].vec_comp, p_mat2[3].vec_comp, _MM_SHUFFLE(1, 1, 1, 1));
+		__m128 e2 = _mm_shuffle_ps(p_mat2[3].vec_comp, p_mat2[3].vec_comp, _MM_SHUFFLE(2, 2, 2, 2));
+		__m128 e3 = _mm_shuffle_ps(p_mat2[3].vec_comp, p_mat2[3].vec_comp, _MM_SHUFFLE(3, 3, 3, 3));
+
+		__m128 m0 = _mm_mul_ps(p_mat[0].vec_comp, e0);
+		__m128 m1 = _mm_mul_ps(p_mat[1].vec_comp, e1);
+		__m128 m2 = _mm_mul_ps(p_mat[2].vec_comp, e2);
+		__m128 m3 = _mm_mul_ps(p_mat[3].vec_comp, e3);
+
+		__m128 a0 = _mm_add_ps(m0, m1);
+		__m128 a1 = _mm_add_ps(m2, m3);
+		__m128 a2 = _mm_add_ps(a0, a1);
+
+		res[3].vec_comp = a2;
+	}
+#endif
 	return res;
 }
 
@@ -146,31 +244,32 @@ bool Matrix4x4::operator==(const Matrix4x4& p_mat)
 		(m_data[3] == p_mat.m_data[3]);
 }
 
-Matrix4x4 Matrix4x4::Inverse(const Matrix4x4& m)
+Matrix4x4 Matrix4x4::Inverse(const Matrix4x4& p_mat)
 {
-	float Coef00 = m[2][2] * m[3][3] - m[3][2] * m[2][3];
-	float Coef02 = m[1][2] * m[3][3] - m[3][2] * m[1][3];
-	float Coef03 = m[1][2] * m[2][3] - m[2][2] * m[1][3];
+#ifndef USE_INTRINSIC
+	float Coef00 = p_mat[2][2] * p_mat[3][3] - p_mat[3][2] * p_mat[2][3];
+	float Coef02 = p_mat[1][2] * p_mat[3][3] - p_mat[3][2] * p_mat[1][3];
+	float Coef03 = p_mat[1][2] * p_mat[2][3] - p_mat[2][2] * p_mat[1][3];
 
-	float Coef04 = m[2][1] * m[3][3] - m[3][1] * m[2][3];
-	float Coef06 = m[1][1] * m[3][3] - m[3][1] * m[1][3];
-	float Coef07 = m[1][1] * m[2][3] - m[2][1] * m[1][3];
+	float Coef04 = p_mat[2][1] * p_mat[3][3] - p_mat[3][1] * p_mat[2][3];
+	float Coef06 = p_mat[1][1] * p_mat[3][3] - p_mat[3][1] * p_mat[1][3];
+	float Coef07 = p_mat[1][1] * p_mat[2][3] - p_mat[2][1] * p_mat[1][3];
 
-	float Coef08 = m[2][1] * m[3][2] - m[3][1] * m[2][2];
-	float Coef10 = m[1][1] * m[3][2] - m[3][1] * m[1][2];
-	float Coef11 = m[1][1] * m[2][2] - m[2][1] * m[1][2];
+	float Coef08 = p_mat[2][1] * p_mat[3][2] - p_mat[3][1] * p_mat[2][2];
+	float Coef10 = p_mat[1][1] * p_mat[3][2] - p_mat[3][1] * p_mat[1][2];
+	float Coef11 = p_mat[1][1] * p_mat[2][2] - p_mat[2][1] * p_mat[1][2];
 
-	float Coef12 = m[2][0] * m[3][3] - m[3][0] * m[2][3];
-	float Coef14 = m[1][0] * m[3][3] - m[3][0] * m[1][3];
-	float Coef15 = m[1][0] * m[2][3] - m[2][0] * m[1][3];
+	float Coef12 = p_mat[2][0] * p_mat[3][3] - p_mat[3][0] * p_mat[2][3];
+	float Coef14 = p_mat[1][0] * p_mat[3][3] - p_mat[3][0] * p_mat[1][3];
+	float Coef15 = p_mat[1][0] * p_mat[2][3] - p_mat[2][0] * p_mat[1][3];
 
-	float Coef16 = m[2][0] * m[3][2] - m[3][0] * m[2][2];
-	float Coef18 = m[1][0] * m[3][2] - m[3][0] * m[1][2];
-	float Coef19 = m[1][0] * m[2][2] - m[2][0] * m[1][2];
+	float Coef16 = p_mat[2][0] * p_mat[3][2] - p_mat[3][0] * p_mat[2][2];
+	float Coef18 = p_mat[1][0] * p_mat[3][2] - p_mat[3][0] * p_mat[1][2];
+	float Coef19 = p_mat[1][0] * p_mat[2][2] - p_mat[2][0] * p_mat[1][2];
 
-	float Coef20 = m[2][0] * m[3][1] - m[3][0] * m[2][1];
-	float Coef22 = m[1][0] * m[3][1] - m[3][0] * m[1][1];
-	float Coef23 = m[1][0] * m[2][1] - m[2][0] * m[1][1];
+	float Coef20 = p_mat[2][0] * p_mat[3][1] - p_mat[3][0] * p_mat[2][1];
+	float Coef22 = p_mat[1][0] * p_mat[3][1] - p_mat[3][0] * p_mat[1][1];
+	float Coef23 = p_mat[1][0] * p_mat[2][1] - p_mat[2][0] * p_mat[1][1];
 
 	SimpleVec4 Fac0(Coef00, Coef00, Coef02, Coef03);
 	SimpleVec4 Fac1(Coef04, Coef04, Coef06, Coef07);
@@ -179,10 +278,10 @@ Matrix4x4 Matrix4x4::Inverse(const Matrix4x4& m)
 	SimpleVec4 Fac4(Coef16, Coef16, Coef18, Coef19);
 	SimpleVec4 Fac5(Coef20, Coef20, Coef22, Coef23);
 
-	SimpleVec4 Vec0(m[1][0], m[0][0], m[0][0], m[0][0]);
-	SimpleVec4 Vec1(m[1][1], m[0][1], m[0][1], m[0][1]);
-	SimpleVec4 Vec2(m[1][2], m[0][2], m[0][2], m[0][2]);
-	SimpleVec4 Vec3(m[1][3], m[0][3], m[0][3], m[0][3]);
+	SimpleVec4 Vec0(p_mat[1][0], p_mat[0][0], p_mat[0][0], p_mat[0][0]);
+	SimpleVec4 Vec1(p_mat[1][1], p_mat[0][1], p_mat[0][1], p_mat[0][1]);
+	SimpleVec4 Vec2(p_mat[1][2], p_mat[0][2], p_mat[0][2], p_mat[0][2]);
+	SimpleVec4 Vec3(p_mat[1][3], p_mat[0][3], p_mat[0][3], p_mat[0][3]);
 
 	SimpleVec4 Inv0(Vec1 * Fac0 - Vec2 * Fac1 + Vec3 * Fac2);
 	SimpleVec4 Inv1(Vec0 * Fac0 - Vec2 * Fac3 + Vec3 * Fac4);
@@ -195,12 +294,234 @@ Matrix4x4 Matrix4x4::Inverse(const Matrix4x4& m)
 
 	SimpleVec4 Row0(Inverse[0][0], Inverse[1][0], Inverse[2][0], Inverse[3][0]);
 
-	SimpleVec4 Dot0(m[0] * Row0);
+	SimpleVec4 Dot0(p_mat[0] * Row0);
 	float Dot1 = (Dot0.x + Dot0.y) + (Dot0.z + Dot0.w);
 
 	float OneOverDeterminant = 1.f / Dot1;
-
 	return Inverse * OneOverDeterminant;
+#else
+	__m128 Fac0;
+	{
+		//	valType SubFactor00 = m[2][2] * m[3][3] - m[3][2] * m[2][3];
+		//	valType SubFactor00 = m[2][2] * m[3][3] - m[3][2] * m[2][3];
+		//	valType SubFactor06 = m[1][2] * m[3][3] - m[3][2] * m[1][3];
+		//	valType SubFactor13 = m[1][2] * m[2][3] - m[2][2] * m[1][3];
+
+		__m128 Swp0a = _mm_shuffle_ps(p_mat[3].vec_comp, p_mat[2].vec_comp, _MM_SHUFFLE(3, 3, 3, 3));
+		__m128 Swp0b = _mm_shuffle_ps(p_mat[3].vec_comp, p_mat[2].vec_comp, _MM_SHUFFLE(2, 2, 2, 2));
+
+		__m128 Swp00 = _mm_shuffle_ps(p_mat[2].vec_comp, p_mat[1].vec_comp, _MM_SHUFFLE(2, 2, 2, 2));
+		__m128 Swp01 = _mm_shuffle_ps(Swp0a, Swp0a, _MM_SHUFFLE(2, 0, 0, 0));
+		__m128 Swp02 = _mm_shuffle_ps(Swp0b, Swp0b, _MM_SHUFFLE(2, 0, 0, 0));
+		__m128 Swp03 = _mm_shuffle_ps(p_mat[2].vec_comp, p_mat[1].vec_comp, _MM_SHUFFLE(3, 3, 3, 3));
+
+		__m128 Mul00 = _mm_mul_ps(Swp00, Swp01);
+		__m128 Mul01 = _mm_mul_ps(Swp02, Swp03);
+		Fac0 = _mm_sub_ps(Mul00, Mul01);
+	}
+
+	__m128 Fac1;
+	{
+		//	valType SubFactor01 = m[2][1] * m[3][3] - m[3][1] * m[2][3];
+		//	valType SubFactor01 = m[2][1] * m[3][3] - m[3][1] * m[2][3];
+		//	valType SubFactor07 = m[1][1] * m[3][3] - m[3][1] * m[1][3];
+		//	valType SubFactor14 = m[1][1] * m[2][3] - m[2][1] * m[1][3];
+
+		__m128 Swp0a = _mm_shuffle_ps(p_mat[3].vec_comp, p_mat[2].vec_comp, _MM_SHUFFLE(3, 3, 3, 3));
+		__m128 Swp0b = _mm_shuffle_ps(p_mat[3].vec_comp, p_mat[2].vec_comp, _MM_SHUFFLE(1, 1, 1, 1));
+
+		__m128 Swp00 = _mm_shuffle_ps(p_mat[2].vec_comp, p_mat[1].vec_comp, _MM_SHUFFLE(1, 1, 1, 1));
+		__m128 Swp01 = _mm_shuffle_ps(Swp0a, Swp0a, _MM_SHUFFLE(2, 0, 0, 0));
+		__m128 Swp02 = _mm_shuffle_ps(Swp0b, Swp0b, _MM_SHUFFLE(2, 0, 0, 0));
+		__m128 Swp03 = _mm_shuffle_ps(p_mat[2].vec_comp, p_mat[1].vec_comp, _MM_SHUFFLE(3, 3, 3, 3));
+
+		__m128 Mul00 = _mm_mul_ps(Swp00, Swp01);
+		__m128 Mul01 = _mm_mul_ps(Swp02, Swp03);
+		Fac1 = _mm_sub_ps(Mul00, Mul01);
+	}
+
+
+	__m128 Fac2;
+	{
+		//	valType SubFactor02 = m[2][1] * m[3][2] - m[3][1] * m[2][2];
+		//	valType SubFactor02 = m[2][1] * m[3][2] - m[3][1] * m[2][2];
+		//	valType SubFactor08 = m[1][1] * m[3][2] - m[3][1] * m[1][2];
+		//	valType SubFactor15 = m[1][1] * m[2][2] - m[2][1] * m[1][2];
+
+		__m128 Swp0a = _mm_shuffle_ps(p_mat[3].vec_comp, p_mat[2].vec_comp, _MM_SHUFFLE(2, 2, 2, 2));
+		__m128 Swp0b = _mm_shuffle_ps(p_mat[3].vec_comp, p_mat[2].vec_comp, _MM_SHUFFLE(1, 1, 1, 1));
+
+		__m128 Swp00 = _mm_shuffle_ps(p_mat[2].vec_comp, p_mat[1].vec_comp, _MM_SHUFFLE(1, 1, 1, 1));
+		__m128 Swp01 = _mm_shuffle_ps(Swp0a, Swp0a, _MM_SHUFFLE(2, 0, 0, 0));
+		__m128 Swp02 = _mm_shuffle_ps(Swp0b, Swp0b, _MM_SHUFFLE(2, 0, 0, 0));
+		__m128 Swp03 = _mm_shuffle_ps(p_mat[2].vec_comp, p_mat[1].vec_comp, _MM_SHUFFLE(2, 2, 2, 2));
+
+		__m128 Mul00 = _mm_mul_ps(Swp00, Swp01);
+		__m128 Mul01 = _mm_mul_ps(Swp02, Swp03);
+		Fac2 = _mm_sub_ps(Mul00, Mul01);
+	}
+
+	__m128 Fac3;
+	{
+		//	valType SubFactor03 = m[2][0] * m[3][3] - m[3][0] * m[2][3];
+		//	valType SubFactor03 = m[2][0] * m[3][3] - m[3][0] * m[2][3];
+		//	valType SubFactor09 = m[1][0] * m[3][3] - m[3][0] * m[1][3];
+		//	valType SubFactor16 = m[1][0] * m[2][3] - m[2][0] * m[1][3];
+
+		__m128 Swp0a = _mm_shuffle_ps(p_mat[3].vec_comp, p_mat[2].vec_comp, _MM_SHUFFLE(3, 3, 3, 3));
+		__m128 Swp0b = _mm_shuffle_ps(p_mat[3].vec_comp, p_mat[2].vec_comp, _MM_SHUFFLE(0, 0, 0, 0));
+
+		__m128 Swp00 = _mm_shuffle_ps(p_mat[2].vec_comp, p_mat[1].vec_comp, _MM_SHUFFLE(0, 0, 0, 0));
+		__m128 Swp01 = _mm_shuffle_ps(Swp0a, Swp0a, _MM_SHUFFLE(2, 0, 0, 0));
+		__m128 Swp02 = _mm_shuffle_ps(Swp0b, Swp0b, _MM_SHUFFLE(2, 0, 0, 0));
+		__m128 Swp03 = _mm_shuffle_ps(p_mat[2].vec_comp, p_mat[1].vec_comp, _MM_SHUFFLE(3, 3, 3, 3));
+
+		__m128 Mul00 = _mm_mul_ps(Swp00, Swp01);
+		__m128 Mul01 = _mm_mul_ps(Swp02, Swp03);
+		Fac3 = _mm_sub_ps(Mul00, Mul01);
+	}
+
+	__m128 Fac4;
+	{
+		//	valType SubFactor04 = m[2][0] * m[3][2] - m[3][0] * m[2][2];
+		//	valType SubFactor04 = m[2][0] * m[3][2] - m[3][0] * m[2][2];
+		//	valType SubFactor10 = m[1][0] * m[3][2] - m[3][0] * m[1][2];
+		//	valType SubFactor17 = m[1][0] * m[2][2] - m[2][0] * m[1][2];
+
+		__m128 Swp0a = _mm_shuffle_ps(p_mat[3].vec_comp, p_mat[2].vec_comp, _MM_SHUFFLE(2, 2, 2, 2));
+		__m128 Swp0b = _mm_shuffle_ps(p_mat[3].vec_comp, p_mat[2].vec_comp, _MM_SHUFFLE(0, 0, 0, 0));
+
+		__m128 Swp00 = _mm_shuffle_ps(p_mat[2].vec_comp, p_mat[1].vec_comp, _MM_SHUFFLE(0, 0, 0, 0));
+		__m128 Swp01 = _mm_shuffle_ps(Swp0a, Swp0a, _MM_SHUFFLE(2, 0, 0, 0));
+		__m128 Swp02 = _mm_shuffle_ps(Swp0b, Swp0b, _MM_SHUFFLE(2, 0, 0, 0));
+		__m128 Swp03 = _mm_shuffle_ps(p_mat[2].vec_comp, p_mat[1].vec_comp, _MM_SHUFFLE(2, 2, 2, 2));
+
+		__m128 Mul00 = _mm_mul_ps(Swp00, Swp01);
+		__m128 Mul01 = _mm_mul_ps(Swp02, Swp03);
+		Fac4 = _mm_sub_ps(Mul00, Mul01);
+	}
+
+	__m128 Fac5;
+	{
+		//	valType SubFactor05 = m[2][0] * m[3][1] - m[3][0] * m[2][1];
+		//	valType SubFactor05 = m[2][0] * m[3][1] - m[3][0] * m[2][1];
+		//	valType SubFactor12 = m[1][0] * m[3][1] - m[3][0] * m[1][1];
+		//	valType SubFactor18 = m[1][0] * m[2][1] - m[2][0] * m[1][1];
+
+		__m128 Swp0a = _mm_shuffle_ps(p_mat[3].vec_comp, p_mat[2].vec_comp, _MM_SHUFFLE(1, 1, 1, 1));
+		__m128 Swp0b = _mm_shuffle_ps(p_mat[3].vec_comp, p_mat[2].vec_comp, _MM_SHUFFLE(0, 0, 0, 0));
+
+		__m128 Swp00 = _mm_shuffle_ps(p_mat[2].vec_comp, p_mat[1].vec_comp, _MM_SHUFFLE(0, 0, 0, 0));
+		__m128 Swp01 = _mm_shuffle_ps(Swp0a, Swp0a, _MM_SHUFFLE(2, 0, 0, 0));
+		__m128 Swp02 = _mm_shuffle_ps(Swp0b, Swp0b, _MM_SHUFFLE(2, 0, 0, 0));
+		__m128 Swp03 = _mm_shuffle_ps(p_mat[2].vec_comp, p_mat[1].vec_comp, _MM_SHUFFLE(1, 1, 1, 1));
+
+		__m128 Mul00 = _mm_mul_ps(Swp00, Swp01);
+		__m128 Mul01 = _mm_mul_ps(Swp02, Swp03);
+		Fac5 = _mm_sub_ps(Mul00, Mul01);
+	}
+
+	__m128 SignA = _mm_set_ps(1.0f, -1.0f, 1.0f, -1.0f);
+	__m128 SignB = _mm_set_ps(-1.0f, 1.0f, -1.0f, 1.0f);
+
+	// m[1][0]
+	// m[0][0]
+	// m[0][0]
+	// m[0][0]
+	__m128 Temp0 = _mm_shuffle_ps(p_mat[1].vec_comp, p_mat[0].vec_comp, _MM_SHUFFLE(0, 0, 0, 0));
+	__m128 Vec0 = _mm_shuffle_ps(Temp0, Temp0, _MM_SHUFFLE(2, 2, 2, 0));
+
+	// m[1][1]
+	// m[0][1]
+	// m[0][1]
+	// m[0][1]
+	__m128 Temp1 = _mm_shuffle_ps(p_mat[1].vec_comp, p_mat[0].vec_comp, _MM_SHUFFLE(1, 1, 1, 1));
+	__m128 Vec1 = _mm_shuffle_ps(Temp1, Temp1, _MM_SHUFFLE(2, 2, 2, 0));
+
+	// m[1][2]
+	// m[0][2]
+	// m[0][2]
+	// m[0][2]
+	__m128 Temp2 = _mm_shuffle_ps(p_mat[1].vec_comp, p_mat[0].vec_comp, _MM_SHUFFLE(2, 2, 2, 2));
+	__m128 Vec2 = _mm_shuffle_ps(Temp2, Temp2, _MM_SHUFFLE(2, 2, 2, 0));
+
+	// m[1][3]
+	// m[0][3]
+	// m[0][3]
+	// m[0][3]
+	__m128 Temp3 = _mm_shuffle_ps(p_mat[1].vec_comp, p_mat[0].vec_comp, _MM_SHUFFLE(3, 3, 3, 3));
+	__m128 Vec3 = _mm_shuffle_ps(Temp3, Temp3, _MM_SHUFFLE(2, 2, 2, 0));
+
+	// col0
+	// + (Vec1[0] * Fac0[0] - Vec2[0] * Fac1[0] + Vec3[0] * Fac2[0]),
+	// - (Vec1[1] * Fac0[1] - Vec2[1] * Fac1[1] + Vec3[1] * Fac2[1]),
+	// + (Vec1[2] * Fac0[2] - Vec2[2] * Fac1[2] + Vec3[2] * Fac2[2]),
+	// - (Vec1[3] * Fac0[3] - Vec2[3] * Fac1[3] + Vec3[3] * Fac2[3]),
+	__m128 Mul00 = _mm_mul_ps(Vec1, Fac0);
+	__m128 Mul01 = _mm_mul_ps(Vec2, Fac1);
+	__m128 Mul02 = _mm_mul_ps(Vec3, Fac2);
+	__m128 Sub00 = _mm_sub_ps(Mul00, Mul01);
+	__m128 Add00 = _mm_add_ps(Sub00, Mul02);
+	__m128 Inv0 = _mm_mul_ps(SignB, Add00);
+
+	// col1
+	// - (Vec0[0] * Fac0[0] - Vec2[0] * Fac3[0] + Vec3[0] * Fac4[0]),
+	// + (Vec0[0] * Fac0[1] - Vec2[1] * Fac3[1] + Vec3[1] * Fac4[1]),
+	// - (Vec0[0] * Fac0[2] - Vec2[2] * Fac3[2] + Vec3[2] * Fac4[2]),
+	// + (Vec0[0] * Fac0[3] - Vec2[3] * Fac3[3] + Vec3[3] * Fac4[3]),
+	__m128 Mul03 = _mm_mul_ps(Vec0, Fac0);
+	__m128 Mul04 = _mm_mul_ps(Vec2, Fac3);
+	__m128 Mul05 = _mm_mul_ps(Vec3, Fac4);
+	__m128 Sub01 = _mm_sub_ps(Mul03, Mul04);
+	__m128 Add01 = _mm_add_ps(Sub01, Mul05);
+	__m128 Inv1 = _mm_mul_ps(SignA, Add01);
+
+	// col2
+	// + (Vec0[0] * Fac1[0] - Vec1[0] * Fac3[0] + Vec3[0] * Fac5[0]),
+	// - (Vec0[0] * Fac1[1] - Vec1[1] * Fac3[1] + Vec3[1] * Fac5[1]),
+	// + (Vec0[0] * Fac1[2] - Vec1[2] * Fac3[2] + Vec3[2] * Fac5[2]),
+	// - (Vec0[0] * Fac1[3] - Vec1[3] * Fac3[3] + Vec3[3] * Fac5[3]),
+	__m128 Mul06 = _mm_mul_ps(Vec0, Fac1);
+	__m128 Mul07 = _mm_mul_ps(Vec1, Fac3);
+	__m128 Mul08 = _mm_mul_ps(Vec3, Fac5);
+	__m128 Sub02 = _mm_sub_ps(Mul06, Mul07);
+	__m128 Add02 = _mm_add_ps(Sub02, Mul08);
+	__m128 Inv2 = _mm_mul_ps(SignB, Add02);
+
+	// col3
+	// - (Vec1[0] * Fac2[0] - Vec1[0] * Fac4[0] + Vec2[0] * Fac5[0]),
+	// + (Vec1[0] * Fac2[1] - Vec1[1] * Fac4[1] + Vec2[1] * Fac5[1]),
+	// - (Vec1[0] * Fac2[2] - Vec1[2] * Fac4[2] + Vec2[2] * Fac5[2]),
+	// + (Vec1[0] * Fac2[3] - Vec1[3] * Fac4[3] + Vec2[3] * Fac5[3]));
+	__m128 Mul09 = _mm_mul_ps(Vec0, Fac2);
+	__m128 Mul10 = _mm_mul_ps(Vec1, Fac4);
+	__m128 Mul11 = _mm_mul_ps(Vec2, Fac5);
+	__m128 Sub03 = _mm_sub_ps(Mul09, Mul10);
+	__m128 Add03 = _mm_add_ps(Sub03, Mul11);
+	__m128 Inv3 = _mm_mul_ps(SignA, Add03);
+
+	__m128 Row0 = _mm_shuffle_ps(Inv0, Inv1, _MM_SHUFFLE(0, 0, 0, 0));
+	__m128 Row1 = _mm_shuffle_ps(Inv2, Inv3, _MM_SHUFFLE(0, 0, 0, 0));
+	__m128 Row2 = _mm_shuffle_ps(Row0, Row1, _MM_SHUFFLE(2, 0, 2, 0));
+
+	//	valType Determinant = m[0][0] * Inverse[0][0] 
+	//						+ m[0][1] * Inverse[1][0] 
+	//						+ m[0][2] * Inverse[2][0] 
+	//						+ m[0][3] * Inverse[3][0];
+
+	
+	__m128 Det0 = _mm_dp_ps(p_mat[0].vec_comp, Row2, 0xff);
+	__m128 Rcp0 = _mm_rcp_ps(Det0);
+	//__m128 Rcp0 = _mm_div_ps(one, Det0);
+	//	Inverse /= Determinant;
+	Matrix4x4 out;
+	out[0].vec_comp = _mm_mul_ps(Inv0, Rcp0);
+	out[1].vec_comp = _mm_mul_ps(Inv1, Rcp0);
+	out[2].vec_comp = _mm_mul_ps(Inv2, Rcp0);
+	out[3].vec_comp = _mm_mul_ps(Inv3, Rcp0);
+	return out;
+#endif
+
 }
 
 Matrix4x4& Matrix4x4::operator*(const float& p_s)
@@ -266,7 +587,6 @@ Matrix4x4 Matrix4x4::CreateFrustum(const float& left, const float& right, const 
 Matrix4x4 Matrix4x4::CreatePerspective(const float& p_fovy, const float& p_aspectRatio, const float& p_zNear, const float& p_zFar)
 {
 	
-	std::cout << Math::Abs(p_aspectRatio - static_cast<float>(EPSILON));
    assert(Math::Abs(p_aspectRatio - static_cast<float>(EPSILON)) > 0.f);
 
 	const float tanHalfFovy = tan(p_fovy / 2.f);
@@ -303,6 +623,7 @@ float Matrix4x4::Determinant(const Matrix4x4& m)
 Matrix4x4 Matrix4x4::Transpose(const Matrix4x4& m)
 {
 	Matrix4x4 result(0);
+#ifndef USE_INTRINSIC
 	result[0][0] = m[0][0];
 	result[0][1] = m[1][0];
 	result[0][2] = m[2][0];
@@ -322,6 +643,17 @@ Matrix4x4 Matrix4x4::Transpose(const Matrix4x4& m)
 	result[3][1] = m[1][3];
 	result[3][2] = m[2][3];
 	result[3][3] = m[3][3];
+#else
+	__m128 tmp0 = _mm_shuffle_ps(m[0].vec_comp, m[1].vec_comp, 0x44);
+	__m128 tmp2 = _mm_shuffle_ps(m[0].vec_comp, m[1].vec_comp, 0xEE);
+	__m128 tmp1 = _mm_shuffle_ps(m[2].vec_comp, m[3].vec_comp, 0x44);
+	__m128 tmp3 = _mm_shuffle_ps(m[2].vec_comp, m[3].vec_comp, 0xEE);
+
+	result[0].vec_comp = _mm_shuffle_ps(tmp0, tmp1, 0x88);
+	result[1].vec_comp = _mm_shuffle_ps(tmp0, tmp1, 0xDD);
+	result[2].vec_comp = _mm_shuffle_ps(tmp2, tmp3, 0x88);
+	result[3].vec_comp = _mm_shuffle_ps(tmp2, tmp3, 0xDD);
+#endif
 	return result;
 }
 

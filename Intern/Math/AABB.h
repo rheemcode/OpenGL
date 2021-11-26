@@ -167,7 +167,7 @@ Vector3 AABB::GetEndpoint(int p_point) const
 			return Vector3(position.x + size.x, position.y + size.y, position.z);
 		case 7:
 			return Vector3(position.x + size.x, position.y + size.y, position.z + size.z);
-
+		default: return Vector3();
 	}
 }
 

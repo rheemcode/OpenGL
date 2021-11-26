@@ -174,13 +174,13 @@ LRESULT Display::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam)
 					(double(raw->data.mouse.lLastY) - 65536.0 / (nScreenHeight)) * nScreenHeight / 65536.0 + nScreenTop);
 
 				POINT coords;
-				coords.x = absPos.x;
-				coords.y = absPos.y;
+				coords.x = (long)(absPos.x);
+				coords.y = (long)(absPos.y);
 
 				ScreenToClient(m_Windows[windowID]->GetNativeWindow(), &coords);
 
-				dx = coords.x - oldMouseX;
-				dy = coords.y - oldMouseY;
+				dx = (int)(coords.x - oldMouseX);
+				dy = (int)(coords.y - oldMouseY);
 
 				Input::SetAxis(Input::AXIS_X, dx);
 				Input::SetAxis(Input::AXIS_Y, dy);
@@ -540,14 +540,14 @@ LRESULT Display::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lparam)
 			MINMAXINFO* minMaxInfo = (MINMAXINFO*)lparam;
 			if (data.minSize != Size2())
 			{
-				minMaxInfo->ptMinTrackSize.x = data.minSize.x + dec.x;
-				minMaxInfo->ptMinTrackSize.y = data.minSize.y + dec.y;
+				minMaxInfo->ptMinTrackSize.x = (long)(data.minSize.x + dec.x);
+				minMaxInfo->ptMinTrackSize.y = (long)(data.minSize.y + dec.y);
 			}
 
 			if (data.maxSize != Size2())
 			{
-				minMaxInfo->ptMaxTrackSize.x = data.maxSize.x + dec.x;
-				minMaxInfo->ptMaxTrackSize.y = data.maxSize.y + dec.y;
+				minMaxInfo->ptMaxTrackSize.x = (long)(data.maxSize.x + dec.x);
+				minMaxInfo->ptMaxTrackSize.y = (long)(data.maxSize.y + dec.y);
 			}
 			return 0;
 		}
@@ -741,7 +741,7 @@ void Display::SetCurrentScreen(int p_screen, WindowID windowID)
 
 	Point2 ofs = GetWindowPosition(windowID) - GetScreenPosition(GetCurrentScreen(windowID));
 	POINT point;
-	point.x = ofs.x + GetScreenPosition(p_screen).x;
+	point.x = (long)(ofs.x + GetScreenPosition(p_screen).x);
 	point.y = ofs.y + GetScreenPosition(p_screen).y;
 	SetWindowPosition(point, windowID);
 }

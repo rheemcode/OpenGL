@@ -21,7 +21,7 @@ struct GLIB_API  SimpleVec3
 		return *this;
 	}
 
-	SimpleVec3& operator +(const SimpleVec3& p_vec) const
+	SimpleVec3 operator +(const SimpleVec3& p_vec) const
 	{
 		SimpleVec3 res = *this;
 		res.x += p_vec.x;
@@ -202,6 +202,12 @@ struct GLIB_API SimpleVec4
 
 		float component[4] = { 0 };
 	};
+
+	void Normalize()
+	{
+		auto len = _mm_rsqrt_ps(_mm_dp_ps(vec_comp, vec_comp, 0xff));
+		vec_comp = _mm_mul_ps(vec_comp, len);
+	}
 
 	SimpleVec4& operator +=(const SimpleVec4& p_vec)
 	{

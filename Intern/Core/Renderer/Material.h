@@ -1,35 +1,33 @@
 #pragma once
 #include "Math/SimpleVec.h"
-#include "Renderer/Texture.h"
+#include "OpenGL/Texture.h"
 
 struct Material
 {
-	struct
-	{
-		Vector4 Color;
-		int Diffuse =-1;
-	};
+	Vector3 Albedo;
+	Vector3 Diffuse;
+	uint32_t AlbedoTexture = 0;
+	uint32_t SpecularTexture = 0;
+	uint32_t NormalTexture = 0;
+	bool NormalMapEnabled = false;
+	Vector3 Specular;
 
-	Vector3 Ambient;
-	Vector3 Specular; 
+	std::string AlbedoTexName = "";
+	std::string SpecularTexName = "";
+	std::string NormalTexName = "";
+
 	float Shininess;
-	float SpecularHighlights;
-	bool SSAO;
+	float SpecularHighlight;
+	bool useSSAO;
 
 	Material()
-		:Shininess(0), SpecularHighlights(0), SSAO(false){};
+		:Shininess(0), SpecularHighlight(0), useSSAO(false){};
 
-	Material(const Material& p_mat)
-	{
-		Color = p_mat.Color;
-		Diffuse = p_mat.Diffuse;
-		Ambient = p_mat.Ambient;
-		Shininess = p_mat.Shininess;
-		SpecularHighlights = p_mat.Shininess;
-		SSAO = p_mat.SSAO;
-
-	}
+	Material(const Material& p_mat) = default;
 };
+
+extern std::ostream& operator<<(std::ostream& os, Material& mat);
+extern std::istream& operator>>(std::istream& is, Material& mat);
 
 class ShaderMatrial
 {

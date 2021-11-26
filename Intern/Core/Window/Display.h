@@ -56,6 +56,7 @@ class GLIB_API Display
 {
 	friend Input;
 	friend GLMain;
+	friend OpenGLContext;
 	HINSTANCE hInstance;
 	MSG m_msg = { 0 };
 	HCURSOR cursors[CursorShape::CURSOR_MAX] = { nullptr };
