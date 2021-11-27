@@ -2,12 +2,13 @@
 #include "Matrix3x3.h"
 #include "Matrix4x4.h"
 
-struct Quaternion
+struct GLIB_API Quaternion
 {
 	union
 	{
 		struct { float x, y, z, w; };
 		float component[4] = { 0 };
+		__m128 vec_comp;
 	};
 	typedef Quaternion Quat;
 

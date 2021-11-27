@@ -1,9 +1,9 @@
 #pragma once
 #include <vector>
 #include <memory>
-#include "Renderer/Shader.h"
+#include "OpenGL/Shader.h"
 #include "Renderer/Buffers/IndexBuffer.h"
-#include "Renderer/VertexArray.h"
+#include "OpenGL/VertexArray.h"
 #include "Math/Matrix4x4.h"
 #include "Math/Transform.h"
 #include "Renderer/Material.h"
@@ -18,6 +18,8 @@ struct VertexAttrib
 	Vector3 vertices;
 	Vector3 normals;
 	Vector2 uv;
+	Vector3 tangent;
+	Vector3 bitangent;
 
 	bool operator==(const VertexAttrib& p_other) const
 	{
@@ -89,10 +91,14 @@ public:
 		m_instanceBounds = p_mesh.m_instanceBounds;
 	}
 	 Mesh(Mesh&& p_mesh) noexcept;
+	 Mesh(const VertexAttrib* p_attribs, uint32_t count) {};
+	 Mesh(const std::vector<VertexAttrib> p_attribs) {};
 	 Mesh(const std::vector<VertexAttrib>& p_vAttribs, const std::vector<uint32_t>& p_indices, Material p_material, AABB p_aabb);
 	 Mesh(VertexAttrib* p_vAttribs, uint32_t* p_indices, uint32_t count, Material p_material, AABB p_aabb);
+	 Mesh(const std::vector<VertexAttrib>& p_vAttribs, uint32_t* p_indices, uint32_t count, Material p_material, AABB p_aabb);
 	 ~Mesh() = default;
 };
+
 
 namespace std
 {

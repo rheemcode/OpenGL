@@ -4,7 +4,7 @@
 #include "Event.h"
 
 
-	class MouseMovedEvent : public Event
+	class GLIB_API  MouseMovedEvent : public Event
 	{
 	public: 
 		MouseMovedEvent(const float x = 0, const float y = 0)
@@ -43,7 +43,7 @@
 			relativeX, relativeY;
 	};
 
-	class MouseScrolledEvent : public Event
+	class GLIB_API MouseScrolledEvent : public Event
 	{
 	public:
 		MouseScrolledEvent(const float xOffset, const float yOffset)
@@ -65,7 +65,7 @@
 		float m_XOffset, m_YOffset;
 	};
 
-	class MouseButtonEvent : public Event
+	class GLIB_API MouseButtonEvent : public Event
 	{
 	public:
 		int GetMouseButton() const { return m_Button; }
@@ -78,7 +78,7 @@
 		int m_Button;
 	};
 
-	class MouseButtonPressedEvent : public MouseButtonEvent
+	class GLIB_API  MouseButtonPressedEvent : public MouseButtonEvent
 	{
 	public:
 		MouseButtonPressedEvent(const int button)

@@ -1,6 +1,7 @@
-#include "../Debug.h"
+#include <glpch.h>
+#include "Utils/Debug.h"
 #include "IndexBuffer.h"
-
+#include <GL/glew.h>
 IndexBuffer::IndexBuffer()
 	: m_RendererID(0), m_Count(0)
 {

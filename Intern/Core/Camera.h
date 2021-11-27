@@ -5,7 +5,7 @@
 #include "Tests/Object.h"
 #include "Math/Quaternion.h"
 #include "Math/Transform.h"
-#include "SceneCameraController.h"
+#include "ECS/SceneCameraController.h"
 #include "Math/Frustum.h"
 
 
@@ -15,26 +15,29 @@ enum class CameraMode
 	ORTHOGRAPHIC
 };
 
-struct CameraSettings
+struct GLIB_API CameraSettings
 {
 	CameraMode mode;
 	float fovY, znear, zfar;
 	float left, right, top, bottom;
-	float winWidth, winHeight;
+	int winWidth, winHeight;
 	float ratio;
 };
 
-class Camera
+class GLIB_API Camera
 {
 protected:
+	friend class Scene;
+	float m_Width, m_Height;
 	CameraSettings m_cameraSettings;
 
 	Matrix4x4 m_ProjectionMatrix;
 	Matrix4x4 m_ViewMatrix;
-	Matrix4x4 m_ViewProjectionMatrix;
-
+	mutable Matrix4x4 m_ViewProjectionMatrix;
 	Frustum m_Frustum;
-	float m_Width, m_Height;
+	Transform transform;
+
+	std::shared_ptr<CameraController> cameraController;
 	Matrix4x4 MakeProjectionMatrix(const CameraMode& projectionMode);
 	Matrix4x4 MakeProjectionMatrix(const CameraSettings& setting);
 	Matrix4x4 MakeViewMatrix();
@@ -43,6 +46,7 @@ public:
 	const Matrix4x4& GetViewMatrix() const;
 	const Matrix4x4& GetProjectionMatrix() const;
 	const Matrix4x4& GetViewProjectionMatrix() const;
+<<<<<<< HEAD
 
 	virtual Frustum& GetFrustum() { return m_Frustum; };
 
@@ -59,32 +63,40 @@ class SceneCamera : public Camera
 	SceneCameraController cameraController;
 
 public:
+=======
+>>>>>>> 9a09ef6660b98f11e584c8baced474b13e6f1ea0
 	const CameraSettings GetCameraSettings() const { return m_cameraSettings; }
 	const Transform& GetTransform() const { return transform; }
 
-	void OnEvent(const Event& event);
-	void OnUpdate(float p_delta)
-	{
-		cameraController.HandleKeyboardInput(transform, p_delta);
-		cameraController.Update(transform, p_delta);
-		UpdateView();
-	}
+	virtual void OnUpdate(float p_delta) {};
+	virtual void OnEvent(const Event& event) {};
 
-	virtual Frustum& GetFrustum()
-	{
-		UpdateView();
-		m_Frustum.SetFrustum(m_ProjectionMatrix * m_ViewMatrix);
-		return m_Frustum;
-	}
-
-	void UpdateView()
+	inline void UpdateView()
 	{
 		m_ViewMatrix = Matrix4x4::Inverse(transform.GetWorldMatrix());
 	}
 
-	SceneCamera(const CameraSettings& p_cameraSetting)
-		: Camera(p_cameraSetting) {
-		cameraController.transform = &transform;
+	inline const Frustum& GetFrustum() {
+		UpdateView();
+		m_Frustum.SetFrustum(m_ProjectionMatrix * m_ViewMatrix);
+		return m_Frustum;
+	};
+
+	const CameraController* const GetController() const { return cameraController.get(); }
+	void AttachController(CameraController* p_cameraController)
+	{
+		cameraController.reset(p_cameraController);
+		cameraController->cameraTransform = &transform;
 	}
+	
+	void AttachController(std::shared_ptr<CameraController> p_cameraController)
+	{
+		cameraController = p_cameraController;
+		cameraController->cameraTransform = &transform;
+	}
+
+	Camera();
+	Camera(const CameraMode& mode);
+	Camera(const CameraSettings& setting);
 
 };

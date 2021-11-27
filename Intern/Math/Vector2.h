@@ -1,10 +1,11 @@
 #pragma once
 
 #define NO_FDECL
+#include "GLCore.h"
 #include "Math/Math.h"
 #include <functional>
 
-struct Vector2
+struct GLIB_API Vector2
 {
 	Vector2() :x(0), y(0) {};
 	Vector2(float p_x, float p_y) : x(p_x), y(p_y) {}
@@ -158,7 +159,7 @@ float Vector2::AngleBetween(const Vector2& p_vecA, const Vector2& p_vecB)
 
 Vector2 Vector2::AngleToDir(float p_angleRad)
 {
-	return Vector2(Math::Cos(p_angleRad), Math::Cos(p_angleRad));
+	return Vector2(Math::Cos(p_angleRad), Math::Sin(p_angleRad));
 }
 
 float Vector2::DirToAngle(const Vector2& p_vec)

@@ -1,6 +1,7 @@
 #pragma once
+#include "GLCore.h"
 
-struct SimpleVec3
+struct GLIB_API  SimpleVec3
 {
 	union
 	{
@@ -20,7 +21,7 @@ struct SimpleVec3
 		return *this;
 	}
 
-	SimpleVec3& operator +(const SimpleVec3& p_vec) const
+	SimpleVec3 operator +(const SimpleVec3& p_vec) const
 	{
 		SimpleVec3 res = *this;
 		res.x += p_vec.x;
@@ -191,22 +192,30 @@ struct SimpleVec3
 };
 
 
-struct SimpleVec4
+struct GLIB_API SimpleVec4
 {
 	union
 	{
+		__m128 vec_comp;
 		struct { float x, y, z, w; };
 		struct { float r, g, b, a; };
 
 		float component[4] = { 0 };
 	};
 
+	void Normalize()
+	{
+		auto len = _mm_rsqrt_ps(_mm_dp_ps(vec_comp, vec_comp, 0xff));
+		vec_comp = _mm_mul_ps(vec_comp, len);
+	}
+
 	SimpleVec4& operator +=(const SimpleVec4& p_vec)
 	{
-		this->x += p_vec.x;
+		this->vec_comp = _mm_add_ps(this->vec_comp, p_vec.vec_comp);
+		/*this->x += p_vec.x;
 		this->y += p_vec.y;
 		this->z += p_vec.z;
-		this->w += p_vec.w;
+		this->w += p_vec.w;*/
 
 		return *this;
 	}
@@ -214,20 +223,21 @@ struct SimpleVec4
 	SimpleVec4 operator +(const SimpleVec4& p_vec) const
 	{
 		SimpleVec4 res = *this;
-		res.x += p_vec.x;
+		/*res.x += p_vec.x;
 		res.y += p_vec.y;
 		res.z += p_vec.z;
-		res.w += p_vec.w;
-
+		res.w += p_vec.w;*/
+		res.vec_comp = _mm_add_ps(res.vec_comp, p_vec.vec_comp);
 		return res;
 	}
 	SimpleVec4 operator -(const SimpleVec4& p_vec) const
 	{
 		SimpleVec4 res = *this;
-		res.x -= p_vec.x;
+		res.vec_comp = _mm_sub_ps(res.vec_comp, p_vec.vec_comp);
+		/*res.x -= p_vec.x;
 		res.y -= p_vec.y;
 		res.z -= p_vec.z;
-		res.w -= p_vec.w;
+		res.w -= p_vec.w;*/
 
 		return res;
 	}
@@ -235,22 +245,22 @@ struct SimpleVec4
 	SimpleVec4 operator *(const SimpleVec4& p_vec) const
 	{
 		SimpleVec4 res = *this;
-		res.x*= p_vec.x;
+		/*res.x*= p_vec.x;
 		res.y*= p_vec.y;
 		res.z*= p_vec.z;
-		res.w*= p_vec.w;
-
+		res.w*= p_vec.w;*/
+		res.vec_comp = _mm_mul_ps(res.vec_comp, p_vec.vec_comp);
 		return res;
 	}
 
 	SimpleVec4 operator /(const SimpleVec4& p_vec) const
 	{
 		SimpleVec4 res = *this;
-		res.x /= p_vec.x;
+		/*res.x /= p_vec.x;
 		res.y /= p_vec.y;
 		res.z /= p_vec.z;
-		res.w /= p_vec.w;
-
+		res.w /= p_vec.w;*/
+		res.vec_comp = _mm_div_ps(res.vec_comp, p_vec.vec_comp);
 		return res;
 	}
 
@@ -261,7 +271,7 @@ struct SimpleVec4
 		res.y *= s;
 		res.z *= s;
 		res.w *= s;
-
+		//res.vec_comp = _mm_add_ps(res.vec_comp, p_vec.vec_comp);
 		return res;
 	}
 	SimpleVec4 operator /(const float& s) const
@@ -299,21 +309,21 @@ struct SimpleVec4
 
 	SimpleVec4& operator -=(const SimpleVec4& p_vec)
 	{
-		this->x -= p_vec.x;
+		/*this->x -= p_vec.x;
 		this->y -= p_vec.y;
 		this->z -= p_vec.z;
-		this->w -= p_vec.w;
-
+		this->w -= p_vec.w;*/
+		this->vec_comp = _mm_sub_ps(this->vec_comp, p_vec.vec_comp);
 		return *this;
 	}
 
 	SimpleVec4& operator *=(const SimpleVec4& p_vec)
 	{
-		this->x *= p_vec.x;
+		/*this->x *= p_vec.x;
 		this->y *= p_vec.y;
 		this->z *= p_vec.z;
-		this->w *= p_vec.w;
-
+		this->w *= p_vec.w;*/
+		this->vec_comp = _mm_mul_ps(this->vec_comp, p_vec.vec_comp);
 		return *this;
 	}
 	SimpleVec4& operator *=(const float& s)
@@ -356,11 +366,11 @@ struct SimpleVec4
 
 	SimpleVec4& operator /=(const SimpleVec4& p_vec)
 	{
-		this->x /= p_vec.x;
+	/*	this->x /= p_vec.x;
 		this->y /= p_vec.y;
 		this->z /= p_vec.z;
-		this->w /= p_vec.w;
-
+		this->w /= p_vec.w;*/
+		this->vec_comp = _mm_div_ps(this->vec_comp, p_vec.vec_comp);
 		return *this;
 	}
 

@@ -1,6 +1,6 @@
+#include <glpch.h>
 #include "Transform.h"
 #include "Window/Window.h"
-#include <sstream>
 
 void Transform::UpdateTransform()
 {

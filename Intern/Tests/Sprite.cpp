@@ -1,3 +1,4 @@
+#include <glpch.h>
 #include "Sprite.h"
 #include "Math/Vector3.h"
 #include "Math/Vector2.h"

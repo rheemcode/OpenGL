@@ -1,3 +1,4 @@
+#include <glpch.h>
 #include "Plane.h"
 
 bool Plane::IsPointOver(const Vector3& p_point) const

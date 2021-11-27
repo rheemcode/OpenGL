@@ -5,8 +5,11 @@
 #include "../Events/Event.h"
 #include "../Events/KeyEvent.h"
 #include "Math/Vector2.h"
+#include "GLCore.h"
 
-class Input
+
+//TODO: implement Input class correctly
+class GLIB_API Input
 {
 	static Point2 mousePos;
 	struct KeyPresses
@@ -38,7 +41,6 @@ public:
 	};
 
 	inline static Point2 GetMousePosition();
-	void OnEvent(const Event& event);
 	
 	static void SetMouseMode(MouseMode p_mouseMode);
 
@@ -49,8 +51,8 @@ public:
 	inline static float GetAxis(Axis);
 	inline static float GetAxisRaw(Axis);
 
-	inline static float GetMouseX() {  }
-	inline static float GetMouseY() {  }   
+	inline static float GetMouseX() { return 0; }
+	inline static float GetMouseY() { return 0; }
 
 	inline static void SetMouseDown(MouseButton p_mouseButton, bool pressed);
 	inline static bool GetMouseDown(MouseButton p_mouseButton);
@@ -59,7 +61,7 @@ public:
 	
 	inline static void SetKeyDown(KeyCode keyCode, bool pressed);
 	inline static bool IsKeyPressed(KeyCode keyCode);
-	inline static bool IsMouseButtonPressed(MouseButton button) {  };
+	inline static bool IsMouseButtonPressed(MouseButton button) { return false; };
 	
 	static unsigned int GetKeySym(unsigned int p_code);	
 	static unsigned int GetScanSym(unsigned int p_code);
